@@ -17,9 +17,9 @@ notebooks, TVs, instalación de cámaras de seguridad, servicios de electricidad
 
 ```text
 src/
-├── common/          🔴 Pendiente   — BaseEntity, DTOs compartidos, filtros globales
+├── common/          🟢 Implementado — BaseEntity, DTOs, filtros, interceptors, enums
 ├── auth/            🔴 Pendiente   — JWT, roles (admin, technician), guards
-├── users/           🔴 Pendiente   — CRUD de usuarios del sistema
+├── users/           🟢 Implementado — CRUD de usuarios del sistema
 ├── clients/         🔴 Pendiente   — CRUD de clientes (con datos de internet)
 ├── suppliers/       🔴 Pendiente   — CRUD de proveedores de repuestos/materiales
 ├── service-types/   🔴 Pendiente   — Catálogo de servicios (reparación, instalación, etc.)
@@ -40,11 +40,11 @@ src/
 
 ### 1. `common/` — Módulo compartido
 
-- [ ] BaseEntity (id, createdAt, updatedAt)
-- [ ] Pagination DTOs
-- [ ] HTTP exception filter global
-- [ ] Transform interceptor
-- [ ] Enums globales (status, prioridad, etc.)
+- [x] BaseEntity (id, createdAt, updatedAt)
+- [x] Pagination DTOs
+- [x] HTTP exception filter global
+- [x] Transform interceptor
+- [x] Enums globales (status, prioridad, etc.)
 
 > Utilidades, DTOs y filtros reutilizados por todos los módulos.
 
@@ -67,8 +67,8 @@ src/
 
 ### 3. `users/` — Usuarios del sistema
 
-- [ ] User entity (name, email, password, role, isActive)
-- [ ] CRUD endpoints (`GET/POST/PATCH/DELETE /users`)
+- [x] User entity (name, email, password, role, isActive)
+- [x] CRUD endpoints (`GET/POST/PATCH/DELETE /users`)
 - [ ] Password hashing (bcrypt)
 - [ ] Solo admin puede crear/modificar usuarios
 - [ ] Relación con WorkOrder (técnico asignado)
@@ -233,7 +233,7 @@ src/
 
 - [ ] Seed de admin por defecto
 - [ ] Seed de tipos de servicio básicos
-- [ ] Migraciones (TypeORM)
+- [x] Migraciones (TypeORM)
 
 > Datos iniciales para arrancar. Migraciones para cambios en el esquema.
 
