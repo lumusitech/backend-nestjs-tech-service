@@ -24,6 +24,10 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    if (!user.isActive) {
+      throw new UnauthorizedException('Account is disabled');
+    }
+
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
@@ -53,13 +57,6 @@ export class AuthService {
       throw new ConflictException('Email already exists');
     }
 
-    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
-
-    const user = await this.usersService.create({
-      ...createUserDto,
-      password: hashedPassword,
-    });
-
-    return user;
+    return this.usersService.create(createUserDto);
   }
 }
