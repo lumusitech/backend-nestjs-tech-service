@@ -20,8 +20,8 @@ src/
 ├── common/          🟢 Implementado — BaseEntity, DTOs, filtros, interceptors, enums
 ├── auth/            🟢 Implementado — JWT, roles (admin, technician), guards
 ├── users/           🟢 Implementado — CRUD de usuarios del sistema
-├── clients/         🔴 Pendiente   — CRUD de clientes (con datos de internet)
-├── suppliers/       🔴 Pendiente   — CRUD de proveedores de repuestos/materiales
+├── clients/         🟢 Implementado — CRUD de clientes (con datos de internet)
+├── suppliers/       🟢 Implementado — CRUD de proveedores de repuestos/materiales
 ├── service-types/   🔴 Pendiente   — Catálogo de servicios (reparación, instalación, etc.)
 ├── work-orders/     🔴 Pendiente   — Órdenes de trabajo (core del sistema)
 ├── tasks/           🔴 Pendiente   — Subtareas dentro de una orden
@@ -90,8 +90,8 @@ src/
 
 ### 5. `suppliers/` — Proveedores
 
-- [ ] Supplier entity (name, contact, phone, email, address, notes)
-- [ ] CRUD endpoints (`GET/POST/PATCH/DELETE /suppliers`)
+- [x] Supplier entity (name, contact, phone, email, address, notes)
+- [x] CRUD endpoints (`GET/POST/PATCH/DELETE /suppliers`)
 - [ ] Relación con WorkOrderMaterial (opcional: saber qué proveedor surtió cada material)
 
 > Proveedores de repuestos, herramientas y materiales.
