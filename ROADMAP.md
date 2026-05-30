@@ -18,7 +18,7 @@ notebooks, TVs, instalación de cámaras de seguridad, servicios de electricidad
 ```text
 src/
 ├── common/          🟢 Implementado — BaseEntity, DTOs, filtros, interceptors, enums
-├── auth/            🔴 Pendiente   — JWT, roles (admin, technician), guards
+├── auth/            🟢 Implementado — JWT, roles (admin, technician), guards
 ├── users/           🟢 Implementado — CRUD de usuarios del sistema
 ├── clients/         🔴 Pendiente   — CRUD de clientes (con datos de internet)
 ├── suppliers/       🔴 Pendiente   — CRUD de proveedores de repuestos/materiales
@@ -31,7 +31,7 @@ src/
 ├── billing/         🔴 Pendiente   — Facturación ARCA/AFIP (planificado, implementación futura)
 ├── reports/         🔴 Pendiente   — Reportes financieros y estadísticas
 ├── portal/          🔴 Pendiente   — Portal público para clientes (sin login)
-└── database/        🔴 Pendiente   — Seeds y migraciones
+└── database/        🟢 Implementado — Seeds y migraciones
 ```
 
 ---
@@ -52,14 +52,14 @@ src/
 
 ### 2. `auth/` — Autenticación y autorización
 
-- [ ] JWT strategy (passport)
-- [ ] Login endpoint (`POST /auth/login`)
-- [ ] Register (solo admin crea usuarios)
-- [ ] JwtGuard
-- [ ] RolesGuard
-- [ ] @Roles() decorator
-- [ ] @CurrentUser() decorator
-- [ ] @Public() decorator (para rutas sin auth)
+- [x] JWT strategy (passport)
+- [x] Login endpoint (`POST /auth/login`)
+- [x] Register (solo admin crea usuarios)
+- [x] JwtGuard
+- [x] RolesGuard
+- [x] @Roles() decorator
+- [x] @CurrentUser() decorator
+- [x] @Public() decorator (para rutas sin auth)
 
 > Autenticación por JWT. Roles: `admin` (acceso total, crea técnicos) y `technician` (solo sus órdenes). Clientes no se registran — usan portal público.
 
@@ -69,8 +69,8 @@ src/
 
 - [x] User entity (name, email, password, role, isActive)
 - [x] CRUD endpoints (`GET/POST/PATCH/DELETE /users`)
-- [ ] Password hashing (bcrypt)
-- [ ] Solo admin puede crear/modificar usuarios
+- [x] Password hashing (bcrypt)
+- [x] Solo admin puede crear/modificar usuarios
 - [ ] Relación con WorkOrder (técnico asignado)
 
 > Usuarios del sistema: admin y technicians. No incluye clientes (acceden por portal sin login).
@@ -231,7 +231,7 @@ src/
 
 ### 15. `database/` — Seeds y migraciones
 
-- [ ] Seed de admin por defecto
+- [x] Seed de admin por defecto
 - [ ] Seed de tipos de servicio básicos
 - [x] Migraciones (TypeORM)
 
