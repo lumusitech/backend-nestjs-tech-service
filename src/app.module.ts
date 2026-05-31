@@ -9,6 +9,7 @@ import { AuthModule } from './auth/auth.module';
 import { ClientsModule } from './clients/clients.module';
 import { SuppliersModule } from './suppliers/suppliers.module';
 import { ServiceTypesModule } from './service-types/service-types.module';
+import { WorkOrdersModule } from './work-orders/work-orders.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { ServiceTypesModule } from './service-types/service-types.module';
     ClientsModule,
     SuppliersModule,
     ServiceTypesModule,
+    WorkOrdersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

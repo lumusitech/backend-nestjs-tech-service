@@ -55,4 +55,10 @@ export class UsersController {
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.usersService.remove(id);
   }
+
+  @Delete(':id/hard')
+  @Roles(UserRole.ADMIN)
+  hardRemove(@Param('id', ParseUUIDPipe) id: string) {
+    return this.usersService.hardRemove(id);
+  }
 }
