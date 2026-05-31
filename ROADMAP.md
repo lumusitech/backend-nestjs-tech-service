@@ -22,8 +22,8 @@ src/
 ├── users/           🟢 Implementado — CRUD de usuarios del sistema
 ├── clients/         🟢 Implementado — CRUD de clientes (con datos de internet)
 ├── suppliers/       🟢 Implementado — CRUD de proveedores de repuestos/materiales
-├── service-types/   🔴 Pendiente   — Catálogo de servicios (reparación, instalación, etc.)
-├── work-orders/     🔴 Pendiente   — Órdenes de trabajo (core del sistema)
+├── service-types/   🟢 Implementado — Catálogo de servicios (reparación, instalación, etc.)
+├── work-orders/     🟢 Implementado — Órdenes de trabajo (core del sistema)
 ├── tasks/           🔴 Pendiente   — Subtareas dentro de una orden
 ├── payments/        🔴 Pendiente   — Pagos (MercadoPago, tarjetas, efectivo)
 ├── finances/        🔴 Pendiente   — Gastos operativos generales
@@ -71,7 +71,7 @@ src/
 - [x] CRUD endpoints (`GET/POST/PATCH/DELETE /users`)
 - [x] Password hashing (bcrypt)
 - [x] Solo admin puede crear/modificar usuarios
-- [ ] Relación con WorkOrder (técnico asignado)
+- [x] Relación con WorkOrder (ManyToMany — múltiples técnicos por orden)
 
 > Usuarios del sistema: admin y technicians. No incluye clientes (acceden por portal sin login).
 
@@ -79,10 +79,10 @@ src/
 
 ### 4. `clients/` — Clientes
 
-- [ ] Client entity (name, email, phone, address)
-- [ ] internetProvider, internetPlan
-- [ ] CRUD endpoints (`GET/POST/PATCH/DELETE /clients`)
-- [ ] Relación con WorkOrder (un cliente puede tener muchas órdenes)
+- [x] Client entity (name, email, phone, address)
+- [x] internetProvider, internetPlan
+- [x] CRUD endpoints (`GET/POST/PATCH/DELETE /clients`)
+- [x] Relación con WorkOrder (un cliente puede tener muchas órdenes)
 
 > Datos de los clientes que solicitan servicios.
 
@@ -92,7 +92,7 @@ src/
 
 - [x] Supplier entity (name, contact, phone, email, address, notes)
 - [x] CRUD endpoints (`GET/POST/PATCH/DELETE /suppliers`)
-- [ ] Relación con WorkOrderMaterial (opcional: saber qué proveedor surtió cada material)
+- [x] Relación con WorkOrderMaterial (opcional: saber qué proveedor surtió cada material)
 
 > Proveedores de repuestos, herramientas y materiales.
 
@@ -100,9 +100,9 @@ src/
 
 ### 6. `service-types/` — Catálogo de servicios
 
-- [ ] ServiceType entity (name, description, estimatedDuration, isActive)
-- [ ] CRUD endpoints (`GET/POST/PATCH/DELETE /service-types`)
-- [ ] Relación con WorkOrder
+- [x] ServiceType entity (name, description, estimatedDuration, isActive)
+- [x] CRUD endpoints (`GET/POST/PATCH/DELETE /service-types`)
+- [x] Relación con WorkOrder
 
 > Tipos de servicio: "Reparación de PC", "Instalación de cámara", "Servicio eléctrico", etc.
 
@@ -110,25 +110,28 @@ src/
 
 ### 7. `work-orders/` — Órdenes de trabajo ⭐ CORE
 
-- [ ] WorkOrder entity:
-  - Cliente, técnico asignado, tipo de servicio
-  - trackingCode único (ej: `TS-A1B2C3`)
+- [x] WorkOrder entity:
+  - Cliente (ManyToOne), múltiples técnicos (ManyToMany), tipo de servicio
+  - trackingCode único (ej: `TS-A1B2C3`) — auto-generado
   - status: `pending → assigned → in_progress → completed → delivered`
   - priority: `low | medium | high | urgent`
   - location: `on_site` (domicilio) | `workshop` (taller)
   - diagnosis (texto rápido)
-  - warrantyUntil, warrantyStatus
+  - warrantyUntil (warrantyStatus derivado de la fecha)
   - scheduledDate, startedAt, completedAt
-- [ ] WorkOrderNote entity:
+- [x] WorkOrderNote entity:
   - type: `diagnosis | issue | observation | internal`
-  - content, createdBy, createdAt
-- [ ] WorkOrderMaterial entity:
+  - content, createdAt
+- [x] WorkOrderMaterial entity:
   - description, quantity, unitCost, supplierId (opcional)
-- [ ] CRUD endpoints (`GET/POST/PATCH/DELETE /work-orders`)
-- [ ] Filtros: por estado, técnico, cliente, fechas, tipo de servicio
-- [ ] Endpoints anidados:
+- [x] CRUD endpoints (`GET/POST/PATCH/DELETE /work-orders`)
+- [x] Soft delete global (DeleteDateColumn en BaseEntity)
+- [x] Endpoint hard delete (`DELETE /work-orders/:id/hard`)
+- [x] Filtros: por estado, prioridad, técnico, cliente, fechas, tipo de servicio
+- [x] Endpoints anidados:
   - `POST/GET /work-orders/:id/notes`
   - `POST/GET/DELETE /work-orders/:id/materials`
+- [x] Gestión de técnicos: `PUT /work-orders/:id/technicians` (reemplazo de array)
 
 > Entidad central del sistema. Representa un trabajo/servicio. Incluye historial (notas con timestamp), materiales usados y seguimiento por código.
 
@@ -232,7 +235,7 @@ src/
 ### 15. `database/` — Seeds y migraciones
 
 - [x] Seed de admin por defecto
-- [ ] Seed de tipos de servicio básicos
+- [x] Seed de tipos de servicio básicos
 - [x] Migraciones (TypeORM)
 
 > Datos iniciales para arrancar. Migraciones para cambios en el esquema.
@@ -244,13 +247,13 @@ src/
 ```text
 User (admin | technician)
   │
-  └──< WorkOrder (assignedTo)
+  └──<< WorkOrder (ManyToMany — múltiples técnicos por orden)
 
 Client (internetProvider, internetPlan)
   │
   └──< WorkOrder (client)
           │
-          ├──< WorkOrderNote (type, content, createdBy, createdAt)
+          ├──< WorkOrderNote (type, content, createdAt)
           ├──< WorkOrderMaterial (description, qty, unitCost, supplier?)
           ├──< Task (title, isCompleted)
           ├──< Payment (amount, method, status, provider)
@@ -264,34 +267,38 @@ Supplier
 Expense (amount, category, date)  ← gastos operativos generales
 ```
 
+> **Nota:** Todas las entidades heredan de BaseEntity (id, createdAt, updatedAt, deletedAt) para soporte de soft delete.
+
 ---
 
 ## Decisiones Técnicas
 
-| Decisión      | Elección                       | Razón                                                |
-| ------------- | ------------------------------ | ---------------------------------------------------- |
-| Arquitectura  | Modular (NestJS estándar)      | Proyecto pequeño/mediano, hexagonal es overkill      |
-| ORM           | TypeORM                        | Ya configurado en el proyecto                        |
-| Autenticación | JWT + passport                 | Stateless, simple, suficiente para el alcance        |
-| Roles         | admin, technician              | Admin acceso total, technician solo sus órdenes      |
-| Clientes      | No se registran                | Acceden por portal público con código de seguimiento |
-| Pagos         | MercadoPago (strategy pattern) | Abierto a otros providers si se necesita             |
-| Facturación   | ARCA/AFIP (planificado)        | Entidades e interfaz listas, implementación después  |
-| QR            | Frontend (Angular)             | El backend solo devuelve la URL                      |
-| Calendario    | Fechas en work orders          | No se necesita módulo aparte                         |
-| Contactos     | clients + suppliers + users    | No se necesita módulo de contactos aparte            |
-| Alertas       | Solo in-app                    | Sin email/SMS por ahora                              |
+| Decisión      | Elección                                | Razón                                                |
+| ------------- | --------------------------------------- | ---------------------------------------------------- |
+| Arquitectura  | Modular (NestJS estándar)               | Proyecto pequeño/mediano, hexagonal es overkill      |
+| ORM           | TypeORM                                 | Ya configurado en el proyecto                        |
+| Autenticación | JWT + passport                          | Stateless, simple, suficiente para el alcance        |
+| Roles         | admin, technician                       | Admin acceso total, technician solo sus órdenes      |
+| Clientes      | No se registran                         | Acceden por portal público con código de seguimiento |
+| Pagos         | MercadoPago (strategy pattern)          | Abierto a otros providers si se necesita             |
+| Facturación   | ARCA/AFIP (planificado)                 | Entidades e interfaz listas, implementación después  |
+| QR            | Frontend (Angular)                      | El backend solo devuelve la URL                      |
+| Calendario    | Fechas en work orders                   | No se necesita módulo aparte                         |
+| Contactos     | clients + suppliers + users             | No se necesita módulo de contactos aparte            |
+| Alertas       | Solo in-app                             | Sin email/SMS por ahora                              |
+| Soft delete   | Global (BaseEntity + DeleteDateColumn)  | Integridad referencial, nada se borra físicamente   |
+| Técnicos      | ManyToMany en WorkOrder                 | Múltiples técnicos pueden trabajar en una orden      |
 
 ---
 
 ## Orden de Implementación
 
-1. `common` — base, DTOs, filtros globales
-2. `auth` + `users` — JWT, roles, login
-3. `clients` — CRUD
-4. `suppliers` — CRUD
-5. `service-types` — catálogo
-6. `work-orders` — core (con notes + materials)
+1. ✅ `common` — base, DTOs, filtros globales
+2. ✅ `auth` + `users` — JWT, roles, login
+3. ✅ `clients` — CRUD
+4. ✅ `suppliers` — CRUD
+5. ✅ `service-types` — catálogo
+6. ✅ `work-orders` — core (con notes + materials + técnicos ManyToMany)
 7. `tasks` — subtareas
 8. `payments` — MercadoPago + tarjetas
 9. `finances` — gastos operativos
@@ -299,7 +306,7 @@ Expense (amount, category, date)  ← gastos operativos generales
 11. `billing` — entidades + interfaz (implementar ARCA después)
 12. `reports` — reportes financieros y operativos
 13. `portal` — portal público del cliente
-14. `database` — seeds y migraciones
+14. ✅ `database` — seeds y migraciones
 
 ---
 
@@ -308,5 +315,8 @@ Expense (amount, category, date)  ← gastos operativos generales
 - **Frontend:** Angular 21+ (a desarrollar más adelante)
 - **Mobile:** Android nativo + Jetpack Compose (a decidir)
 - **Facturación ARCA/AFIP:** La interfaz y entidades se crean desde el inicio, pero la integración real con los WS de ARCA se implementa en una fase posterior
-- **Tracking code:** Se genera automáticamente al crear una work order. Formato sugerido: `TS-XXXXX` (ej: `TS-A1B2C3`)
+- **Tracking code:** Se genera automáticamente al crear una work order. Formato: `TS-XXXXX` (ej: `TS-A1B2C3`)
 - **QR:** Lo genera el frontend a partir de la URL `https://dominio/portal/track/{code}`
+- **Soft delete:** Todas las entidades heredan `deletedAt` de BaseEntity. El borrado lógico es el comportamiento por defecto. Solo admin puede borrar físicamente vía endpoint `DELETE /:id/hard`
+- **Técnicos:** Relación ManyToMany con WorkOrder. Una orden puede tener múltiples técnicos asignados. Se asignan reemplazando el array completo vía `PUT /work-orders/:id/technicians`
+- **warrantyStatus:** Se deriva de `warrantyUntil` comparando con la fecha actual (no se almacena en DB)
