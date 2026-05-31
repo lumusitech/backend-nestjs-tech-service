@@ -19,6 +19,8 @@ import { UpdateWorkOrderDto } from './dto/update-work-order.dto';
 import { FilterWorkOrderDto } from './dto/filter-work-order.dto';
 import { CreateWorkOrderNoteDto } from './dto/create-work-order-note.dto';
 import { CreateWorkOrderMaterialDto } from './dto/create-work-order-material.dto';
+import { CreateTaskDto } from './dto/create-task.dto';
+import { UpdateTaskDto } from './dto/update-task.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { UserRole } from '../users/enums/user-role.enum';
@@ -125,5 +127,41 @@ export class WorkOrdersController {
     @Param('materialId', ParseUUIDPipe) materialId: string,
   ) {
     return this.workOrdersService.removeMaterial(id, materialId);
+  }
+
+  // ─── Tasks ──────────────────────────────────────────
+
+  @Post(':id/tasks')
+  @Roles(UserRole.ADMIN, UserRole.TECHNICIAN)
+  createTask(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() createTaskDto: CreateTaskDto,
+  ) {
+    return this.workOrdersService.createTask(id, createTaskDto);
+  }
+
+  @Get(':id/tasks')
+  @Roles(UserRole.ADMIN, UserRole.TECHNICIAN)
+  findTasks(@Param('id', ParseUUIDPipe) id: string) {
+    return this.workOrdersService.findTasks(id);
+  }
+
+  @Patch(':id/tasks/:taskId')
+  @Roles(UserRole.ADMIN)
+  updateTask(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('taskId', ParseUUIDPipe) taskId: string,
+    @Body() updateTaskDto: UpdateTaskDto,
+  ) {
+    return this.workOrdersService.updateTask(id, taskId, updateTaskDto);
+  }
+
+  @Delete(':id/tasks/:taskId')
+  @Roles(UserRole.ADMIN)
+  removeTask(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('taskId', ParseUUIDPipe) taskId: string,
+  ) {
+    return this.workOrdersService.removeTask(id, taskId);
   }
 }

@@ -8,11 +8,14 @@ import { In, Repository } from 'typeorm';
 import { WorkOrder } from './entities/work-order.entity';
 import { WorkOrderNote } from './entities/work-order-note.entity';
 import { WorkOrderMaterial } from './entities/work-order-material.entity';
+import { Task } from './entities/task.entity';
 import { CreateWorkOrderDto } from './dto/create-work-order.dto';
 import { UpdateWorkOrderDto } from './dto/update-work-order.dto';
 import { FilterWorkOrderDto } from './dto/filter-work-order.dto';
 import { CreateWorkOrderNoteDto } from './dto/create-work-order-note.dto';
 import { CreateWorkOrderMaterialDto } from './dto/create-work-order-material.dto';
+import { CreateTaskDto } from './dto/create-task.dto';
+import { UpdateTaskDto } from './dto/update-task.dto';
 import { WorkOrderStatus } from '../common/enums/work-order-status.enum';
 import { PaginatedResponseDto } from '../common/dto/paginated-response.dto';
 import { User } from '../users/entities/user.entity';
@@ -44,6 +47,8 @@ export class WorkOrdersService {
     private readonly noteRepository: Repository<WorkOrderNote>,
     @InjectRepository(WorkOrderMaterial)
     private readonly materialRepository: Repository<WorkOrderMaterial>,
+    @InjectRepository(Task)
+    private readonly taskRepository: Repository<Task>,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
   ) {}
@@ -266,6 +271,70 @@ export class WorkOrdersService {
     }
 
     await this.materialRepository.softRemove(material);
+  }
+
+  // ─── Tasks ──────────────────────────────────────────
+
+  async createTask(workOrderId: string, dto: CreateTaskDto): Promise<Task> {
+    await this.findOne(workOrderId);
+
+    const task = this.taskRepository.create({
+      ...dto,
+      workOrderId,
+    });
+
+    return this.taskRepository.save(task);
+  }
+
+  async findTasks(workOrderId: string): Promise<Task[]> {
+    await this.findOne(workOrderId);
+
+    return this.taskRepository.find({
+      where: { workOrderId },
+      relations: { assignedTo: true },
+      order: { createdAt: 'DESC' },
+    });
+  }
+
+  async updateTask(
+    workOrderId: string,
+    taskId: string,
+    dto: UpdateTaskDto,
+  ): Promise<Task> {
+    const task = await this.taskRepository.findOne({
+      where: { id: taskId, workOrderId },
+    });
+
+    if (!task) {
+      throw new NotFoundException(
+        `Task #${taskId} not found in work order #${workOrderId}`,
+      );
+    }
+
+    if (dto.isCompleted === true && !task.isCompleted) {
+      task.completedAt = new Date();
+    }
+
+    if (dto.isCompleted === false) {
+      task.completedAt = null!;
+    }
+
+    Object.assign(task, dto);
+    return this.taskRepository.save(task);
+  }
+
+  async removeTask(workOrderId: string, taskId: string): Promise<void> {
+    const task = await this.taskRepository.findOne({
+      where: { id: taskId, workOrderId },
+    });
+
+    if (!task) {
+      throw new NotFoundException(
+        `Task #${taskId} not found in work order #${workOrderId}`,
+      );
+    }
+
+    await this.taskRepository.softRemove(task);
   }
 
   // ─── Private helpers ─────────────────────────────────

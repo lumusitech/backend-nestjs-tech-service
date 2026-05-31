@@ -5,6 +5,7 @@ import { WorkOrdersController } from './work-orders.controller';
 import { WorkOrder } from './entities/work-order.entity';
 import { WorkOrderNote } from './entities/work-order-note.entity';
 import { WorkOrderMaterial } from './entities/work-order-material.entity';
+import { Task } from './entities/task.entity';
 import { User } from '../users/entities/user.entity';
 
 @Module({
@@ -13,6 +14,7 @@ import { User } from '../users/entities/user.entity';
       WorkOrder,
       WorkOrderNote,
       WorkOrderMaterial,
+      Task,
       User,
     ]),
   ],

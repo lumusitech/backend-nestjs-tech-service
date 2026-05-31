@@ -16,6 +16,7 @@ import { Client } from '../../clients/entities/client.entity';
 import { ServiceType } from '../../service-types/entities/service-type.entity';
 import { WorkOrderNote } from './work-order-note.entity';
 import { WorkOrderMaterial } from './work-order-material.entity';
+import { Task } from './task.entity';
 
 @Entity('work_orders')
 export class WorkOrder extends BaseEntity {
@@ -87,4 +88,7 @@ export class WorkOrder extends BaseEntity {
     cascade: true,
   })
   materials!: WorkOrderMaterial[];
+
+  @OneToMany(() => Task, (task) => task.workOrder, { cascade: true })
+  tasks!: Task[];
 }
