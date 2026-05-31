@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import dataSource from './data-source';
 import { seedAdmin } from './seeds/seed-admin';
+import { seedServiceTypes } from './seeds/seed-service-types';
 
 async function runSeeds() {
   await dataSource.initialize();
@@ -8,6 +9,7 @@ async function runSeeds() {
   console.log('Running seeds...');
 
   await seedAdmin(dataSource);
+  await seedServiceTypes(dataSource);
 
   console.log('Seeds finished');
 
