@@ -130,14 +130,15 @@ export class WorkOrdersService {
   async findOne(id: string): Promise<WorkOrder> {
     const workOrder = await this.workOrderRepository.findOne({
       where: { id },
-      relations: [
-        'client',
-        'serviceType',
-        'technicians',
-        'notes',
-        'materials',
-        'materials.supplier',
-      ],
+      relations: {
+        client: true,
+        serviceType: true,
+        technicians: true,
+        notes: true,
+        materials: {
+          supplier: true,
+        },
+      },
     });
 
     if (!workOrder) {
@@ -248,7 +249,7 @@ export class WorkOrdersService {
 
     return this.materialRepository.find({
       where: { workOrderId },
-      relations: ['supplier'],
+      relations: { supplier: true },
       order: { createdAt: 'DESC' },
     });
   }
