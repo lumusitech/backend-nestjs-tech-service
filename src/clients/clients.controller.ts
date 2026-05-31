@@ -51,4 +51,9 @@ export class ClientsController {
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.clientsService.remove(id);
   }
+
+  @Delete(':id/hard')
+  hardRemove(@Param('id', ParseUUIDPipe) id: string) {
+    return this.clientsService.hardRemove(id);
+  }
 }

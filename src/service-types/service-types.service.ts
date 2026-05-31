@@ -89,6 +89,11 @@ export class ServiceTypesService {
 
   async remove(id: string): Promise<void> {
     const serviceType = await this.findOne(id);
+    await this.serviceTypeRepository.softRemove(serviceType);
+  }
+
+  async hardRemove(id: string): Promise<void> {
+    const serviceType = await this.findOne(id);
     await this.serviceTypeRepository.remove(serviceType);
   }
 }

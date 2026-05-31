@@ -51,4 +51,9 @@ export class ServiceTypesController {
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.serviceTypesService.remove(id);
   }
+
+  @Delete(':id/hard')
+  hardRemove(@Param('id', ParseUUIDPipe) id: string) {
+    return this.serviceTypesService.hardRemove(id);
+  }
 }
