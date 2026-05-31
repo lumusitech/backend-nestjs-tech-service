@@ -24,7 +24,7 @@ src/
 ├── suppliers/       🟢 Implementado — CRUD de proveedores de repuestos/materiales
 ├── service-types/   🟢 Implementado — Catálogo de servicios (reparación, instalación, etc.)
 ├── work-orders/     🟢 Implementado — Órdenes de trabajo (core del sistema)
-├── tasks/           🔴 Pendiente   — Subtareas dentro de una orden
+├── tasks/           🟢 Implementado — Subtareas dentro de una orden
 ├── payments/        🔴 Pendiente   — Pagos (MercadoPago, tarjetas, efectivo)
 ├── finances/        🔴 Pendiente   — Gastos operativos generales
 ├── alerts/          🔴 Pendiente   — Notificaciones in-app
@@ -139,8 +139,8 @@ src/
 
 ### 8. `tasks/` — Subtareas
 
-- [ ] Task entity (title, description, isCompleted, completedAt, assignedTo)
-- [ ] CRUD endpoints anidados (`/work-orders/:id/tasks`)
+- [x] Task entity (title, description, isCompleted, completedAt, assignedTo)
+- [x] CRUD endpoints anidados (`/work-orders/:id/tasks`)
 
 > Checklist o subtareas dentro de una orden de trabajo. Ej: "Verificar fuente", "Probar display", "Limpiar ventiladores".
 
@@ -299,7 +299,7 @@ Expense (amount, category, date)  ← gastos operativos generales
 4. ✅ `suppliers` — CRUD
 5. ✅ `service-types` — catálogo
 6. ✅ `work-orders` — core (con notes + materials + técnicos ManyToMany)
-7. `tasks` — subtareas
+7. ✅ `tasks` — subtareas
 8. `payments` — MercadoPago + tarjetas
 9. `finances` — gastos operativos
 10. `alerts` — notificaciones in-app
