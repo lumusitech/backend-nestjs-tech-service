@@ -11,6 +11,7 @@ import { SuppliersModule } from './suppliers/suppliers.module';
 import { ServiceTypesModule } from './service-types/service-types.module';
 import { WorkOrdersModule } from './work-orders/work-orders.module';
 import { PaymentsModule } from './payments/payments.module';
+import { FinancesModule } from './finances/finances.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { PaymentsModule } from './payments/payments.module';
     ServiceTypesModule,
     WorkOrdersModule,
     PaymentsModule,
+    FinancesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
