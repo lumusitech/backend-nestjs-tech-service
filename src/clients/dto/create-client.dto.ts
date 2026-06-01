@@ -4,7 +4,9 @@ import {
   IsEmail,
   IsOptional,
   IsBoolean,
+  IsEnum,
 } from 'class-validator';
+import { IvaCondition } from '../../billing/enums/iva-condition.enum';
 
 export class CreateClientDto {
   @IsString()
@@ -33,4 +35,12 @@ export class CreateClientDto {
   @IsBoolean()
   @IsOptional()
   isActive?: boolean;
+
+  @IsString()
+  @IsOptional()
+  cuit?: string;
+
+  @IsEnum(IvaCondition)
+  @IsOptional()
+  ivaCondition?: IvaCondition;
 }

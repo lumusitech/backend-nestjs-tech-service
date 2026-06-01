@@ -1,5 +1,6 @@
 import { Entity, Column } from 'typeorm';
 import { BaseEntity } from '../../common/entities/base.entity';
+import { IvaCondition } from '../../billing/enums/iva-condition.enum';
 
 @Entity('clients')
 export class Client extends BaseEntity {
@@ -23,4 +24,15 @@ export class Client extends BaseEntity {
 
   @Column({ name: 'is_active', default: true })
   isActive!: boolean;
+
+  @Column({ nullable: true })
+  cuit!: string;
+
+  @Column({
+    name: 'iva_condition',
+    type: 'enum',
+    enum: IvaCondition,
+    nullable: true,
+  })
+  ivaCondition!: IvaCondition;
 }

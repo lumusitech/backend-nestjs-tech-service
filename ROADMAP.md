@@ -28,7 +28,7 @@ src/
 ├── payments/        🟢 Implementado — Pagos (MercadoPago, tarjetas, efectivo)
 ├── finances/        🟢 Implementado — Gastos operativos generales
 ├── notifications/   🟢 Implementado — Notificaciones in-app (WebSocket + EventEmitter)
-├── billing/         🔴 Pendiente   — Facturación ARCA/AFIP (planificado, implementación futura)
+├── billing/         🟢 Implementado — Facturación ARCA/AFIP (stub, PDFs)
 ├── reports/         🟢 Implementado — Reportes financieros y estadísticas
 ├── portal/          🟢 Implementado — Portal público para clientes (sin login)
 └── database/        🟢 Implementado — Seeds y migraciones
@@ -197,20 +197,28 @@ src/
 
 ---
 
-### 12. `billing/` — Facturación ARCA/AFIP ⏳ Planificado
+### 12. `billing/` — Facturación ARCA/AFIP
 
-- [ ] Invoice entity:
-  - invoiceNumber, invoiceType (A | B | C)
-  - pointOfSale, cae, caeExpiration
-  - clientCUIT, clientName, taxCondition
-  - subtotal, iva, total
-  - workOrderId, status (`draft | issued | cancelled`), issuedAt
-- [ ] InvoiceItem entity (description, quantity, unitPrice, ivaRate, subtotal)
-- [ ] BillingProvider interface
-- [ ] ARCA provider (esqueleto, sin implementar)
-- [ ] Enums: InvoiceType, TaxCondition (RI, MT, CF, EX)
+- [x] Invoice entity:
+  - invoiceNumber (auto-generado: 0001-00000001), invoiceType (A | B | C)
+  - pointOfSale, cae, caeExpiry
+  - clientName, clientCuit, clientAddress, clientIvaCondition
+  - subtotal, ivaAmount, total
+  - workOrderId, paymentId (opcional), status (`draft | issued | cancelled | rejected`)
+  - issuedAt, cancelledAt, metadata (jsonb)
+- [x] BillingProvider interface (strategy pattern)
+- [x] ArcaProvider stub (retorna CAE mock, loggea warning)
+- [x] Enums: InvoiceType (A/B/C), InvoiceConcept, InvoiceStatus, IvaCondition
+- [x] `POST /billing/invoices` — crear factura borrador
+- [x] `GET /billing/invoices` — listar con filtros (status, type, fecha, clientName)
+- [x] `GET /billing/invoices/:id` — obtener una con relaciones
+- [x] `POST /billing/invoices/:id/issue` — emitir (draft → issued, llama ARCA stub)
+- [x] `POST /billing/invoices/:id/cancel` — anular
+- [x] `GET /billing/invoices/:id/pdf` — descargar factura PDF (pdfkit, formato argentino)
+- [x] Invoice PDF: tipo, número, punto de venta, CAE, emisor CUIT, cliente CUIT/IVA, subtotal, IVA, total
+- [x] Client entity actualizada: cuit + ivaCondition opcionales
 
-> Facturación electrónica vía ARCA/AFIP (WSFEv4). Solo entidades e interfaz por ahora. Implementación real se hace después.
+> Facturación electrónica vía ARCA/AFIP. Interface + entities + flujo admin completo. Stub de ARCA listo para conectar WSFEv1 en fase posterior.
 
 ---
 
@@ -324,10 +332,58 @@ Expense (amount, category, date)  ← gastos operativos generales
 8. ✅ `payments` — MercadoPago + tarjetas
 9. ✅ `finances` — gastos operativos
 10. ✅ `notifications` — notificaciones in-app (WebSocket + EventEmitter)
-11. `billing` — entidades + interfaz (implementar ARCA después)
+11. ✅ `billing` — facturación ARCA/AFIP (stub + PDFs)
 12. ✅ `reports` — reportes financieros y operativos (BFF + PDFs)
 13. ✅ `portal` — portal público del cliente
 14. ✅ `database` — seeds y migraciones
+15. 🔴 `testing` — tests unitarios, e2e y aceptación (ver sección detalle)
+
+---
+
+### 16. `testing/` — Testing completo
+
+> **Objetivo:** Cubrir todos los módulos con tests antes del deploy. Se hace módulo por módulo, verificando que cada uno pase los 3 niveles antes de pasar al siguiente.
+
+#### Stack de testing
+
+- **Unit tests:** Jest (ya incluido en NestJS)
+- **E2E tests:** Jest + Supertest (HTTP contra app levantada)
+- **Acceptance tests:** Jest + Supertest (flujos completos de negocio)
+
+#### Orden de testing (por módulo)
+
+1. `common/` — unit tests de BaseEntity, DTOs, filtros
+2. `auth + users/` — unit: service + guards | e2e: login, register, roles | acceptance: flujo completo de auth
+3. `clients/` — unit: service | e2e: CRUD + filtros | acceptance: crear cliente → crear work order → facturar
+4. `suppliers/` — unit: service | e2e: CRUD
+5. `service-types/` — unit: service | e2e: CRUD
+6. `work-orders/` — unit: service + transitions | e2e: CRUD + cambio de estados | acceptance: flujo completo de orden
+7. `tasks/` — unit: service | e2e: CRUD + completar
+8. `payments/` — unit: service + providers | e2e: CRUD + webhook | acceptance: crear pago → aprobar → comprobante
+9. `finances/` — unit: service | e2e: CRUD + filtros
+10. `notifications/` — unit: listener + service | e2e: WebSocket events
+11. `billing/` — unit: service + ArcaProvider stub | e2e: crear → emitir → PDF → cancelar | acceptance: flujo facturación completo
+12. `reports/` — unit: service (queries) | e2e: todos los endpoints | acceptance: dashboard completo con datos seed
+13. `portal/` — unit: service | e2e: tracking por código | acceptance: cliente ve su orden sin auth
+
+#### Cobertura mínima por módulo
+
+- **Unit:** Service methods (happy path + error cases)
+- **E2E:** Controller endpoints (status codes, response shape, auth/roles)
+- **Acceptance:** Flujos de negocio de punta a punta (setup seed → acciones → assertions)
+
+#### Comandos
+
+```bash
+# Unit tests
+npm run test
+
+# E2E tests
+npm run test:e2e
+
+# Coverage
+npm run test:cov
+```
 
 ---
 
@@ -335,9 +391,137 @@ Expense (amount, category, date)  ← gastos operativos generales
 
 - **Frontend:** Angular 21+ (a desarrollar más adelante)
 - **Mobile:** Android nativo + Jetpack Compose (a decidir)
-- **Facturación ARCA/AFIP:** La interfaz y entidades se crean desde el inicio, pero la integración real con los WS de ARCA se implementa en una fase posterior
 - **Tracking code:** Se genera automáticamente al crear una work order. Formato: `TS-XXXXX` (ej: `TS-A1B2C3`)
 - **QR:** Lo genera el frontend a partir de la URL `https://dominio/portal/track/{code}`
 - **Soft delete:** Todas las entidades heredan `deletedAt` de BaseEntity. El borrado lógico es el comportamiento por defecto. Solo admin puede borrar físicamente vía endpoint `DELETE /:id/hard`
 - **Técnicos:** Relación ManyToMany con WorkOrder. Una orden puede tener múltiples técnicos asignados. Se asignan reemplazando el array completo vía `PUT /work-orders/:id/technicians`
 - **warrantyStatus:** Se deriva de `warrantyUntil` comparando con la fecha actual (no se almacena en DB)
+
+---
+
+## Integraciones pendientes — Detalle de implementación
+
+### ARCA/AFIP — Facturación Electrónica (WSFEv1)
+
+El módulo `billing/` tiene la interfaz, entidades, flujo admin y PDFs listos. El `ArcaProvider` actual es un **stub**. Para conectar con ARCA real se necesita:
+
+#### Requisitos previos (AFIP)
+
+1. **CUIT del negocio** — habilitado en AFIP con actividad "Servicios de reparación"
+2. **Certificado digital (.crt)** — se obtiene desde AFIP → Administrador de Relaciones → Certificados
+3. **Clave privada (.key)** — generada junto al certificado
+4. **Punto de venta** — número autorizado por AFIP (ej: 0001). Cada punto de venta tiene su propia numeración
+5. **WSAA habilitado** — autorización para usar WSFEv1 (Facturación Electrónica). Se habilita en AFIP → Administrador de Relaciones de Clave Fiscal
+
+#### Dependencias a instalar
+
+```bash
+npm install soap node-forge
+npm install -D @types/soap
+```
+
+- `soap` — cliente SOAP para consumir los Web Services de AFIP
+- `node-forge` — para manejar certificados PKCS12/PFX y firmar el TRA (Ticket de Request de Acceso)
+
+#### Flujo de autenticación WSAA
+
+1. Generar un **TRA** (Ticket de Request de Acceso) con XML que especifique el servicio `wsfe` y la validez (24h)
+2. Firmar el TRA con el **certificado .crt** y la **clave privada .key** usando PKCS7
+3. Enviar el TRA firmado al WSAA (`https://wsaahomo.afip.gov.ar/ws/services/LoginCms` en homologación)
+4. Recibir un **TA** (Ticket de Acceso) con token + sign (válido ~24h)
+5. Usar token + sign en cada llamada al WSFEv1
+
+#### Flujo de emisión de factura (WSFEv1)
+
+1. Consultar `FECompUltimoAutorizado` para obtener el último número autorizado del punto de venta
+2. Incrementar el número en 1
+3. Armar el XML con los datos: tipo comprobante, punto venta, número, fecha, concepto, tipo doc receptor, nro doc receptor, importe total, importe neto, importe IVA, etc.
+4. Llamar `FECAESolicitar` con el XML
+5. ARCA devuelve: CAE (14 dígitos) + fecha vencimiento CAE
+6. Guardar CAE + vencimiento en la entidad Invoice
+
+#### Datos de env vars necesarios
+
+```
+ARCA_CUIT=20-12345678-9
+ARCA_POINT_OF_SALE=1
+ARCA_CERT_PATH=./certs/afip.crt
+ARCA_KEY_PATH=./certs/afip.key
+ARCA_ENVIRONMENT=homologacion|produccion
+```
+
+#### Archivos a modificar en `src/billing/providers/arca.provider.ts`
+
+- Inyectar `soap` client para WSAA y WSFEv1
+- Implementar `getToken()` — genera TRA, firma, obtiene TA
+- Implementar `issueInvoice()` — llama FECompUltimoAutorizado + FECAESolicitar
+- Implementar `getLastInvoiceNumber()` — consulta último comprobante autorizado
+- Manejar errores de AFIP (errores array en la respuesta SOAP)
+- Cachear el TA (token+sign) hasta que expire para no autenticar en cada request
+
+#### Testing
+
+- **Unit test:** Mock del SOAP client, testear parsing de respuestas
+- **E2E:** Testear contra el WS de **homologación** con certificados de prueba
+- **Producción:** Requiere certificados de producción y punto de venta autorizado
+
+---
+
+### MercadoPago — Integración completa
+
+El módulo `payments/` tiene la interfaz y providers listos. El `MercadoPagoProvider` actual tiene la estructura pero la integración puede mejorarse. Para completar:
+
+#### Requisitos previos (MercadoPago)
+
+1. **Cuenta de MercadoPago** — business account
+2. **Access Token** — se obtiene desde MercadoPago Developers → Your Integrations → Credentials
+3. **Public Key** — para el frontend (checkout)
+4. **Webhook URL** — endpoint público HTTPS donde MercadoPago envía notificaciones
+
+#### Dependencias
+
+```bash
+npm install @mercadopago/sdk-node
+```
+
+#### Funcionalidades a implementar/completar
+
+1. **Creación de preferencia de pago:**
+   - `POST /v1/checkout/preferences` con items, payer, back_urls, notification_url
+   - Devolver `checkoutUrl` al frontend para redirigir al usuario
+   - Guardar `preferenceId` en metadata del Payment
+
+2. **Webhook handler (ya existe la ruta):**
+   - Recibir notificaciones de tipo `payment`
+   - Consultar `GET /v1/payments/{id}` para obtener estado real
+   - Actualizar Payment.status según respuesta
+   - Manejar estados: approved → APPROVED, rejected → REJECTED, refunded → REFUNDED, cancelled → CANCELLED
+   - Verificar firma del webhook (opcional pero recomendado)
+
+3. **Consulta de estado:**
+   - `GET /v1/payments/{id}` — para verificar estado de un pago puntual
+   - Usado por `getPaymentStatus()` en la interfaz
+
+4. **Reembolsos (opcional):**
+   - `POST /v1/payments/{id}/refunds` — para reembolsos parciales o totales
+   - Crear endpoint `POST /payments/:id/refund`
+
+#### Env vars
+
+```
+MERCADOPAGO_ACCESS_TOKEN=APP_USR-xxxx
+MERCADOPAGO_PUBLIC_KEY=APP_USR-xxxx
+MERCADOPAGO_WEBHOOK_SECRET=xxxx (opcional, para verificar firma)
+```
+
+#### Archivos a modificar
+
+- `src/payments/providers/mercadopago.provider.ts` — completar implementación real con SDK
+- `src/payments/payments.service.ts` — agregar flujo de preferencia de checkout
+- `src/payments/payments.controller.ts` — agregar endpoint de webhook (ya existe como `PaymentsWebhookController`)
+
+#### Testing
+
+- **Unit test:** Mock del SDK de MercadoPago, testear parsing de webhooks
+- **E2E:** Testear contra sandbox de MercadoPago con credenciales de prueba
+- **Producción:** Requiere credenciales de producción y webhook URL con HTTPS
