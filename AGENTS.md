@@ -60,7 +60,7 @@ Arquitectura modular estándar de NestJS. Cada módulo encapsula su propio contr
 9. ✅ finances — gastos operativos
 10. ✅ notifications — notificaciones in-app (WebSocket + EventEmitter)
 11. billing — ARCA/AFIP (entidades + interfaz, implementar después)
-12. reports — ingresos/gastos/ganancias por período
+12. ✅ reports — ingresos/gastos/ganancias por período (BFF + PDFs con pdfkit)
 13. ✅ portal — público sin auth, tracking por código/QR
 14. database — seeds y migraciones
 
@@ -80,6 +80,8 @@ Arquitectura modular estándar de NestJS. Cada módulo encapsula su propio contr
 - Pagos = strategy pattern para agregar más providers
 - Billing ARCA = interfaz + entidades, implementación WSFE después
 - Tracking code formato: `TS-XXXXX` (ej: `TS-A1B2C3`)
+- Reportes = BFF pattern, el backend computa todo, frontend solo renderiza
+- PDFs = generados con pdfkit desde el backend para evitar manipulación de datos
 
 ## Lo que NO hacer
 
