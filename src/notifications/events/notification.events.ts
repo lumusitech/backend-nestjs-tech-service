@@ -1,0 +1,57 @@
+export class WorkOrderCreatedEvent {
+  workOrderId!: string;
+  trackingCode!: string;
+  clientName!: string;
+  serviceTypeName!: string;
+  priority!: string;
+  technicianIds!: string[];
+}
+
+export class WorkOrderStatusChangedEvent {
+  workOrderId!: string;
+  trackingCode!: string;
+  oldStatus!: string;
+  newStatus!: string;
+  technicianIds!: string[];
+}
+
+export class WorkOrderTechnicianAssignedEvent {
+  workOrderId!: string;
+  trackingCode!: string;
+  technicianIds!: string[];
+}
+
+export class TaskCreatedEvent {
+  taskId!: string;
+  taskTitle!: string;
+  workOrderId!: string;
+  trackingCode!: string;
+  assignedToId?: string;
+  technicianIds!: string[];
+}
+
+export class TaskCompletedEvent {
+  taskId!: string;
+  taskTitle!: string;
+  workOrderId!: string;
+  trackingCode!: string;
+  completedByName!: string;
+  technicianIds!: string[];
+}
+
+export class PaymentCreatedEvent {
+  paymentId!: string;
+  amount!: number;
+  method!: string;
+  workOrderId!: string;
+  trackingCode!: string;
+}
+
+export class PaymentStatusChangedEvent {
+  paymentId!: string;
+  amount!: number;
+  newStatus!: string;
+  workOrderId!: string;
+  trackingCode!: string;
+  technicianIds!: string[];
+}

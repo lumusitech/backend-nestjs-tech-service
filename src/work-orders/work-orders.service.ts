@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { WorkOrder } from './entities/work-order.entity';
 import { WorkOrderNote } from './entities/work-order-note.entity';
 import { WorkOrderMaterial } from './entities/work-order-material.entity';
@@ -19,6 +20,13 @@ import { UpdateTaskDto } from './dto/update-task.dto';
 import { WorkOrderStatus } from '../common/enums/work-order-status.enum';
 import { PaginatedResponseDto } from '../common/dto/paginated-response.dto';
 import { User } from '../users/entities/user.entity';
+import {
+  WorkOrderCreatedEvent,
+  WorkOrderStatusChangedEvent,
+  WorkOrderTechnicianAssignedEvent,
+  TaskCreatedEvent,
+  TaskCompletedEvent,
+} from '../notifications/events/notification.events';
 
 const VALID_TRANSITIONS: Record<WorkOrderStatus, WorkOrderStatus[]> = {
   [WorkOrderStatus.PENDING]: [
@@ -51,6 +59,7 @@ export class WorkOrdersService {
     private readonly taskRepository: Repository<Task>,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async create(createWorkOrderDto: CreateWorkOrderDto): Promise<WorkOrder> {
@@ -69,7 +78,25 @@ export class WorkOrdersService {
       });
     }
 
-    return this.workOrderRepository.save(workOrder);
+    const saved = await this.workOrderRepository.save(workOrder);
+
+    const withRelations = await this.workOrderRepository.findOne({
+      where: { id: saved.id },
+      relations: { client: true, serviceType: true, technicians: true },
+    });
+
+    if (withRelations) {
+      const event = new WorkOrderCreatedEvent();
+      event.workOrderId = saved.id;
+      event.trackingCode = saved.trackingCode;
+      event.clientName = withRelations.client?.name ?? '';
+      event.serviceTypeName = withRelations.serviceType?.name ?? '';
+      event.priority = saved.priority;
+      event.technicianIds = withRelations.technicians?.map((t) => t.id) ?? [];
+      this.eventEmitter.emit('workorder.created', event);
+    }
+
+    return saved;
   }
 
   async findAll(
@@ -158,6 +185,8 @@ export class WorkOrdersService {
     updateWorkOrderDto: UpdateWorkOrderDto,
   ): Promise<WorkOrder> {
     const workOrder = await this.findOne(id);
+    const oldStatus = workOrder.status;
+    const oldTechnicianIds = workOrder.technicians?.map((t) => t.id) ?? [];
 
     if (
       updateWorkOrderDto.status &&
@@ -184,7 +213,27 @@ export class WorkOrdersService {
       });
     }
 
-    return this.workOrderRepository.save(workOrder);
+    const saved = await this.workOrderRepository.save(workOrder);
+
+    if (updateWorkOrderDto.status && updateWorkOrderDto.status !== oldStatus) {
+      const event = new WorkOrderStatusChangedEvent();
+      event.workOrderId = saved.id;
+      event.trackingCode = saved.trackingCode;
+      event.oldStatus = oldStatus;
+      event.newStatus = saved.status;
+      event.technicianIds = oldTechnicianIds;
+      this.eventEmitter.emit('workorder.status_changed', event);
+    }
+
+    if (technicianIds !== undefined) {
+      const event = new WorkOrderTechnicianAssignedEvent();
+      event.workOrderId = saved.id;
+      event.trackingCode = saved.trackingCode;
+      event.technicianIds = technicianIds;
+      this.eventEmitter.emit('workorder.technician_assigned', event);
+    }
+
+    return saved;
   }
 
   async remove(id: string): Promise<void> {
@@ -205,7 +254,15 @@ export class WorkOrdersService {
     workOrder.technicians = await this.userRepository.findBy({
       id: In(technicianIds),
     });
-    return this.workOrderRepository.save(workOrder);
+    const saved = await this.workOrderRepository.save(workOrder);
+
+    const event = new WorkOrderTechnicianAssignedEvent();
+    event.workOrderId = saved.id;
+    event.trackingCode = saved.trackingCode;
+    event.technicianIds = technicianIds;
+    this.eventEmitter.emit('workorder.technician_assigned', event);
+
+    return saved;
   }
 
   // ─── Notes ───────────────────────────────────────────
@@ -276,14 +333,25 @@ export class WorkOrdersService {
   // ─── Tasks ──────────────────────────────────────────
 
   async createTask(workOrderId: string, dto: CreateTaskDto): Promise<Task> {
-    await this.findOne(workOrderId);
+    const workOrder = await this.findOne(workOrderId);
 
     const task = this.taskRepository.create({
       ...dto,
       workOrderId,
     });
 
-    return this.taskRepository.save(task);
+    const saved = await this.taskRepository.save(task);
+
+    const event = new TaskCreatedEvent();
+    event.taskId = saved.id;
+    event.taskTitle = saved.title;
+    event.workOrderId = workOrderId;
+    event.trackingCode = workOrder.trackingCode;
+    event.assignedToId = saved.assignedToId;
+    event.technicianIds = workOrder.technicians?.map((t) => t.id) ?? [];
+    this.eventEmitter.emit('task.created', event);
+
+    return saved;
   }
 
   async findTasks(workOrderId: string): Promise<Task[]> {
@@ -311,6 +379,8 @@ export class WorkOrdersService {
       );
     }
 
+    const wasCompleted = task.isCompleted;
+
     if (dto.isCompleted === true && !task.isCompleted) {
       task.completedAt = new Date();
     }
@@ -320,7 +390,25 @@ export class WorkOrdersService {
     }
 
     Object.assign(task, dto);
-    return this.taskRepository.save(task);
+    const saved = await this.taskRepository.save(task);
+
+    if (dto.isCompleted === true && !wasCompleted) {
+      const workOrder = await this.workOrderRepository.findOne({
+        where: { id: workOrderId },
+        relations: { technicians: true },
+      });
+
+      const event = new TaskCompletedEvent();
+      event.taskId = saved.id;
+      event.taskTitle = saved.title;
+      event.workOrderId = workOrderId;
+      event.trackingCode = workOrder?.trackingCode ?? '';
+      event.completedByName = '';
+      event.technicianIds = workOrder?.technicians?.map((t) => t.id) ?? [];
+      this.eventEmitter.emit('task.completed', event);
+    }
+
+    return saved;
   }
 
   async removeTask(workOrderId: string, taskId: string): Promise<void> {
