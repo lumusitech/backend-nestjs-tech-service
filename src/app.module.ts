@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { CommonModule } from './common/common.module';
@@ -12,10 +13,12 @@ import { ServiceTypesModule } from './service-types/service-types.module';
 import { WorkOrdersModule } from './work-orders/work-orders.module';
 import { PaymentsModule } from './payments/payments.module';
 import { FinancesModule } from './finances/finances.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    EventEmitterModule.forRoot(),
 
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
@@ -46,6 +49,7 @@ import { FinancesModule } from './finances/finances.module';
     WorkOrdersModule,
     PaymentsModule,
     FinancesModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -58,7 +58,7 @@ Arquitectura modular estándar de NestJS. Cada módulo encapsula su propio contr
 7. tasks — subtareas de work orders
 8. payments — MercadoPago (strategy pattern)
 9. ✅ finances — gastos operativos
-10. alerts — notificaciones in-app
+10. ✅ notifications — notificaciones in-app (WebSocket + EventEmitter)
 11. billing — ARCA/AFIP (entidades + interfaz, implementar después)
 12. reports — ingresos/gastos/ganancias por período
 13. portal — público sin auth, tracking por código/QR
@@ -76,6 +76,7 @@ Arquitectura modular estándar de NestJS. Cada módulo encapsula su propio contr
 - Calendario = fechas en work orders, no módulo aparte
 - Contactos = clients + suppliers + users, no módulo aparte
 - Alertas = solo in-app (sin email/SMS)
+- Notificaciones = WebSocket (Socket.IO) push real-time + EventEmitter2 para desacoplamiento
 - Pagos = strategy pattern para agregar más providers
 - Billing ARCA = interfaz + entidades, implementación WSFE después
 - Tracking code formato: `TS-XXXXX` (ej: `TS-A1B2C3`)

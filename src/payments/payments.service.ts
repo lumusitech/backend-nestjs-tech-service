@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Payment } from './entities/payment.entity';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
@@ -16,6 +17,10 @@ import { MercadoPagoProvider } from './providers/mercadopago.provider';
 import { CashProvider } from './providers/cash.provider';
 import { TransferProvider } from './providers/transfer.provider';
 import { PaginatedResponseDto } from '../common/dto/paginated-response.dto';
+import {
+  PaymentCreatedEvent,
+  PaymentStatusChangedEvent,
+} from '../notifications/events/notification.events';
 
 @Injectable()
 export class PaymentsService {
@@ -28,6 +33,7 @@ export class PaymentsService {
     private readonly mercadopagoProvider: MercadoPagoProvider,
     private readonly cashProvider: CashProvider,
     private readonly transferProvider: TransferProvider,
+    private readonly eventEmitter: EventEmitter2,
   ) {
     this.providers = new Map<string, PaymentProvider>([
       ['mercadopago', this.mercadopagoProvider],
@@ -61,6 +67,25 @@ export class PaymentsService {
     this.logger.log(
       `Payment created: ${saved.id} for work order ${workOrderId}`,
     );
+
+    const event = new PaymentCreatedEvent();
+    event.paymentId = saved.id;
+    event.amount = saved.amount;
+    event.method = saved.method;
+    event.workOrderId = workOrderId;
+    event.trackingCode = '';
+    this.eventEmitter.emit('payment.created', event);
+
+    if (saved.status === PaymentStatus.APPROVED) {
+      const statusEvent = new PaymentStatusChangedEvent();
+      statusEvent.paymentId = saved.id;
+      statusEvent.amount = saved.amount;
+      statusEvent.newStatus = saved.status;
+      statusEvent.workOrderId = workOrderId;
+      statusEvent.trackingCode = '';
+      statusEvent.technicianIds = [];
+      this.eventEmitter.emit('payment.status_changed', statusEvent);
+    }
 
     return saved;
   }
@@ -141,6 +166,7 @@ export class PaymentsService {
 
   async update(id: string, dto: UpdatePaymentDto): Promise<Payment> {
     const payment = await this.findOne(id);
+    const oldStatus = payment.status;
 
     if (dto.status === PaymentStatus.APPROVED && !payment.paidAt) {
       payment.paidAt = new Date();
@@ -148,7 +174,20 @@ export class PaymentsService {
 
     Object.assign(payment, dto);
 
-    return this.paymentRepository.save(payment);
+    const saved = await this.paymentRepository.save(payment);
+
+    if (dto.status && dto.status !== oldStatus) {
+      const event = new PaymentStatusChangedEvent();
+      event.paymentId = saved.id;
+      event.amount = saved.amount;
+      event.newStatus = saved.status;
+      event.workOrderId = saved.workOrderId;
+      event.trackingCode = '';
+      event.technicianIds = [];
+      this.eventEmitter.emit('payment.status_changed', event);
+    }
+
+    return saved;
   }
 
   async handleMercadoPagoWebhook(body: unknown): Promise<void> {
@@ -169,6 +208,7 @@ export class PaymentsService {
       return;
     }
 
+    const oldStatus = payment.status;
     payment.status = result.status;
 
     if (result.metadata) {
@@ -184,6 +224,17 @@ export class PaymentsService {
     this.logger.log(
       `Payment ${payment.id} updated to status ${result.status} via webhook`,
     );
+
+    if (result.status !== oldStatus) {
+      const event = new PaymentStatusChangedEvent();
+      event.paymentId = payment.id;
+      event.amount = payment.amount;
+      event.newStatus = result.status;
+      event.workOrderId = payment.workOrderId;
+      event.trackingCode = '';
+      event.technicianIds = [];
+      this.eventEmitter.emit('payment.status_changed', event);
+    }
   }
 
   private getProvider(providerName: string): PaymentProvider {

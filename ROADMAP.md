@@ -27,7 +27,7 @@ src/
 ├── tasks/           🟢 Implementado — Subtareas dentro de una orden
 ├── payments/        🟢 Implementado — Pagos (MercadoPago, tarjetas, efectivo)
 ├── finances/        🟢 Implementado — Gastos operativos generales
-├── alerts/          🔴 Pendiente   — Notificaciones in-app
+├── notifications/   🟢 Implementado — Notificaciones in-app (WebSocket + EventEmitter)
 ├── billing/         🔴 Pendiente   — Facturación ARCA/AFIP (planificado, implementación futura)
 ├── reports/         🔴 Pendiente   — Reportes financieros y estadísticas
 ├── portal/          🔴 Pendiente   — Portal público para clientes (sin login)
@@ -181,13 +181,19 @@ src/
 
 ---
 
-### 11. `alerts/` — Notificaciones in-app
+### 11. `notifications/` — Notificaciones in-app
 
-- [ ] Alert entity (title, message, type, isRead, userId, workOrderId)
-- [ ] Endpoints: `GET /alerts` (listar del usuario), `PATCH /alerts/:id/read`
-- [ ] Generación automática al cambiar estado de work order
+- [x] Notification entity (type, title, message, userId, referenceId, referenceType, metadata, isRead, readAt)
+- [x] NotificationType enum: work_order.created, work_order.status_changed, work_order.technician_assigned, task.created, task.completed, payment.created, payment.approved, payment.rejected
+- [x] WebSocket Gateway (Socket.IO) con autenticación JWT en handshake
+- [x] EventEmitter2 para desacoplamiento entre servicios y notificaciones
+- [x] NotificationsListener (@OnEvent) genera notificaciones automáticamente
+- [x] Endpoints: `GET /notifications`, `GET /notifications/unread-count`, `PATCH /notifications/:id/read`, `PATCH /notifications/read-all`
+- [x] Integración en work-orders: create, update (status), replaceTechnicians, createTask, updateTask
+- [x] Integración en payments: create, update, handleMercadoPagoWebhook
+- [x] Admin recibe todas las notificaciones, técnicos solo las suyas
 
-> Notificaciones internas del sistema. Ej: "Orden TS-A1B2C3 asignada a vos", "Trabajo completado". Solo in-app.
+> Notificaciones en tiempo real vía WebSocket. El frontend muestra toasts al instante y tiene un panel para leer todas las notificaciones. Desacoplado vía EventEmitter — los servicios emiten eventos, el módulo notifications escucha y persiste.
 
 ---
 
@@ -289,6 +295,7 @@ Expense (amount, category, date)  ← gastos operativos generales
 | Calendario    | Fechas en work orders                   | No se necesita módulo aparte                         |
 | Contactos     | clients + suppliers + users             | No se necesita módulo de contactos aparte            |
 | Alertas       | Solo in-app                             | Sin email/SMS por ahora                              |
+| Notificaciones | WebSocket (Socket.IO) + EventEmitter2  | Push real-time al frontend, desacoplamiento de eventos |
 | Soft delete   | Global (BaseEntity + DeleteDateColumn)  | Integridad referencial, nada se borra físicamente   |
 | Técnicos      | ManyToMany en WorkOrder                 | Múltiples técnicos pueden trabajar en una orden      |
 
@@ -305,7 +312,7 @@ Expense (amount, category, date)  ← gastos operativos generales
 7. ✅ `tasks` — subtareas
 8. ✅ `payments` — MercadoPago + tarjetas
 9. ✅ `finances` — gastos operativos
-10. `alerts` — notificaciones in-app
+10. ✅ `notifications` — notificaciones in-app (WebSocket + EventEmitter)
 11. `billing` — entidades + interfaz (implementar ARCA después)
 12. `reports` — reportes financieros y operativos
 13. `portal` — portal público del cliente
