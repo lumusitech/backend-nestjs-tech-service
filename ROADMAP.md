@@ -25,7 +25,7 @@ src/
 ├── service-types/   🟢 Implementado — Catálogo de servicios (reparación, instalación, etc.)
 ├── work-orders/     🟢 Implementado — Órdenes de trabajo (core del sistema)
 ├── tasks/           🟢 Implementado — Subtareas dentro de una orden
-├── payments/        🔴 Pendiente   — Pagos (MercadoPago, tarjetas, efectivo)
+├── payments/        🟢 Implementado — Pagos (MercadoPago, tarjetas, efectivo)
 ├── finances/        🔴 Pendiente   — Gastos operativos generales
 ├── alerts/          🔴 Pendiente   — Notificaciones in-app
 ├── billing/         🔴 Pendiente   — Facturación ARCA/AFIP (planificado, implementación futura)
@@ -148,7 +148,7 @@ src/
 
 ### 9. `payments/` — Pagos
 
-- [ ] Payment entity:
+- [x] Payment entity:
   - amount, currency (ARS)
   - method: `credit_card | debit_card | cash | transfer`
   - provider: `mercadopago | cash | transfer`
@@ -156,10 +156,13 @@ src/
   - status: `pending | approved | rejected | refunded | cancelled`
   - workOrderId
   - metadata (JSON con datos del provider)
-- [ ] PaymentProvider interface (strategy pattern)
-- [ ] MercadoPago provider implementation
-- [ ] CRUD endpoints (`GET/POST /payments`)
-- [ ] Callback endpoint (`POST /payments/callback`) — webhook de MercadoPago
+  - installmentNumber, totalInstallments, dueDate, paidAt (soporte de cuotas)
+- [x] PaymentProvider interface (strategy pattern)
+- [x] MercadoPago provider implementation (SDK instalado)
+- [x] Cash provider implementation
+- [x] Transfer provider implementation
+- [x] CRUD endpoints anidados (`/work-orders/:id/payments`)
+- [x] Callback endpoint (`POST /payments/mercadopago/webhook`) — webhook de MercadoPago
 
 > Pagos integrados con MercadoPago y tarjetas. Diseñado con patrón strategy para agregar más providers en el futuro.
 
@@ -300,7 +303,7 @@ Expense (amount, category, date)  ← gastos operativos generales
 5. ✅ `service-types` — catálogo
 6. ✅ `work-orders` — core (con notes + materials + técnicos ManyToMany)
 7. ✅ `tasks` — subtareas
-8. `payments` — MercadoPago + tarjetas
+8. ✅ `payments` — MercadoPago + tarjetas
 9. `finances` — gastos operativos
 10. `alerts` — notificaciones in-app
 11. `billing` — entidades + interfaz (implementar ARCA después)
