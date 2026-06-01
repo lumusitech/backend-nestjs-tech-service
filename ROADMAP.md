@@ -30,7 +30,7 @@ src/
 ├── notifications/   🟢 Implementado — Notificaciones in-app (WebSocket + EventEmitter)
 ├── billing/         🔴 Pendiente   — Facturación ARCA/AFIP (planificado, implementación futura)
 ├── reports/         🔴 Pendiente   — Reportes financieros y estadísticas
-├── portal/          🔴 Pendiente   — Portal público para clientes (sin login)
+├── portal/          🟢 Implementado — Portal público para clientes (sin login)
 └── database/        🟢 Implementado — Seeds y migraciones
 ```
 
@@ -113,7 +113,7 @@ src/
 - [x] WorkOrder entity:
   - Cliente (ManyToOne), múltiples técnicos (ManyToMany), tipo de servicio
   - trackingCode único (ej: `TS-A1B2C3`) — auto-generado
-  - status: `pending → assigned → in_progress → completed → delivered`
+  - status: `pending → assigned → in_progress → completed → delivered` (also: postponed, cancelled)
   - priority: `low | medium | high | urgent`
   - location: `on_site` (domicilio) | `workshop` (taller)
   - diagnosis (texto rápido)
@@ -229,15 +229,18 @@ src/
 
 ### 14. `portal/` — Portal público del cliente
 
-- [ ] `GET /portal/track/:trackingCode` — público, sin auth
-- [ ] Respuesta sanitizada:
-  - trackingCode, status, serviceType
-  - fechas (scheduled, started, completed)
-  - notas públicas (type: `diagnosis | observation`)
-  - datos de contacto del negocio
-- [ ] NO expone: costos, notas internas, datos de otros clientes, proveedores
+- [x] `GET /portal/track/:trackingCode` — público, sin auth (`@Public()`)
+- [x] Respuesta sanitizada:
+  - trackingCode, status, priority, location, diagnosis
+  - fechas (scheduled, started, completed, warrantyUntil, createdAt)
+  - serviceType (name, description)
+  - clientName (sin email, phone, address)
+  - tasks (title, description, isCompleted, completedAt — sin staff info)
+  - notas públicas (type: `diagnosis | issue | observation` — excluye `internal`)
+  - paymentSummary (totalApproved, paymentCount, hasPayments, isFullyPaid, installmentsPending/Total)
+- [x] NO expone: costos de materiales, notas internas, datos de otros clientes, proveedores, técnicos asignados, datos PII del cliente
 
-> Portal sin autenticación. El cliente ingresa su código de seguimiento (desde comprobante o QR) y ve el estado de su trabajo.
+> Portal sin autenticación. El cliente ingresa su código de seguimiento (desde comprobante o QR) y ve el estado de su trabajo, tareas y resumen de pagos. El frontend agrega QR para MercadoPago y datos de transferencia.
 
 ---
 
@@ -315,7 +318,7 @@ Expense (amount, category, date)  ← gastos operativos generales
 10. ✅ `notifications` — notificaciones in-app (WebSocket + EventEmitter)
 11. `billing` — entidades + interfaz (implementar ARCA después)
 12. `reports` — reportes financieros y operativos
-13. `portal` — portal público del cliente
+13. ✅ `portal` — portal público del cliente
 14. ✅ `database` — seeds y migraciones
 
 ---
