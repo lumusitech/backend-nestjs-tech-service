@@ -57,6 +57,7 @@ export class NotificationsListener {
       pending: 'Pendiente',
       assigned: 'Asignada',
       in_progress: 'En progreso',
+      postponed: 'Pospuesta',
       completed: 'Completada',
       delivered: 'Entregada',
       cancelled: 'Cancelada',

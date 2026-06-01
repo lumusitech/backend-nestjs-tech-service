@@ -61,7 +61,7 @@ Arquitectura modular estándar de NestJS. Cada módulo encapsula su propio contr
 10. ✅ notifications — notificaciones in-app (WebSocket + EventEmitter)
 11. billing — ARCA/AFIP (entidades + interfaz, implementar después)
 12. reports — ingresos/gastos/ganancias por período
-13. portal — público sin auth, tracking por código/QR
+13. ✅ portal — público sin auth, tracking por código/QR
 14. database — seeds y migraciones
 
 ## Roles

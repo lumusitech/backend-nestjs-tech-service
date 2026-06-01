@@ -14,6 +14,7 @@ import { WorkOrdersModule } from './work-orders/work-orders.module';
 import { PaymentsModule } from './payments/payments.module';
 import { FinancesModule } from './finances/finances.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { PortalModule } from './portal/portal.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     PaymentsModule,
     FinancesModule,
     NotificationsModule,
+    PortalModule,
   ],
   controllers: [AppController],
   providers: [AppService],

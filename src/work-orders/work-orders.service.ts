@@ -31,14 +31,21 @@ import {
 const VALID_TRANSITIONS: Record<WorkOrderStatus, WorkOrderStatus[]> = {
   [WorkOrderStatus.PENDING]: [
     WorkOrderStatus.ASSIGNED,
+    WorkOrderStatus.POSTPONED,
     WorkOrderStatus.CANCELLED,
   ],
   [WorkOrderStatus.ASSIGNED]: [
     WorkOrderStatus.IN_PROGRESS,
+    WorkOrderStatus.POSTPONED,
     WorkOrderStatus.CANCELLED,
   ],
   [WorkOrderStatus.IN_PROGRESS]: [
     WorkOrderStatus.COMPLETED,
+    WorkOrderStatus.CANCELLED,
+  ],
+  [WorkOrderStatus.POSTPONED]: [
+    WorkOrderStatus.ASSIGNED,
+    WorkOrderStatus.IN_PROGRESS,
     WorkOrderStatus.CANCELLED,
   ],
   [WorkOrderStatus.COMPLETED]: [WorkOrderStatus.DELIVERED],
