@@ -26,7 +26,7 @@ src/
 ├── work-orders/     🟢 Implementado — Órdenes de trabajo (core del sistema)
 ├── tasks/           🟢 Implementado — Subtareas dentro de una orden
 ├── payments/        🟢 Implementado — Pagos (MercadoPago, tarjetas, efectivo)
-├── finances/        🔴 Pendiente   — Gastos operativos generales
+├── finances/        🟢 Implementado — Gastos operativos generales
 ├── alerts/          🔴 Pendiente   — Notificaciones in-app
 ├── billing/         🔴 Pendiente   — Facturación ARCA/AFIP (planificado, implementación futura)
 ├── reports/         🔴 Pendiente   — Reportes financieros y estadísticas
@@ -170,12 +170,12 @@ src/
 
 ### 10. `finances/` — Gastos operativos
 
-- [ ] Expense entity:
+- [x] Expense entity:
   - description, amount, date
-  - category: `rent | utilities | salaries | tools | transport | advertising | supplies | maintenance | other`
+  - category: `rent | utilities | salaries | tools | transport | advertising | supplies | maintenance | hosting | other`
   - isRecurring, notes
-- [ ] CRUD endpoints (`GET/POST/PATCH/DELETE /expenses`)
-- [ ] Filtros: por categoría, fechas, período
+- [x] CRUD endpoints (`GET/POST/PATCH/DELETE /expenses`)
+- [x] Filtros: por categoría, fechas, período
 
 > Gastos generales del negocio (alquiler, sueldos, herramientas, etc.). Complementa los ingresos de payments y costos de materials para reportes completos.
 
@@ -304,7 +304,7 @@ Expense (amount, category, date)  ← gastos operativos generales
 6. ✅ `work-orders` — core (con notes + materials + técnicos ManyToMany)
 7. ✅ `tasks` — subtareas
 8. ✅ `payments` — MercadoPago + tarjetas
-9. `finances` — gastos operativos
+9. ✅ `finances` — gastos operativos
 10. `alerts` — notificaciones in-app
 11. `billing` — entidades + interfaz (implementar ARCA después)
 12. `reports` — reportes financieros y operativos

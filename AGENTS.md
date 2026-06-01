@@ -57,7 +57,7 @@ Arquitectura modular estándar de NestJS. Cada módulo encapsula su propio contr
 6. work-orders — CORE (trackingCode, notes, materials, tasks, payments, invoices)
 7. tasks — subtareas de work orders
 8. payments — MercadoPago (strategy pattern)
-9. finances — gastos operativos
+9. ✅ finances — gastos operativos
 10. alerts — notificaciones in-app
 11. billing — ARCA/AFIP (entidades + interfaz, implementar después)
 12. reports — ingresos/gastos/ganancias por período
