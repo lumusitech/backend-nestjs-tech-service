@@ -59,10 +59,11 @@ Arquitectura modular estándar de NestJS. Cada módulo encapsula su propio contr
 8. payments — MercadoPago (strategy pattern)
 9. ✅ finances — gastos operativos
 10. ✅ notifications — notificaciones in-app (WebSocket + EventEmitter)
-11. billing — ARCA/AFIP (entidades + interfaz, implementar después)
+11. ✅ billing — ARCA/AFIP (stub + PDFs, interfaz lista para WSFEv1)
 12. ✅ reports — ingresos/gastos/ganancias por período (BFF + PDFs con pdfkit)
 13. ✅ portal — público sin auth, tracking por código/QR
-14. database — seeds y migraciones
+14. ✅ database — seeds y migraciones
+15. 🔴 testing — unit tests, e2e, acceptance tests (por módulo)
 
 ## Roles
 
@@ -78,10 +79,29 @@ Arquitectura modular estándar de NestJS. Cada módulo encapsula su propio contr
 - Alertas = solo in-app (sin email/SMS)
 - Notificaciones = WebSocket (Socket.IO) push real-time + EventEmitter2 para desacoplamiento
 - Pagos = strategy pattern para agregar más providers
-- Billing ARCA = interfaz + entidades, implementación WSFE después
+- Billing ARCA = interfaz + entidades + flujo admin + PDFs listos. Stub listo para conectar WSFEv1
+- MercadoPago = interfaz + providers listos. SDK parcialmente implementado
 - Tracking code formato: `TS-XXXXX` (ej: `TS-A1B2C3`)
 - Reportes = BFF pattern, el backend computa todo, frontend solo renderiza
 - PDFs = generados con pdfkit desde el backend para evitar manipulación de datos
+
+## Integraciones pendientes — Qué falta para completar
+
+### ARCA/AFIP (facturación electrónica)
+- Obtener CUIT + certificado digital (.crt) + clave privada (.key) desde AFIP
+- Habilitar WSFEv1 en AFIP → Administrador de Relaciones
+- Instalar: `npm install soap node-forge` + `@types/soap`
+- Implementar en `arca.provider.ts`: autenticación WSAA (TRA → TA), llamadas SOAP a WSFEv1
+- Env vars: `ARCA_CERT_PATH`, `ARCA_KEY_PATH`, `ARCA_ENVIRONMENT` (homologacion|produccion)
+- Flujo: FECompUltimoAutorizado → FECAESolicitar → guardar CAE + vencimiento
+
+### MercadoPago (pagos)
+- Obtener Access Token + Public Key desde MercadoPago Developers
+- Instalar: `npm install @mercadopago/sdk-node`
+- Completar `mercadopago.provider.ts`: crear preferencia de checkout, consultar estado, manejar webhooks
+- Agregar endpoint de webhook con verificación de firma
+- Env vars: `MERCADOPAGO_PUBLIC_KEY`, `MERCADOPAGO_WEBHOOK_SECRET`
+- Flujo: crear preferencia → redirect a checkout → webhook → actualizar estado del pago
 
 ## Lo que NO hacer
 
