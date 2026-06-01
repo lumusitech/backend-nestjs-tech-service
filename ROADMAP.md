@@ -29,7 +29,7 @@ src/
 ├── finances/        🟢 Implementado — Gastos operativos generales
 ├── notifications/   🟢 Implementado — Notificaciones in-app (WebSocket + EventEmitter)
 ├── billing/         🔴 Pendiente   — Facturación ARCA/AFIP (planificado, implementación futura)
-├── reports/         🔴 Pendiente   — Reportes financieros y estadísticas
+├── reports/         🟢 Implementado — Reportes financieros y estadísticas
 ├── portal/          🟢 Implementado — Portal público para clientes (sin login)
 └── database/        🟢 Implementado — Seeds y migraciones
 ```
@@ -216,14 +216,20 @@ src/
 
 ### 13. `reports/` — Reportes y estadísticas
 
-- [ ] `GET /reports/income?period=daily|weekly|monthly|bimestral|yearly`
-- [ ] `GET /reports/expenses?period=...&category=...`
-- [ ] `GET /reports/profit?period=...` (ingresos - materiales - gastos)
-- [ ] `GET /reports/summary` — resumen general (dashboard)
-- [ ] `GET /reports/services` — servicios más solicitados por período
-- [ ] `GET /reports/technicians/:id` — rendimiento por técnico
+- [x] `GET /reports/summary` — dashboard completo (KPIs, tendencias, gráficas pre-computadas)
+- [x] `GET /reports/income?period=...&dateFrom=&dateTo=` — ingresos con tendencia vs período anterior
+- [x] `GET /reports/expenses?period=...&category=...` — gastos por categoría con tendencia
+- [x] `GET /reports/profit?period=...` — ganancia bruta y neta con tendencia
+- [x] `GET /reports/services?period=...` — servicios más pedidos con revenue por servicio
+- [x] `GET /reports/technicians` — ranking de técnicos (completados, tiempo promedio, revenue)
+- [x] `GET /reports/technicians/:id` — detalle de rendimiento de un técnico
+- [x] `GET /reports/clients/:id` — historial completo del cliente (deudas, pagos, trabajos, KPIs)
+- [x] `GET /reports/work-orders/:id/budget` — presupuesto detallado (PDF generado con pdfkit)
+- [x] `GET /reports/payments/:id/receipt` — comprobante de pago (PDF generado con pdfkit)
+- [x] BFF pattern: el backend devuelve datos pre-computados listos para consumir por el frontend
+- [x] PDF generation con pdfkit (presupuestos y comprobantes desde el backend para evitar manipulación)
 
-> Reportes financieros se nutren de Payments (ingresos), WorkOrderMaterial (costos) y Expenses (gastos operativos). También reportes operativos (órdenes, técnicos, servicios).
+> Reportes financieros se nutren de Payments (ingresos), WorkOrderMaterial (costos) y Expenses (gastos operativos). Dashboard con KPIs, tendencias mensuales, distribuciones y rankings. PDFs generados desde el backend con pdfkit.
 
 ---
 
@@ -301,6 +307,8 @@ Expense (amount, category, date)  ← gastos operativos generales
 | Notificaciones | WebSocket (Socket.IO) + EventEmitter2  | Push real-time al frontend, desacoplamiento de eventos |
 | Soft delete   | Global (BaseEntity + DeleteDateColumn)  | Integridad referencial, nada se borra físicamente   |
 | Técnicos      | ManyToMany en WorkOrder                 | Múltiples técnicos pueden trabajar en una orden      |
+| Reportes      | BFF pattern (backend computa todo)      | Integridad de datos, frontend solo renderiza          |
+| PDFs          | pdfkit desde backend                    | Evita manipulación, estructura para emails futuros   |
 
 ---
 
@@ -317,7 +325,7 @@ Expense (amount, category, date)  ← gastos operativos generales
 9. ✅ `finances` — gastos operativos
 10. ✅ `notifications` — notificaciones in-app (WebSocket + EventEmitter)
 11. `billing` — entidades + interfaz (implementar ARCA después)
-12. `reports` — reportes financieros y operativos
+12. ✅ `reports` — reportes financieros y operativos (BFF + PDFs)
 13. ✅ `portal` — portal público del cliente
 14. ✅ `database` — seeds y migraciones
 

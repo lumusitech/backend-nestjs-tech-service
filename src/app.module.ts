@@ -15,6 +15,7 @@ import { PaymentsModule } from './payments/payments.module';
 import { FinancesModule } from './finances/finances.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { PortalModule } from './portal/portal.module';
+import { ReportsModule } from './reports/reports.module';
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import { PortalModule } from './portal/portal.module';
     FinancesModule,
     NotificationsModule,
     PortalModule,
+    ReportsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
