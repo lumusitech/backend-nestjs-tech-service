@@ -10,6 +10,7 @@ import { ClientsModule } from './clients/clients.module';
 import { SuppliersModule } from './suppliers/suppliers.module';
 import { ServiceTypesModule } from './service-types/service-types.module';
 import { WorkOrdersModule } from './work-orders/work-orders.module';
+import { PaymentsModule } from './payments/payments.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { WorkOrdersModule } from './work-orders/work-orders.module';
     SuppliersModule,
     ServiceTypesModule,
     WorkOrdersModule,
+    PaymentsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

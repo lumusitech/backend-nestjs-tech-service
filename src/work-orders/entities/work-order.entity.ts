@@ -17,6 +17,7 @@ import { ServiceType } from '../../service-types/entities/service-type.entity';
 import { WorkOrderNote } from './work-order-note.entity';
 import { WorkOrderMaterial } from './work-order-material.entity';
 import { Task } from './task.entity';
+import { Payment } from '../../payments/entities/payment.entity';
 
 @Entity('work_orders')
 export class WorkOrder extends BaseEntity {
@@ -91,4 +92,7 @@ export class WorkOrder extends BaseEntity {
 
   @OneToMany(() => Task, (task) => task.workOrder, { cascade: true })
   tasks!: Task[];
+
+  @OneToMany(() => Payment, (payment) => payment.workOrder)
+  payments!: Payment[];
 }
