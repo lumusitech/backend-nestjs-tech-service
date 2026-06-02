@@ -338,6 +338,7 @@ Expense (amount, category, date)  ← gastos operativos generales
 13. ✅ `portal` — portal público del cliente
 14. ✅ `database` — seeds y migraciones
 15. ✅ `testing` — tests unitarios, e2e y aceptación (por módulo)
+16. ✅ `swagger` — documentación OpenAPI + CORS + prefijo /api/
 
 ---
 
@@ -418,13 +419,18 @@ npm run test:unit:cov
 
 ## Notas
 
-- **Frontend:** Angular 21+ (a desarrollar más adelante)
+- **Frontend:** Angular 21+ (a desarrollar más adelante, repo separado)
 - **Mobile:** Android nativo + Jetpack Compose (a decidir)
+- **API prefix:** Todas las rutas están bajo `/api/` (ej: `/api/clients`, `/api/work-orders`)
+- **CORS:** Habilitado para `http://localhost:4200` (Angular dev server)
+- **Swagger:** Documentación interactiva en `http://localhost:3000/api/docs`
+- **Swagger JSON:** Spec OpenAPI en `http://localhost:3000/api/docs-json` (para codegen en frontend)
 - **Tracking code:** Se genera automáticamente al crear una work order. Formato: `TS-XXXXX` (ej: `TS-A1B2C3`)
 - **QR:** Lo genera el frontend a partir de la URL `https://dominio/portal/track/{code}`
 - **Soft delete:** Todas las entidades heredan `deletedAt` de BaseEntity. El borrado lógico es el comportamiento por defecto. Solo admin puede borrar físicamente vía endpoint `DELETE /:id/hard`
 - **Técnicos:** Relación ManyToMany con WorkOrder. Una orden puede tener múltiples técnicos asignados. Se asignan reemplazando el array completo vía `PUT /work-orders/:id/technicians`
 - **warrantyStatus:** Se deriva de `warrantyUntil` comparando con la fecha actual (no se almacena en DB)
+- **Frontend repos:** Backend y frontend en repos separados. El API es el contrato. Swagger codegen mantiene tipos sincronizados.
 
 ---
 

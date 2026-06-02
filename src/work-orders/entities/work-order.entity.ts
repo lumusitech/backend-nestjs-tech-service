@@ -18,12 +18,15 @@ import { WorkOrderNote } from './work-order-note.entity';
 import { WorkOrderMaterial } from './work-order-material.entity';
 import { Task } from './task.entity';
 import { Payment } from '../../payments/entities/payment.entity';
+import { ApiProperty } from '@nestjs/swagger';
 
 @Entity('work_orders')
 export class WorkOrder extends BaseEntity {
+  @ApiProperty({ example: 'TS-A1B2C3' })
   @Column({ name: 'tracking_code', unique: true })
   trackingCode!: string;
 
+  @ApiProperty({ enum: WorkOrderStatus, example: WorkOrderStatus.PENDING })
   @Column({
     type: 'enum',
     enum: WorkOrderStatus,
@@ -31,6 +34,7 @@ export class WorkOrder extends BaseEntity {
   })
   status!: WorkOrderStatus;
 
+  @ApiProperty({ enum: Priority, example: Priority.HIGH })
   @Column({
     type: 'enum',
     enum: Priority,
@@ -38,6 +42,7 @@ export class WorkOrder extends BaseEntity {
   })
   priority!: Priority;
 
+  @ApiProperty({ enum: WorkOrderLocation, example: WorkOrderLocation.ON_SITE })
   @Column({
     type: 'enum',
     enum: WorkOrderLocation,
@@ -45,18 +50,23 @@ export class WorkOrder extends BaseEntity {
   })
   location!: WorkOrderLocation;
 
+  @ApiProperty({ example: 'Pantalla rota, necesita reemplazo' })
   @Column({ nullable: true })
   diagnosis!: string;
 
+  @ApiProperty({ example: '2026-12-31' })
   @Column({ name: 'warranty_until', type: 'date', nullable: true })
   warrantyUntil!: Date;
 
+  @ApiProperty({ example: '2026-06-15' })
   @Column({ name: 'scheduled_date', type: 'date', nullable: true })
   scheduledDate!: Date;
 
+  @ApiProperty({ example: '2026-06-10T08:00:00.000Z' })
   @Column({ name: 'started_at', type: 'timestamp', nullable: true })
   startedAt!: Date;
 
+  @ApiProperty({ example: '2026-06-10T17:00:00.000Z' })
   @Column({ name: 'completed_at', type: 'timestamp', nullable: true })
   completedAt!: Date;
 
@@ -64,6 +74,7 @@ export class WorkOrder extends BaseEntity {
   @JoinColumn({ name: 'client_id' })
   client!: Client;
 
+  @ApiProperty({ example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890' })
   @Column({ name: 'client_id' })
   clientId!: string;
 
@@ -71,6 +82,7 @@ export class WorkOrder extends BaseEntity {
   @JoinColumn({ name: 'service_type_id' })
   serviceType!: ServiceType;
 
+  @ApiProperty({ example: 'b2c3d4e5-f6a7-8901-bcde-f12345678901' })
   @Column({ name: 'service_type_id' })
   serviceTypeId!: string;
 
