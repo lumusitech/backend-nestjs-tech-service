@@ -64,6 +64,7 @@ Arquitectura modular estándar de NestJS. Cada módulo encapsula su propio contr
 13. ✅ portal — público sin auth, tracking por código/QR
 14. ✅ database — seeds y migraciones
 15. ✅ testing — unit tests (270), e2e, acceptance tests
+16. ✅ swagger — documentación OpenAPI + CORS + prefijo /api/
 
 ## Roles
 
