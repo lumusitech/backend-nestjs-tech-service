@@ -63,7 +63,7 @@ Arquitectura modular estándar de NestJS. Cada módulo encapsula su propio contr
 12. ✅ reports — ingresos/gastos/ganancias por período (BFF + PDFs con pdfkit)
 13. ✅ portal — público sin auth, tracking por código/QR
 14. ✅ database — seeds y migraciones
-15. 🔴 testing — unit tests, e2e, acceptance tests (por módulo)
+15. ✅ testing — unit tests (270), e2e, acceptance tests
 
 ## Roles
 

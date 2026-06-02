@@ -31,7 +31,8 @@ src/
 ├── billing/         🟢 Implementado — Facturación ARCA/AFIP (stub, PDFs)
 ├── reports/         🟢 Implementado — Reportes financieros y estadísticas
 ├── portal/          🟢 Implementado — Portal público para clientes (sin login)
-└── database/        🟢 Implementado — Seeds y migraciones
+├── database/        🟢 Implementado — Seeds y migraciones
+└── testing/         🟢 Implementado — Tests unitarios, e2e y aceptación
 ```
 
 ---
@@ -336,7 +337,7 @@ Expense (amount, category, date)  ← gastos operativos generales
 12. ✅ `reports` — reportes financieros y operativos (BFF + PDFs)
 13. ✅ `portal` — portal público del cliente
 14. ✅ `database` — seeds y migraciones
-15. 🔴 `testing` — tests unitarios, e2e y aceptación (ver sección detalle)
+15. ✅ `testing` — tests unitarios, e2e y aceptación (por módulo)
 
 ---
 
@@ -350,39 +351,67 @@ Expense (amount, category, date)  ← gastos operativos generales
 - **E2E tests:** Jest + Supertest (HTTP contra app levantada)
 - **Acceptance tests:** Jest + Supertest (flujos completos de negocio)
 
-#### Orden de testing (por módulo)
+#### Infraestructura de testing
 
-1. `common/` — unit tests de BaseEntity, DTOs, filtros
-2. `auth + users/` — unit: service + guards | e2e: login, register, roles | acceptance: flujo completo de auth
-3. `clients/` — unit: service | e2e: CRUD + filtros | acceptance: crear cliente → crear work order → facturar
-4. `suppliers/` — unit: service | e2e: CRUD
-5. `service-types/` — unit: service | e2e: CRUD
-6. `work-orders/` — unit: service + transitions | e2e: CRUD + cambio de estados | acceptance: flujo completo de orden
-7. `tasks/` — unit: service | e2e: CRUD + completar
-8. `payments/` — unit: service + providers | e2e: CRUD + webhook | acceptance: crear pago → aprobar → comprobante
-9. `finances/` — unit: service | e2e: CRUD + filtros
-10. `notifications/` — unit: listener + service | e2e: WebSocket events
-11. `billing/` — unit: service + ArcaProvider stub | e2e: crear → emitir → PDF → cancelar | acceptance: flujo facturación completo
-12. `reports/` — unit: service (queries) | e2e: todos los endpoints | acceptance: dashboard completo con datos seed
-13. `portal/` — unit: service | e2e: tracking por código | acceptance: cliente ve su orden sin auth
+- [x] `.env.test` — variables de entorno para test (DB separada: `techservice_test`)
+- [x] `test/helpers/app.helper.ts` — `createTestApp()` bootstrap de NestJS para e2e
+- [x] `test/helpers/auth.helper.ts` — `loginAsAdmin()`, `loginAsTechnician()`, `authHeader()`
+- [x] `test/helpers/seed.helper.ts` — `seedTestData()` con migraciones + datos base
+- [x] `src/common/testing/mock-query-builder.helper.ts` — `createMockRepository()`, `createMockQueryBuilder()` reutilizables
+- [x] `eslint.config.mjs` — overrides para archivos de test (relaxed rules)
+- [x] `package.json` — scripts: `test:unit`, `test:e2e`, `test:acceptance`, `test:all`
 
-#### Cobertura mínima por módulo
+#### Unit tests (270 tests, 13 suites) ✅
 
-- **Unit:** Service methods (happy path + error cases)
-- **E2E:** Controller endpoints (status codes, response shape, auth/roles)
-- **Acceptance:** Flujos de negocio de punta a punta (setup seed → acciones → assertions)
+- [x] `auth/` — validateUser, login, register (11 tests)
+- [x] `users/` — CRUD, findByEmail (15 tests)
+- [x] `clients/` — CRUD, filters (15 tests)
+- [x] `suppliers/` — CRUD, filters (18 tests)
+- [x] `service-types/` — CRUD, duplicate name (18 tests)
+- [x] `work-orders/` — CRUD, status transitions, technicians, notes, materials (40 tests)
+- [x] `tasks/` — CRUD, events, completion (16 tests)
+- [x] `payments/` — CRUD, providers, webhook, events (37 tests)
+- [x] `finances/` — CRUD, filters (21 tests)
+- [x] `billing/` — CRUD, issue, cancel, invoice number gen (33 tests)
+- [x] `reports/` — all report methods (27 tests)
+- [x] `portal/` — trackByCode, paymentSummary (18 tests)
+
+#### E2E tests (11 spec files) ✅
+
+- [x] `auth.e2e-spec.ts` — login, register, credentials
+- [x] `clients.e2e-spec.ts` — full CRUD, auth/roles
+- [x] `suppliers.e2e-spec.ts` — full CRUD, auth
+- [x] `service-types.e2e-spec.ts` — full CRUD, duplicate name
+- [x] `work-orders.e2e-spec.ts` — CRUD, status changes, technicians
+- [x] `tasks.e2e-spec.ts` — CRUD, completion
+- [x] `payments.e2e-spec.ts` — CRUD, providers, webhook
+- [x] `finances.e2e-spec.ts` — CRUD, filters
+- [x] `billing.e2e-spec.ts` — create, issue, cancel, PDF
+- [x] `reports.e2e-spec.ts` — all endpoints, PDFs
+- [x] `portal.e2e-spec.ts` — public tracking
+
+#### Acceptance tests (2 spec files) ✅
+
+- [x] `work-order-flow.e2e-spec.ts` — full lifecycle: client → WO → tasks → payment → portal → reports
+- [x] `billing-flow.e2e-spec.ts` — full lifecycle: client → WO → payment → invoice → issue → PDF → cancel
 
 #### Comandos
 
 ```bash
-# Unit tests
-npm run test
+# Unit tests (sin DB, rápido)
+npm run test:unit
 
-# E2E tests
+# E2E tests (requiere PostgreSQL con techservice_test)
 npm run test:e2e
 
+# Acceptance tests (requiere PostgreSQL con techservice_test)
+npm run test:acceptance
+
+# Todos
+npm run test:all
+
 # Coverage
-npm run test:cov
+npm run test:unit:cov
 ```
 
 ---
