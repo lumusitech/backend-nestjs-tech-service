@@ -1,0 +1,236 @@
+import { DataSource } from 'typeorm';
+import { Client } from '../../clients/entities/client.entity';
+import { IvaCondition } from '../../billing/enums/iva-condition.enum';
+
+const CLIENTS = [
+  {
+    name: 'Juan Pérez',
+    email: 'juan.perez@gmail.com',
+    phone: '+5491155551001',
+    address: 'Av. Corrientes 1234, CABA',
+    internetProvider: 'Fibertel',
+    internetPlan: '100Mbps',
+    cuit: '20-30123456-9',
+    ivaCondition: IvaCondition.CONSUMIDOR_FINAL,
+  },
+  {
+    name: 'Ana Rodríguez',
+    email: 'ana.rodriguez@hotmail.com',
+    phone: '+5491155551002',
+    address: 'Av. Santa Fe 4567, CABA',
+    internetProvider: 'Telecentro',
+    internetPlan: '300Mbps',
+    cuit: '27-31234567-4',
+    ivaCondition: IvaCondition.MONOTRIBUTO,
+  },
+  {
+    name: 'Roberto González',
+    email: 'roberto.gonzalez@gmail.com',
+    phone: '+5491155551003',
+    address: 'Av. Rivadavia 8900, CABA',
+    internetProvider: 'Movistar',
+    internetPlan: '300Mbps',
+    cuit: '20-32345678-1',
+    ivaCondition: IvaCondition.RESPONSABLE_INSCRIPTO,
+  },
+  {
+    name: 'Luciana Martínez',
+    email: 'luciana.martinez@yahoo.com',
+    phone: '+5491155551004',
+    address: 'Calle Falsa 123, Lanús, GBA',
+    internetProvider: 'Claro',
+    internetPlan: '50Mbps',
+    cuit: '27-33456789-2',
+    ivaCondition: IvaCondition.CONSUMIDOR_FINAL,
+  },
+  {
+    name: 'Fernando Díaz',
+    email: 'fernando.diaz@gmail.com',
+    phone: '+5491155551005',
+    address: 'Av. Belgrano 2345, CABA',
+    internetProvider: 'Fibertel',
+    internetPlan: '50Mbps',
+    cuit: '20-34567890-3',
+    ivaCondition: IvaCondition.MONOTRIBUTO,
+  },
+  {
+    name: 'Valentina Torres',
+    email: 'valentina.torres@hotmail.com',
+    phone: '+5491155551006',
+    address: 'Av. Cabildo 1500, CABA',
+    internetProvider: 'Personal',
+    internetPlan: '100Mbps',
+    cuit: '27-35678901-4',
+    ivaCondition: IvaCondition.CONSUMIDOR_FINAL,
+  },
+  {
+    name: 'Martín Romero',
+    email: 'martin.romero@gmail.com',
+    phone: '+5491155551007',
+    address: 'Av. Libertador 3456, Vicente López, GBA',
+    internetProvider: 'Fibertel',
+    internetPlan: '300Mbps',
+    cuit: '20-36789012-5',
+    ivaCondition: IvaCondition.RESPONSABLE_INSCRIPTO,
+  },
+  {
+    name: 'Camila Sosa',
+    email: 'camila.sosa@yahoo.com',
+    phone: '+5491155551008',
+    address: 'Av. Mitre 789, Avellaneda, GBA',
+    internetProvider: 'Telecentro',
+    internetPlan: '100Mbps',
+    cuit: '27-37890123-6',
+    ivaCondition: IvaCondition.MONOTRIBUTO,
+  },
+  {
+    name: 'Santiago Álvarez',
+    email: 'santiago.alvarez@gmail.com',
+    phone: '+5491155551009',
+    address: 'Av. Corrientes 5678, CABA',
+    internetProvider: 'Movistar',
+    internetPlan: '50Mbps',
+    cuit: '20-38901234-7',
+    ivaCondition: IvaCondition.CONSUMIDOR_FINAL,
+  },
+  {
+    name: 'Isabella López',
+    email: 'isabella.lopez@hotmail.com',
+    phone: '+5491155551010',
+    address: 'Av. San Martín 1234, San Martín, GBA',
+    internetProvider: 'Claro',
+    internetPlan: '100Mbps',
+    cuit: '27-39012345-8',
+    ivaCondition: IvaCondition.CONSUMIDOR_FINAL,
+  },
+  {
+    name: 'Mateo Ruiz',
+    email: 'mateo.ruiz@gmail.com',
+    phone: '+5491155551011',
+    address: 'Calle Córdoba 456, Rosario, Santa Fe',
+    internetProvider: 'Fibertel',
+    internetPlan: '100Mbps',
+    cuit: '20-40123456-9',
+    ivaCondition: IvaCondition.MONOTRIBUTO,
+  },
+  {
+    name: 'Sofía Castro',
+    email: 'sofia.castro@yahoo.com',
+    phone: '+5491155551012',
+    address: 'Av. Pellegrini 789, Rosario, Santa Fe',
+    internetProvider: 'Telecentro',
+    internetPlan: '50Mbps',
+    cuit: '27-41234567-0',
+    ivaCondition: IvaCondition.CONSUMIDOR_FINAL,
+  },
+  {
+    name: 'Benjamín Moreno',
+    email: 'benjamin.moreno@gmail.com',
+    phone: '+5491155551013',
+    address: 'Av. Colón 1234, Córdoba Capital',
+    internetProvider: 'Movistar',
+    internetPlan: '300Mbps',
+    cuit: '20-42345678-1',
+    ivaCondition: IvaCondition.RESPONSABLE_INSCRIPTO,
+  },
+  {
+    name: 'Emma Herrera',
+    email: 'emma.herrera@hotmail.com',
+    phone: '+5491155551014',
+    address: 'Av. General Paz 5678, Ramos Mejía, GBA',
+    internetProvider: 'Personal',
+    internetPlan: '50Mbps',
+    cuit: '27-43456789-2',
+    ivaCondition: IvaCondition.CONSUMIDOR_FINAL,
+  },
+  {
+    name: 'Tomás Vargas',
+    email: 'tomas.vargas@gmail.com',
+    phone: '+5491155551015',
+    address: 'Av. Rivadavia 9012, Morón, GBA',
+    internetProvider: 'Fibertel',
+    internetPlan: '100Mbps',
+    cuit: '20-44567890-3',
+    ivaCondition: IvaCondition.MONOTRIBUTO,
+  },
+  {
+    name: 'Joaquín Pereyra',
+    email: 'joaquin.pereyra@yahoo.com',
+    phone: '+5491155551016',
+    address: 'Av. Entre Ríos 2345, CABA',
+    internetProvider: 'Claro',
+    internetPlan: '300Mbps',
+    cuit: '20-45678901-4',
+    ivaCondition: IvaCondition.CONSUMIDOR_FINAL,
+  },
+  {
+    name: 'Mía Aguirre',
+    email: 'mia.aguirre@gmail.com',
+    phone: '+5491155551017',
+    address: 'Av. San Juan 3456, CABA',
+    internetProvider: 'Telecentro',
+    internetPlan: '100Mbps',
+    cuit: '27-46789012-5',
+    ivaCondition: IvaCondition.MONOTRIBUTO,
+  },
+  {
+    name: 'Lucas Giménez',
+    email: 'lucas.gimenez@hotmail.com',
+    phone: '+5491155551018',
+    address: 'Av. Directorio 4567, CABA',
+    internetProvider: 'Movistar',
+    internetPlan: '50Mbps',
+    cuit: '20-47890123-6',
+    ivaCondition: IvaCondition.CONSUMIDOR_FINAL,
+  },
+  {
+    name: 'Catalina Ramos',
+    email: 'catalina.ramos@gmail.com',
+    phone: '+5491155551019',
+    address: 'Av. de Mayo 1234, CABA',
+    internetProvider: 'Fibertel',
+    internetPlan: '300Mbps',
+    cuit: '27-48901234-7',
+    ivaCondition: IvaCondition.RESPONSABLE_INSCRIPTO,
+  },
+  {
+    name: 'Nicolás Flores',
+    email: 'nicolas.flores@yahoo.com',
+    phone: '+5491155551020',
+    address: 'Av. Estado de Israel 5678, CABA',
+    internetProvider: 'Personal',
+    internetPlan: '100Mbps',
+    cuit: '20-49012345-8',
+    ivaCondition: IvaCondition.CONSUMIDOR_FINAL,
+  },
+];
+
+export async function seedClients(dataSource: DataSource) {
+  const clientRepo = dataSource.getRepository(Client);
+
+  for (const client of CLIENTS) {
+    const existing = await clientRepo.findOne({
+      where: { email: client.email },
+    });
+
+    if (existing) {
+      console.log('  Client already exists:', client.email);
+      continue;
+    }
+
+    const entity = clientRepo.create({
+      name: client.name,
+      email: client.email,
+      phone: client.phone,
+      address: client.address,
+      internetProvider: client.internetProvider,
+      internetPlan: client.internetPlan,
+      cuit: client.cuit,
+      ivaCondition: client.ivaCondition,
+      isActive: true,
+    });
+
+    await clientRepo.save(entity);
+    console.log('  Client created:', client.name);
+  }
+}
