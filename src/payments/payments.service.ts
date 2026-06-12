@@ -134,6 +134,47 @@ export class PaymentsService {
     return new PaginatedResponseDto(data, total, page, limit);
   }
 
+  async findAllGlobal(
+    filterDto: FilterPaymentDto,
+  ): Promise<PaginatedResponseDto<Payment>> {
+    const {
+      page = 1,
+      limit = 10,
+      sortBy = 'createdAt',
+      order = 'ASC',
+      status,
+      method,
+      dateFrom,
+      dateTo,
+    } = filterDto;
+
+    const qb = this.paymentRepository.createQueryBuilder('p');
+
+    if (status) {
+      qb.andWhere('p.status = :status', { status });
+    }
+
+    if (method) {
+      qb.andWhere('p.method = :method', { method });
+    }
+
+    if (dateFrom) {
+      qb.andWhere('p.created_at >= :dateFrom', { dateFrom });
+    }
+
+    if (dateTo) {
+      qb.andWhere('p.created_at <= :dateTo', { dateTo });
+    }
+
+    qb.orderBy(`p.${sortBy}`, order)
+      .skip((page - 1) * limit)
+      .take(limit);
+
+    const [data, total] = await qb.getManyAndCount();
+
+    return new PaginatedResponseDto(data, total, page, limit);
+  }
+
   async findOne(id: string): Promise<Payment> {
     const payment = await this.paymentRepository.findOne({
       where: { id },

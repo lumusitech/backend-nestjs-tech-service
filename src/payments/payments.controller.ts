@@ -89,6 +89,22 @@ export class PaymentsController {
 }
 
 @ApiTags('Payments')
+@ApiBearerAuth()
+@Controller('payments')
+@UseGuards(RolesGuard)
+@Roles(UserRole.ADMIN)
+export class PaymentsApiController {
+  constructor(private readonly paymentsService: PaymentsService) {}
+
+  @Get()
+  @ApiOperation({ summary: 'List all payments across all work orders' })
+  @ApiResponse({ status: 200, description: 'Payments retrieved successfully' })
+  findAllGlobal(@Query() filterDto: FilterPaymentDto) {
+    return this.paymentsService.findAllGlobal(filterDto);
+  }
+}
+
+@ApiTags('Payments')
 @Controller('payments')
 export class PaymentsWebhookController {
   constructor(private readonly paymentsService: PaymentsService) {}
