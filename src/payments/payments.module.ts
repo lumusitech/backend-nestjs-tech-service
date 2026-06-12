@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { PaymentsService } from './payments.service';
 import {
   PaymentsController,
+  PaymentsApiController,
   PaymentsWebhookController,
 } from './payments.controller';
 import { Payment } from './entities/payment.entity';
@@ -12,7 +13,11 @@ import { TransferProvider } from './providers/transfer.provider';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Payment])],
-  controllers: [PaymentsController, PaymentsWebhookController],
+  controllers: [
+    PaymentsController,
+    PaymentsApiController,
+    PaymentsWebhookController,
+  ],
   providers: [
     PaymentsService,
     MercadoPagoProvider,
