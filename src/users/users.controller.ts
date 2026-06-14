@@ -13,7 +13,7 @@ import {
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { PaginationDto } from '../common/dto/pagination.dto';
+import { FilterUserDto } from './dto/filter-user.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { UserRole } from './enums/user-role.enum';
@@ -43,10 +43,12 @@ export class UsersController {
 
   @Get()
   @Roles(UserRole.ADMIN)
-  @ApiOperation({ summary: 'List all users with pagination' })
+  @ApiOperation({
+    summary: 'List all users with pagination and optional role filter',
+  })
   @ApiResponse({ status: 200, description: 'Paginated list of users' })
-  findAll(@Query() paginationDto: PaginationDto) {
-    return this.usersService.findAll(paginationDto);
+  findAll(@Query() filterDto: FilterUserDto) {
+    return this.usersService.findAll(filterDto);
   }
 
   @Get(':id')

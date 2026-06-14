@@ -9,7 +9,7 @@ import * as bcrypt from 'bcrypt';
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { PaginationDto } from '../common/dto/pagination.dto';
+import { FilterUserDto } from './dto/filter-user.dto';
 import { PaginatedResponseDto } from '../common/dto/paginated-response.dto';
 
 @Injectable()
@@ -52,17 +52,19 @@ export class UsersService {
     });
   }
 
-  async findAll(
-    paginationDto: PaginationDto,
-  ): Promise<PaginatedResponseDto<User>> {
+  async findAll(filterDto: FilterUserDto): Promise<PaginatedResponseDto<User>> {
     const {
       page = 1,
       limit = 10,
       sortBy = 'createdAt',
       order = 'ASC',
-    } = paginationDto;
+      role,
+    } = filterDto;
+
+    const where = role ? { role } : {};
 
     const [data, total] = await this.userRepository.findAndCount({
+      where,
       skip: (page - 1) * limit,
       take: limit,
       order: { [sortBy]: order },
