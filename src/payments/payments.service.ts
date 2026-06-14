@@ -107,6 +107,7 @@ export class PaymentsService {
 
     const qb = this.paymentRepository
       .createQueryBuilder('p')
+      .leftJoinAndSelect('p.workOrder', 'workOrder')
       .where('p.work_order_id = :workOrderId', { workOrderId });
 
     if (status) {
@@ -148,7 +149,9 @@ export class PaymentsService {
       dateTo,
     } = filterDto;
 
-    const qb = this.paymentRepository.createQueryBuilder('p');
+    const qb = this.paymentRepository
+      .createQueryBuilder('p')
+      .leftJoinAndSelect('p.workOrder', 'workOrder');
 
     if (status) {
       qb.andWhere('p.status = :status', { status });
