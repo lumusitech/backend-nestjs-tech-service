@@ -120,6 +120,7 @@ describe('UsersService', () => {
       const result = await service.findAll({ page: 1, limit: 10 });
 
       expect(repository.findAndCount).toHaveBeenCalledWith({
+        where: {},
         skip: 0,
         take: 10,
         order: { createdAt: 'ASC' },
@@ -139,6 +140,7 @@ describe('UsersService', () => {
       });
 
       expect(repository.findAndCount).toHaveBeenCalledWith({
+        where: {},
         skip: 5,
         take: 5,
         order: { name: 'DESC' },
