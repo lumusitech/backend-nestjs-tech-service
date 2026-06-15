@@ -55,3 +55,26 @@ export class PaymentStatusChangedEvent {
   trackingCode!: string;
   technicianIds!: string[];
 }
+
+export class PendingItemCreatedEvent {
+  pendingItemId!: string;
+  title!: string;
+  dueDate!: string;
+  priority!: string;
+  assignedToId?: string;
+  createdById!: string;
+}
+
+export class PendingItemDueTodayEvent {
+  pendingItemId!: string;
+  title!: string;
+  dueDate!: string;
+  assignedToId!: string;
+}
+
+export class PendingItemOverdueEvent {
+  pendingItemId!: string;
+  title!: string;
+  dueDate!: string;
+  assignedToId!: string;
+}

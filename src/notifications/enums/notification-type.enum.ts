@@ -7,4 +7,7 @@ export enum NotificationType {
   PAYMENT_CREATED = 'payment.created',
   PAYMENT_APPROVED = 'payment.approved',
   PAYMENT_REJECTED = 'payment.rejected',
+  PENDING_ITEM_CREATED = 'pending_item.created',
+  PENDING_ITEM_DUE_TODAY = 'pending_item.due_today',
+  PENDING_ITEM_OVERDUE = 'pending_item.overdue',
 }
