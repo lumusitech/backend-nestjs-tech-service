@@ -19,6 +19,7 @@ import { PortalModule } from './portal/portal.module';
 import { ReportsModule } from './reports/reports.module';
 import { BillingModule } from './billing/billing.module';
 import { PendingItemsModule } from './pending-items/pending-items.module';
+import { UserPreferencesModule } from './user-preferences/user-preferences.module';
 
 @Module({
   imports: [
@@ -60,6 +61,7 @@ import { PendingItemsModule } from './pending-items/pending-items.module';
     ReportsModule,
     BillingModule,
     PendingItemsModule,
+    UserPreferencesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

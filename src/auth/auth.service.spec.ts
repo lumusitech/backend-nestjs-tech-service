@@ -4,6 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
+import { UserPreferencesService } from '../user-preferences/user-preferences.service';
 import { User } from '../users/entities/user.entity';
 import { UserRole } from '../users/enums/user-role.enum';
 
@@ -13,6 +14,7 @@ describe('AuthService', () => {
   let service: AuthService;
   let usersService: jest.Mocked<UsersService>;
   let jwtService: jest.Mocked<JwtService>;
+  let userPreferencesService: jest.Mocked<UserPreferencesService>;
 
   const mockUser: User = {
     id: 'uuid-1',
@@ -43,12 +45,19 @@ describe('AuthService', () => {
             sign: jest.fn(),
           },
         },
+        {
+          provide: UserPreferencesService,
+          useValue: {
+            getByUserId: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
     service = module.get<AuthService>(AuthService);
     usersService = module.get(UsersService);
     jwtService = module.get(JwtService);
+    userPreferencesService = module.get(UserPreferencesService);
   });
 
   it('should be defined', () => {
@@ -112,6 +121,12 @@ describe('AuthService', () => {
       usersService.findByEmail.mockResolvedValue(mockUser);
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
       jwtService.sign.mockReturnValue('jwt-token');
+      (userPreferencesService.getByUserId as jest.Mock).mockResolvedValue({
+        userId: 'uuid-1',
+        theme: 'light',
+        language: 'es',
+        preferences: {},
+      });
 
       const result = await service.login(loginDto);
 
@@ -119,7 +134,19 @@ describe('AuthService', () => {
         sub: mockUser.id,
         role: mockUser.role,
       });
-      expect(result).toEqual({ accessToken: 'jwt-token' });
+      expect(result).toEqual({
+        accessToken: 'jwt-token',
+        user: {
+          id: 'uuid-1',
+          name: 'John Doe',
+          email: 'john@example.com',
+          role: 'technician',
+        },
+        preferences: {
+          theme: 'light',
+          language: 'es',
+        },
+      });
     });
 
     it('should throw UnauthorizedException for invalid credentials', async () => {
