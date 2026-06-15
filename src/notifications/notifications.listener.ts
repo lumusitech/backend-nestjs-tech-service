@@ -14,6 +14,9 @@ import {
   TaskCompletedEvent,
   PaymentCreatedEvent,
   PaymentStatusChangedEvent,
+  PendingItemCreatedEvent,
+  PendingItemDueTodayEvent,
+  PendingItemOverdueEvent,
 } from './events/notification.events';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 
@@ -214,5 +217,76 @@ export class NotificationsListener {
       select: { id: true },
     });
     return admins.map((a) => a.id);
+  }
+
+  @OnEvent('pending_item.created')
+  async handlePendingItemCreated(
+    event: PendingItemCreatedEvent,
+  ): Promise<void> {
+    const adminIds = await this.getAdminIds();
+    const recipientIds = event.assignedToId
+      ? [...new Set([...adminIds, event.assignedToId])]
+      : adminIds;
+
+    const dtos: CreateNotificationDto[] = recipientIds.map((userId) => ({
+      type: NotificationType.PENDING_ITEM_CREATED,
+      title: 'Nuevo trabajo pendiente',
+      message: `Se creó el pendiente '${event.title}' con vencimiento ${event.dueDate}`,
+      userId,
+      referenceId: event.pendingItemId,
+      referenceType: 'pending_item',
+      metadata: {
+        title: event.title,
+        dueDate: event.dueDate,
+        priority: event.priority,
+      },
+    }));
+
+    await this.notificationsService.createBulk(dtos);
+  }
+
+  @OnEvent('pending_item.due_today')
+  async handlePendingItemDueToday(
+    event: PendingItemDueTodayEvent,
+  ): Promise<void> {
+    const dtos: CreateNotificationDto[] = [
+      {
+        type: NotificationType.PENDING_ITEM_DUE_TODAY,
+        title: 'Pendiente vence hoy',
+        message: `'${event.title}' vence hoy`,
+        userId: event.assignedToId,
+        referenceId: event.pendingItemId,
+        referenceType: 'pending_item',
+        metadata: {
+          title: event.title,
+          dueDate: event.dueDate,
+        },
+      },
+    ];
+
+    await this.notificationsService.createBulk(dtos);
+  }
+
+  @OnEvent('pending_item.overdue')
+  async handlePendingItemOverdue(
+    event: PendingItemOverdueEvent,
+  ): Promise<void> {
+    const adminIds = await this.getAdminIds();
+    const recipientIds = [...new Set([...adminIds, event.assignedToId])];
+
+    const dtos: CreateNotificationDto[] = recipientIds.map((userId) => ({
+      type: NotificationType.PENDING_ITEM_OVERDUE,
+      title: 'Pendiente vencido',
+      message: `'${event.title}' está vencido desde ${event.dueDate}`,
+      userId,
+      referenceId: event.pendingItemId,
+      referenceType: 'pending_item',
+      metadata: {
+        title: event.title,
+        dueDate: event.dueDate,
+      },
+    }));
+
+    await this.notificationsService.createBulk(dtos);
   }
 }
