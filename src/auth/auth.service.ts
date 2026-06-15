@@ -6,6 +6,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from '../users/users.service';
+import { UserPreferencesService } from '../user-preferences/user-preferences.service';
 import { LoginDto } from './dto/login.dto';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { JwtPayload } from './strategies/jwt-payload.interface';
@@ -15,6 +16,7 @@ export class AuthService {
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
+    private readonly userPreferencesService: UserPreferencesService,
   ) {}
 
   async validateUser(email: string, password: string) {
@@ -45,6 +47,8 @@ export class AuthService {
       role: user.role,
     };
 
+    const preferences = await this.userPreferencesService.getByUserId(user.id);
+
     return {
       accessToken: this.jwtService.sign(payload),
       user: {
@@ -52,6 +56,11 @@ export class AuthService {
         name: user.name,
         email: user.email,
         role: user.role,
+      },
+      preferences: {
+        theme: preferences.theme,
+        language: preferences.language,
+        ...(preferences.preferences || {}),
       },
     };
   }
