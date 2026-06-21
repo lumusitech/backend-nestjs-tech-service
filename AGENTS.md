@@ -91,14 +91,14 @@ Arquitectura modular estándar de NestJS. Cada módulo encapsula su propio contr
 ### ARCA/AFIP (facturación electrónica)
 - Obtener CUIT + certificado digital (.crt) + clave privada (.key) desde AFIP
 - Habilitar WSFEv1 en AFIP → Administrador de Relaciones
-- Instalar: `npm install soap node-forge` + `@types/soap`
+- Instalar: `pnpm add soap node-forge` + `@types/soap`
 - Implementar en `arca.provider.ts`: autenticación WSAA (TRA → TA), llamadas SOAP a WSFEv1
 - Env vars: `ARCA_CERT_PATH`, `ARCA_KEY_PATH`, `ARCA_ENVIRONMENT` (homologacion|produccion)
 - Flujo: FECompUltimoAutorizado → FECAESolicitar → guardar CAE + vencimiento
 
 ### MercadoPago (pagos)
 - Obtener Access Token + Public Key desde MercadoPago Developers
-- Instalar: `npm install @mercadopago/sdk-node`
+- Instalar: `pnpm add mercadopago`
 - Completar `mercadopago.provider.ts`: crear preferencia de checkout, consultar estado, manejar webhooks
 - Agregar endpoint de webhook con verificación de firma
 - Env vars: `MERCADOPAGO_PUBLIC_KEY`, `MERCADOPAGO_WEBHOOK_SECRET`

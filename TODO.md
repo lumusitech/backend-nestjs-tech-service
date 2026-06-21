@@ -47,7 +47,7 @@
   - [ ] TypeScript version "5" → "6"
   - [ ] Fix testing section (agregar test:unit, test:e2e, test:acceptance, test:all, test:unit:cov)
   - [ ] Agregar env vars section completa
-  - [ ] Documentar npm run seed
+  - [ ] Documentar pnpm seed
   - [ ] Documentar test DB setup (.env.test, techservice_test)
 - [ ] ROADMAP.md:
   - [ ] Angular version "21+" → "22"

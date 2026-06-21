@@ -19,7 +19,7 @@ notebooks, TVs, instalación de cámaras de seguridad, servicios de electricidad
 ## 📋 Requisitos
 
 - Node.js >= 18
-- npm
+- pnpm
 - Docker + Docker Compose
 
 ---
@@ -90,7 +90,7 @@ docker compose ps
 ### 4. Instalar dependencias
 
 ```bash
-npm install
+pnpm install
 ```
 
 ---
@@ -113,7 +113,7 @@ Este proyecto NO usa synchronize en producción, en su lugar usa migraciones ver
 ### Generar migración
 
 ```bash
-npm run migration:generate
+pnpm migration:generate
 ```
 
 👉 Se usa cuando
@@ -124,7 +124,7 @@ npm run migration:generate
 ### Ejecutar migraciones
 
 ```bash
-npm run migration:run
+pnpm migration:run
 ```
 
 👉 Se usa cuando:
@@ -136,7 +136,7 @@ npm run migration:run
 ### Revertir migración
 
 ```bash
-npm run migration:revert
+pnpm migration:revert
 ```
 
 👉 Útil para:
@@ -153,9 +153,9 @@ npm run migration:revert
 
 ```bash
 docker compose up -d
-npm install
-npm run migration:run
-npm run start:dev
+pnpm install
+pnpm migration:run
+pnpm start:dev
 ```
 
 ### Caso 2 — Desarrollo normal
@@ -164,13 +164,13 @@ npm run start:dev
 2. Generás migración:
 
 ```bash
-npm run migration:generate
+pnpm migration:generate
 ```
 
 1. Aplicás cambios:
 
 ```bash
-npm run migration:run
+pnpm migration:run
 ```
 
 ### ⚠️ Importante
@@ -184,19 +184,19 @@ npm run migration:run
 ### ▶️ Ejecutar la app
 
 ```bash
-npm run start:dev
+pnpm start:dev
 ```
 
 ### 🧪 Testing
 
 ```bash
-npm run lint
+pnpm lint
 ```
 
 ### 🧹 Lint
 
 ```bash
-npm run lint
+pnpm lint
 ```
 
 ---

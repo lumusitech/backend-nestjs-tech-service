@@ -400,19 +400,19 @@ Expense (amount, category, date)  ← gastos operativos generales
 
 ```bash
 # Unit tests (sin DB, rápido)
-npm run test:unit
+pnpm test:unit
 
 # E2E tests (requiere PostgreSQL con techservice_test)
-npm run test:e2e
+pnpm test:e2e
 
 # Acceptance tests (requiere PostgreSQL con techservice_test)
-npm run test:acceptance
+pnpm test:acceptance
 
 # Todos
-npm run test:all
+pnpm test:all
 
 # Coverage
-npm run test:unit:cov
+pnpm test:unit:cov
 ```
 
 ---
@@ -451,8 +451,8 @@ El módulo `billing/` tiene la interfaz, entidades, flujo admin y PDFs listos. E
 #### Dependencias a instalar
 
 ```bash
-npm install soap node-forge
-npm install -D @types/soap
+pnpm add soap node-forge
+pnpm add -D @types/soap
 ```
 
 - `soap` — cliente SOAP para consumir los Web Services de AFIP
@@ -516,7 +516,7 @@ El módulo `payments/` tiene la interfaz y providers listos. El `MercadoPagoProv
 #### Dependencias
 
 ```bash
-npm install @mercadopago/sdk-node
+pnpm add mercadopago
 ```
 
 #### Funcionalidades a implementar/completar
