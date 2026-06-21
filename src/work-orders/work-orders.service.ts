@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
@@ -185,6 +186,30 @@ export class WorkOrdersService {
     }
 
     return workOrder;
+  }
+
+  async validateTechnicianOwnership(
+    workOrderId: string,
+    technicianId: string,
+  ): Promise<void> {
+    const workOrder = await this.workOrderRepository.findOne({
+      where: { id: workOrderId },
+      relations: { technicians: true },
+    });
+
+    if (!workOrder) {
+      throw new NotFoundException(`Work order #${workOrderId} not found`);
+    }
+
+    const isAssigned = workOrder.technicians.some(
+      (t) => t.id === technicianId,
+    );
+
+    if (!isAssigned) {
+      throw new ForbiddenException(
+        'You are not assigned to this work order',
+      );
+    }
   }
 
   async update(
