@@ -13,6 +13,7 @@ import { seedPayments } from './seeds/seed-payments';
 import { seedInvoices } from './seeds/seed-invoices';
 import { seedExpenses } from './seeds/seed-expenses';
 import { seedPendingItems } from './seeds/seed-pending-items';
+import { seedInquiries } from './seeds/seed-inquiries';
 
 async function runSeeds() {
   await dataSource.initialize();
@@ -32,6 +33,7 @@ async function runSeeds() {
   await seedInvoices(dataSource);
   await seedExpenses(dataSource);
   await seedPendingItems(dataSource);
+  await seedInquiries(dataSource);
 
   console.log('Seeds finished');
 
