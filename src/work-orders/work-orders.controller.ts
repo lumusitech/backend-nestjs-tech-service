@@ -213,17 +213,25 @@ export class WorkOrdersController {
   }
 
   @Patch(':id/tasks/:taskId')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.TECHNICIAN)
   @ApiOperation({ summary: 'Update a task in a work order' })
   @ApiParam({ name: 'id', description: 'Work order UUID' })
   @ApiParam({ name: 'taskId', description: 'Task UUID' })
   @ApiResponse({ status: 200, description: 'Task updated successfully' })
   @ApiResponse({ status: 404, description: 'Work order or task not found' })
-  updateTask(
+  @ApiResponse({ status: 403, description: 'Technician not assigned to this work order' })
+  async updateTask(
     @Param('id', ParseUUIDPipe) id: string,
     @Param('taskId', ParseUUIDPipe) taskId: string,
     @Body() updateTaskDto: UpdateTaskDto,
+    @Req() req: Request,
   ) {
+    const user = req.user as { id: string; role: UserRole };
+
+    if (user.role === UserRole.TECHNICIAN) {
+      await this.workOrdersService.validateTechnicianOwnership(id, user.id);
+    }
+
     return this.workOrdersService.updateTask(id, taskId, updateTaskDto);
   }
 
