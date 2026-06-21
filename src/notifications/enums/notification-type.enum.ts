@@ -10,4 +10,8 @@ export enum NotificationType {
   PENDING_ITEM_CREATED = 'pending_item.created',
   PENDING_ITEM_DUE_TODAY = 'pending_item.due_today',
   PENDING_ITEM_OVERDUE = 'pending_item.overdue',
+  INQUIRY_CREATED = 'inquiry.created',
+  INQUIRY_ASSIGNED = 'inquiry.assigned',
+  INQUIRY_CONTACTED = 'inquiry.contacted',
+  INQUIRY_REVIEWED = 'inquiry.reviewed',
 }

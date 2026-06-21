@@ -17,6 +17,10 @@ import {
   PendingItemCreatedEvent,
   PendingItemDueTodayEvent,
   PendingItemOverdueEvent,
+  InquiryCreatedEvent,
+  InquiryAssignedEvent,
+  InquiryContactedEvent,
+  InquiryReviewedEvent,
 } from './events/notification.events';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 
@@ -284,6 +288,89 @@ export class NotificationsListener {
       metadata: {
         title: event.title,
         dueDate: event.dueDate,
+      },
+    }));
+
+    await this.notificationsService.createBulk(dtos);
+  }
+
+  @OnEvent('inquiry.created')
+  async handleInquiryCreated(event: InquiryCreatedEvent): Promise<void> {
+    const adminIds = await this.getAdminIds();
+    const recipientIds = event.assignedToId
+      ? [...new Set([...adminIds, event.assignedToId])]
+      : adminIds;
+
+    const dtos: CreateNotificationDto[] = recipientIds.map((userId) => ({
+      type: NotificationType.INQUIRY_CREATED,
+      title: 'Nueva consulta recibida',
+      message: `${event.clientName}: ${event.description.substring(0, 100)}`,
+      userId,
+      referenceId: event.inquiryId,
+      referenceType: 'inquiry',
+      metadata: {
+        clientName: event.clientName,
+        source: event.source,
+      },
+    }));
+
+    await this.notificationsService.createBulk(dtos);
+  }
+
+  @OnEvent('inquiry.assigned')
+  async handleInquiryAssigned(event: InquiryAssignedEvent): Promise<void> {
+    const dtos: CreateNotificationDto[] = [
+      {
+        type: NotificationType.INQUIRY_ASSIGNED,
+        title: 'Consulta asignada',
+        message: `Se te asignó la consulta de ${event.clientName}`,
+        userId: event.assignedToId,
+        referenceId: event.inquiryId,
+        referenceType: 'inquiry',
+        metadata: { clientName: event.clientName },
+      },
+    ];
+
+    await this.notificationsService.createBulk(dtos);
+  }
+
+  @OnEvent('inquiry.contacted')
+  async handleInquiryContacted(event: InquiryContactedEvent): Promise<void> {
+    const adminIds = await this.getAdminIds();
+
+    const dtos: CreateNotificationDto[] = adminIds.map((userId) => ({
+      type: NotificationType.INQUIRY_CONTACTED,
+      title: 'Consulta contactada',
+      message: `Se contactó a ${event.clientName} — ${event.technicianNotes.substring(0, 80)}`,
+      userId,
+      referenceId: event.inquiryId,
+      referenceType: 'inquiry',
+      metadata: {
+        clientName: event.clientName,
+        technicianNotes: event.technicianNotes,
+      },
+    }));
+
+    await this.notificationsService.createBulk(dtos);
+  }
+
+  @OnEvent('inquiry.reviewed')
+  async handleInquiryReviewed(event: InquiryReviewedEvent): Promise<void> {
+    const adminIds = await this.getAdminIds();
+
+    const decisionLabel =
+      event.adminDecision === 'approved' ? 'aprobada' : 'rechazada';
+
+    const dtos: CreateNotificationDto[] = adminIds.map((userId) => ({
+      type: NotificationType.INQUIRY_REVIEWED,
+      title: `Consulta ${decisionLabel}`,
+      message: `La consulta de ${event.clientName} fue ${decisionLabel}`,
+      userId,
+      referenceId: event.inquiryId,
+      referenceType: 'inquiry',
+      metadata: {
+        clientName: event.clientName,
+        adminDecision: event.adminDecision,
       },
     }));
 
