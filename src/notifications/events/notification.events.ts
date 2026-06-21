@@ -78,3 +78,33 @@ export class PendingItemOverdueEvent {
   dueDate!: string;
   assignedToId!: string;
 }
+
+export class InquiryCreatedEvent {
+  inquiryId!: string;
+  clientName!: string;
+  description!: string;
+  source!: string;
+  assignedToId?: string;
+  createdById!: string;
+}
+
+export class InquiryAssignedEvent {
+  inquiryId!: string;
+  clientName!: string;
+  assignedToId!: string;
+  assignedByName!: string;
+}
+
+export class InquiryContactedEvent {
+  inquiryId!: string;
+  clientName!: string;
+  technicianNotes!: string;
+  assignedToId?: string;
+}
+
+export class InquiryReviewedEvent {
+  inquiryId!: string;
+  clientName!: string;
+  adminDecision!: string;
+  adminNotes?: string;
+}
