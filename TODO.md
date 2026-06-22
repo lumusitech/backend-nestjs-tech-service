@@ -4,32 +4,33 @@
 
 - NestJS 11, TypeORM, PostgreSQL 16, TypeScript 6
 - 18 módulos implementados con tests
-- 314+ tests unitarios, 11 e2e, 2 acceptance
+- 315 tests unitarios, 11 e2e, 2 acceptance
 - JWT auth con roles (admin, technician)
 - WebSocket (Socket.IO) para notificaciones in-app
 - EventEmitter2 para desacoplamiento de eventos
 - pnpm como gestor de paquetes
 - db:reset para resetear la DB al estado seed
+- Búsqueda sin tildes (unaccent) en clients, work-orders y billing
 
 ## PRs Abiertos (pendientes de merge)
 
-| #   | Título                      | Branch                          | Estado |
-| --- | --------------------------- | ------------------------------- | ------ |
-| 41  | workOrder relation en pagos | fix/payments-workorder-relation | Open   |
+| #   | Título                                        | Branch                        | Estado |
+| --- | --------------------------------------------- | ----------------------------- | ------ |
+| 64  | feat: accent-insensitive search + billing search | feat/search-unaccent-billing | Open   |
 
 ## Módulos completados
 
 1. ✅ common — BaseEntity, DTOs, filtros globales
 2. ✅ auth + users — JWT, roles, guards, login
-3. ✅ clients — CRUD
+3. ✅ clients — CRUD + búsqueda con unaccent
 4. ✅ suppliers — CRUD
 5. ✅ service-types — catálogo
-6. ✅ work-orders — core (trackingCode, notes, materials, tasks, payments, technicians)
+6. ✅ work-orders — core (trackingCode, notes, materials, tasks, payments, technicians) + búsqueda con unaccent
 7. ✅ tasks — subtareas
 8. ✅ payments — MercadoPago + tarjetas (strategy pattern)
 9. ✅ finances — gastos operativos
 10. ✅ notifications — notificaciones in-app (WebSocket + EventEmitter)
-11. ✅ billing — facturación ARCA/AFIP (stub + PDFs)
+11. ✅ billing — facturación ARCA/AFIP (stub + PDFs + búsqueda con unaccent)
 12. ✅ reports — reportes financieros (BFF + PDFs)
 13. ✅ portal — portal público (sin auth)
 14. ✅ database — seeds + migraciones + db:reset
