@@ -84,6 +84,7 @@ src/
 - [x] internetProvider, internetPlan
 - [x] CRUD endpoints (`GET/POST/PATCH/DELETE /clients`)
 - [x] Relación con WorkOrder (un cliente puede tener muchas órdenes)
+- [x] Búsqueda con `search` param (accent-insensitive con PostgreSQL unaccent)
 
 > Datos de los clientes que solicitan servicios.
 
@@ -129,6 +130,7 @@ src/
 - [x] Soft delete global (DeleteDateColumn en BaseEntity)
 - [x] Endpoint hard delete (`DELETE /work-orders/:id/hard`)
 - [x] Filtros: por estado, prioridad, técnico, cliente, fechas, tipo de servicio
+- [x] Búsqueda con `search` param (accent-insensitive: tracking code + client name)
 - [x] Endpoints anidados:
   - `POST/GET /work-orders/:id/notes`
   - `POST/GET/DELETE /work-orders/:id/materials`
@@ -211,7 +213,7 @@ src/
 - [x] ArcaProvider stub (retorna CAE mock, loggea warning)
 - [x] Enums: InvoiceType (A/B/C), InvoiceConcept, InvoiceStatus, IvaCondition
 - [x] `POST /billing/invoices` — crear factura borrador
-- [x] `GET /billing/invoices` — listar con filtros (status, type, fecha, clientName)
+- [x] `GET /billing/invoices` — listar con filtros (status, type, fecha, clientName accent-insensitive)
 - [x] `GET /billing/invoices/:id` — obtener una con relaciones
 - [x] `POST /billing/invoices/:id/issue` — emitir (draft → issued, llama ARCA stub)
 - [x] `POST /billing/invoices/:id/cancel` — anular
