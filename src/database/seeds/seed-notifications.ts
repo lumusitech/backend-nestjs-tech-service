@@ -57,6 +57,12 @@ export async function seedNotifications(dataSource: DataSource): Promise<void> {
   });
   const woMap = new Map(workOrders.map((wo) => [wo.trackingCode, wo.id]));
 
+  // Also fetch payments to get their IDs
+  const payments = await dataSource.query(
+    'SELECT p.id, wo.tracking_code FROM payments p LEFT JOIN work_orders wo ON p.work_order_id = wo.id',
+  );
+  const payMap = new Map<string, string>(payments.map((p: any) => [p.tracking_code, p.id]));
+
   const d = (n: number) => {
     const x = new Date();
     x.setDate(x.getDate() + n);
@@ -65,7 +71,12 @@ export async function seedNotifications(dataSource: DataSource): Promise<void> {
   };
 
   for (const seed of NOTIFS) {
-    const referenceId = seed.refCode ? woMap.get(seed.refCode) || null : null;
+    let referenceId: string | null = null;
+    if (seed.refType === 'payment') {
+      referenceId = seed.refCode ? payMap.get(seed.refCode) || null : null;
+    } else {
+      referenceId = seed.refCode ? woMap.get(seed.refCode) || null : null;
+    }
 
     const notification = repo.create({
       type: seed.type as any,
