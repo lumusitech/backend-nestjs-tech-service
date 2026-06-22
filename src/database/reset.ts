@@ -16,10 +16,37 @@ import { seedPendingItems } from './seeds/seed-pending-items';
 import { seedInquiries } from './seeds/seed-inquiries';
 import { seedNotifications } from './seeds/seed-notifications';
 
-async function runSeeds() {
+const TABLES = [
+  'notifications',
+  'invoices',
+  'payments',
+  'work_order_notes',
+  'work_order_materials',
+  'tasks',
+  'work_order_technicians',
+  'work_orders',
+  'inquiries',
+  'pending_items',
+  'expenses',
+  'user_preferences',
+  'service_types',
+  'clients',
+  'suppliers',
+  'users',
+];
+
+async function reset() {
   await dataSource.initialize();
 
-  console.log('Running seeds...');
+  console.log('🗑️  Truncating all tables...');
+
+  for (const table of TABLES) {
+    await dataSource.query(`TRUNCATE TABLE "${table}" CASCADE`);
+    console.log(`  ✓ ${table}`);
+  }
+
+  console.log('');
+  console.log('🌱 Re-seeding...');
 
   await seedAdmin(dataSource);
   await seedServiceTypes(dataSource);
@@ -37,12 +64,12 @@ async function runSeeds() {
   await seedInquiries(dataSource);
   await seedNotifications(dataSource);
 
-  console.log('Seeds finished');
-
+  console.log('');
+  console.log('✅ Reset complete! All data restored to seed state.');
   await dataSource.destroy();
 }
 
-runSeeds().catch((err) => {
-  console.error('Seed error:', err);
+reset().catch((err) => {
+  console.error('Reset error:', err);
   process.exit(1);
 });
