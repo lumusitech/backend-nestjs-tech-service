@@ -19,7 +19,7 @@ import {
 import { ClientsService } from './clients.service';
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
-import { PaginationDto } from '../common/dto/pagination.dto';
+import { FilterClientDto } from './dto/filter-client.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { UserRole } from '../users/enums/user-role.enum';
@@ -44,8 +44,8 @@ export class ClientsController {
   @Get()
   @ApiOperation({ summary: 'Get all clients with pagination' })
   @ApiResponse({ status: 200, description: 'List of clients' })
-  findAll(@Query() paginationDto: PaginationDto) {
-    return this.clientsService.findAll(paginationDto);
+  findAll(@Query() filterDto: FilterClientDto) {
+    return this.clientsService.findAll(filterDto);
   }
 
   @Get(':id')

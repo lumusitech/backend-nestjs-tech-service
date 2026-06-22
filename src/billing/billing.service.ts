@@ -89,7 +89,7 @@ export class BillingService {
     }
 
     if (clientName) {
-      qb.andWhere('i.client_name ILIKE :clientName', {
+      qb.andWhere('unaccent(i.client_name) ILIKE unaccent(:clientName)', {
         clientName: `%${clientName}%`,
       });
     }

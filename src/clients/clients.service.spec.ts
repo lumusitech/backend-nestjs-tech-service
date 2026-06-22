@@ -6,7 +6,7 @@ import { Client } from './entities/client.entity';
 import { createMockRepository } from '../common/testing/mock-query-builder.helper';
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
-import { PaginationDto } from '../common/dto/pagination.dto';
+import { FilterClientDto } from './dto/filter-client.dto';
 
 describe('ClientsService', () => {
   let service: ClientsService;
@@ -75,16 +75,15 @@ describe('ClientsService', () => {
         { id: 'uuid-1', name: 'John', email: 'john@example.com' },
         { id: 'uuid-2', name: 'Jane', email: 'jane@example.com' },
       ];
-      repository.findAndCount.mockResolvedValue([clients, 2]);
+      const mockQb = repository.createQueryBuilder();
+      mockQb.getManyAndCount.mockResolvedValue([clients, 2]);
 
-      const paginationDto: PaginationDto = {};
-      const result = await service.findAll(paginationDto);
+      const filterDto: FilterClientDto = {};
+      const result = await service.findAll(filterDto);
 
-      expect(repository.findAndCount).toHaveBeenCalledWith({
-        skip: 0,
-        take: 10,
-        order: { createdAt: 'ASC' },
-      });
+      expect(mockQb.orderBy).toHaveBeenCalledWith('client.createdAt', 'ASC');
+      expect(mockQb.skip).toHaveBeenCalledWith(0);
+      expect(mockQb.take).toHaveBeenCalledWith(10);
       expect(result.data).toEqual(clients);
       expect(result.total).toBe(2);
       expect(result.page).toBe(1);
@@ -96,21 +95,20 @@ describe('ClientsService', () => {
       const clients = [
         { id: 'uuid-1', name: 'John', email: 'john@example.com' },
       ];
-      repository.findAndCount.mockResolvedValue([clients, 15]);
+      const mockQb = repository.createQueryBuilder();
+      mockQb.getManyAndCount.mockResolvedValue([clients, 15]);
 
-      const paginationDto: PaginationDto = {
+      const filterDto: FilterClientDto = {
         page: 2,
         limit: 5,
         sortBy: 'name',
         order: 'DESC',
       };
-      const result = await service.findAll(paginationDto);
+      const result = await service.findAll(filterDto);
 
-      expect(repository.findAndCount).toHaveBeenCalledWith({
-        skip: 5,
-        take: 5,
-        order: { name: 'DESC' },
-      });
+      expect(mockQb.orderBy).toHaveBeenCalledWith('client.name', 'DESC');
+      expect(mockQb.skip).toHaveBeenCalledWith(5);
+      expect(mockQb.take).toHaveBeenCalledWith(5);
       expect(result.data).toEqual(clients);
       expect(result.total).toBe(15);
       expect(result.page).toBe(2);
@@ -119,13 +117,32 @@ describe('ClientsService', () => {
     });
 
     it('should handle empty results', async () => {
-      repository.findAndCount.mockResolvedValue([[], 0]);
+      const mockQb = repository.createQueryBuilder();
+      mockQb.getManyAndCount.mockResolvedValue([[], 0]);
 
       const result = await service.findAll({});
 
       expect(result.data).toEqual([]);
       expect(result.total).toBe(0);
       expect(result.totalPages).toBe(0);
+    });
+
+    it('should filter by search term', async () => {
+      const clients = [
+        { id: 'uuid-1', name: 'Juan Perez', email: 'juan@example.com' },
+      ];
+      const mockQb = repository.createQueryBuilder();
+      mockQb.getManyAndCount.mockResolvedValue([clients, 1]);
+
+      const filterDto: FilterClientDto = { search: 'Juan' };
+      const result = await service.findAll(filterDto);
+
+      expect(mockQb.andWhere).toHaveBeenCalledWith(
+        '(unaccent(client.name) ILIKE unaccent(:search) OR unaccent(client.email) ILIKE unaccent(:search))',
+        { search: '%Juan%' },
+      );
+      expect(result.data).toEqual(clients);
+      expect(result.total).toBe(1);
     });
   });
 

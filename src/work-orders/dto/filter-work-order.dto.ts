@@ -1,10 +1,15 @@
-import { IsOptional, IsEnum, IsUUID, IsDateString } from 'class-validator';
+import { IsOptional, IsEnum, IsUUID, IsDateString, IsString } from 'class-validator';
 import { PaginationDto } from '../../common/dto/pagination.dto';
 import { WorkOrderStatus } from '../../common/enums/work-order-status.enum';
 import { Priority } from '../../common/enums/priority.enum';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class FilterWorkOrderDto extends PaginationDto {
+  @ApiPropertyOptional({ example: 'Juan', description: 'Search by tracking code or client name' })
+  @IsOptional()
+  @IsString()
+  search?: string;
+
   @ApiPropertyOptional({
     enum: WorkOrderStatus,
     example: WorkOrderStatus.PENDING,

@@ -8,7 +8,7 @@ import { Repository } from 'typeorm';
 import { Client } from './entities/client.entity';
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
-import { PaginationDto } from '../common/dto/pagination.dto';
+import { FilterClientDto } from './dto/filter-client.dto';
 import { PaginatedResponseDto } from '../common/dto/paginated-response.dto';
 
 @Injectable()
@@ -32,20 +32,30 @@ export class ClientsService {
   }
 
   async findAll(
-    paginationDto: PaginationDto,
+    filterDto: FilterClientDto,
   ): Promise<PaginatedResponseDto<Client>> {
     const {
       page = 1,
       limit = 10,
       sortBy = 'createdAt',
       order = 'ASC',
-    } = paginationDto;
+      search,
+    } = filterDto;
 
-    const [data, total] = await this.clientRepository.findAndCount({
-      skip: (page - 1) * limit,
-      take: limit,
-      order: { [sortBy]: order },
-    });
+    const qb = this.clientRepository.createQueryBuilder('client');
+
+    if (search) {
+      qb.andWhere(
+        '(unaccent(client.name) ILIKE unaccent(:search) OR unaccent(client.email) ILIKE unaccent(:search))',
+        { search: `%${search}%` },
+      );
+    }
+
+    qb.orderBy(`client.${sortBy}`, order)
+      .skip((page - 1) * limit)
+      .take(limit);
+
+    const [data, total] = await qb.getManyAndCount();
 
     return new PaginatedResponseDto(data, total, page, limit);
   }

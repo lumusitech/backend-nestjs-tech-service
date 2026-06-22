@@ -21,6 +21,8 @@ async function runSeeds() {
 
   console.log('Running seeds...');
 
+  await dataSource.query('CREATE EXTENSION IF NOT EXISTS unaccent');
+
   await seedAdmin(dataSource);
   await seedServiceTypes(dataSource);
   await seedTechnicians(dataSource);

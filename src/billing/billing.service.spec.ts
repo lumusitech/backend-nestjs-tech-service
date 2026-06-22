@@ -291,14 +291,14 @@ describe('BillingService', () => {
       });
     });
 
-    it('should apply clientName filter with ILIKE', async () => {
+    it('should apply clientName filter with unaccent', async () => {
       const mockQb = createMockQueryBuilder([mockInvoice], 1);
       mockRepo.createQueryBuilder.mockReturnValue(mockQb);
 
       await service.findAll({ clientName: 'John' });
 
       expect(mockQb.andWhere).toHaveBeenCalledWith(
-        'i.client_name ILIKE :clientName',
+        'unaccent(i.client_name) ILIKE unaccent(:clientName)',
         { clientName: '%John%' },
       );
     });
