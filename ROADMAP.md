@@ -263,9 +263,48 @@ src/
 
 - [x] Seed de admin por defecto
 - [x] Seed de tipos de servicio básicos
+- [x] Seed de técnicos (5 usuarios)
+- [x] Seed de clientes (20 registros)
+- [x] Seed de proveedores (4 registros)
+- [x] Seed de órdenes de trabajo (15 órdenes, varios estados)
+- [x] Seed de tareas, materiales, notas
+- [x] Seed de pagos (9 pagos, varios estados)
+- [x] Seed de facturas (8 facturas)
+- [x] Seed de gastos (12 gastos, varias categorías)
+- [x] Seed de pending items (10 pendientes)
+- [x] Seed de inquiries (10 consultas, varios estados)
+- [x] Seed de notificaciones (14 notificaciones, 7 unread)
 - [x] Migraciones (TypeORM)
+- [x] `pnpm db:reset` — resetea toda la DB al estado seed
 
-> Datos iniciales para arrancar. Migraciones para cambios en el esquema.
+> Datos iniciales para arrancar. Migraciones para cambios en el esquema. `pnpm db:reset` para volver al estado inicial.
+
+---
+
+### 16. `pending-items/` — Trabajo Pendiente
+
+- [x] PendingItem entity (title, description, dueDate, type, priority, status, referenceType, referenceId, assignedToId, createdById, completedAt)
+- [x] Enums: PendingItemType, PendingItemPriority, PendingItemStatus
+- [x] DTOs: CreatePendingItemDto, UpdatePendingItemDto, FilterPendingItemDto
+- [x] Service: CRUD + validación por rol (technician solo referenceType=work_order y asignado)
+- [x] Controller: endpoints REST con guards
+- [x] Cron job diario (8:00 AM): buscar pendientes con dueDate <= mañana, crear notificaciones
+- [x] Nuevos tipos de notificación: pending_item.created, pending_item.due_today, pending_item.overdue
+- [x] Tests unitarios (21 tests)
+- [x] Seed de datos (10 pendientes)
+
+---
+
+### 17. `inquiries/` — Consultas de Clientes
+
+- [x] Inquiry entity (clientName, clientPhone, clientEmail, clientAddress, description, source, status, priority, assignedToId, createdById, technicianNotes, estimatedCost, estimatedDuration, materialsNeeded, recommendation, adminDecision, adminNotes, workOrderId, contactedAt, reviewedAt)
+- [x] Enums: InquirySource, InquiryStatus, InquiryRecommendation, InquiryDecision
+- [x] DTOs: CreateInquiryDto, UpdateInquiryDto, FilterInquiryDto, ContactInquiryDto
+- [x] Service: CRUD + workflow de estados + lógica de convert (crear Work Order)
+- [x] Controller: endpoints REST con guards
+- [x] Nuevos tipos de notificación: inquiry.created, inquiry.assigned, inquiry.contacted, inquiry.reviewed
+- [x] Tests unitarios (22 tests)
+- [x] Seed de datos (10 consultas, varios estados)
 
 ---
 
@@ -274,22 +313,35 @@ src/
 ```text
 User (admin | technician)
   │
-  └──<< WorkOrder (ManyToMany — múltiples técnicos por orden)
+  ├──<< WorkOrder (ManyToMany — múltiples técnicos por orden)
+  ├──< Notification (userId, type, isRead)
+  ├──< UserPreference (theme, language, dashboardLayout)
+  └──< PendingItem (assignedTo, createdBy)
 
-Client (internetProvider, internetPlan)
+Client (internetProvider, internetPlan, cuit, ivaCondition)
   │
   └──< WorkOrder (client)
           │
           ├──< WorkOrderNote (type, content, createdAt)
           ├──< WorkOrderMaterial (description, qty, unitCost, supplier?)
-          ├──< Task (title, isCompleted)
+          ├──< Task (title, isCompleted, assignedTo)
           ├──< Payment (amount, method, status, provider)
-          ├──< Invoice (number, type, cae, total)
-          └─── Alert (type, isRead)
+          └──< Invoice (number, type, cae, total)
 
 Supplier
   │
   └──< WorkOrderMaterial (opcional)
+
+Inquiry (clientName, source, status, priority, recommendation, adminDecision)
+  │
+  ├── Created by User
+  ├── Assigned to User
+  └── Converts to WorkOrder (opcional)
+
+PendingItem (title, dueDate, type, priority, status)
+  │
+  ├── Created by User
+  └── Assigned to User
 
 Expense (amount, category, date)  ← gastos operativos generales
 ```
@@ -308,7 +360,7 @@ Expense (amount, category, date)  ← gastos operativos generales
 | Roles         | admin, technician                       | Admin acceso total, technician solo sus órdenes      |
 | Clientes      | No se registran                         | Acceden por portal público con código de seguimiento |
 | Pagos         | MercadoPago (strategy pattern)          | Abierto a otros providers si se necesita             |
-| Facturación   | ARCA/AFIP (planificado)                 | Entidades e interfaz listas, implementación después  |
+| Facturación   | ARCA/AFIP (stub + PDFs)                | Interfaz + entidades + flujo admin + PDFs. Stub listo para WSFEv1 |
 | QR            | Frontend (Angular)                      | El backend solo devuelve la URL                      |
 | Calendario    | Fechas en work orders                   | No se necesita módulo aparte                         |
 | Contactos     | clients + suppliers + users             | No se necesita módulo de contactos aparte            |
@@ -339,6 +391,8 @@ Expense (amount, category, date)  ← gastos operativos generales
 14. ✅ `database` — seeds y migraciones
 15. ✅ `testing` — tests unitarios, e2e y aceptación (por módulo)
 16. ✅ `swagger` — documentación OpenAPI + CORS + prefijo /api/
+17. ✅ `pending-items` — CRUD + cron job + notificaciones
+18. ✅ `inquiries` — CRUD + workflow de estados + convert a Work Order
 
 ---
 

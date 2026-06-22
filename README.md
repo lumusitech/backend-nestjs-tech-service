@@ -190,13 +190,29 @@ pnpm start:dev
 ### 🧪 Testing
 
 ```bash
-pnpm lint
+pnpm test:unit          # Unit tests (sin DB)
+pnpm test:e2e           # E2E tests (requiere PostgreSQL)
+pnpm test:acceptance    # Acceptance tests
+pnpm test:all           # Todos
+pnpm test:unit:cov      # Coverage
 ```
 
 ### 🧹 Lint
 
 ```bash
 pnpm lint
+```
+
+### 🗑️ Reset de base de datos
+
+```bash
+pnpm db:reset           # Truncatea todo y re-seedea
+```
+
+### 🌱 Seed manual
+
+```bash
+pnpm seed               # Ejecuta seeds (idempotente)
 ```
 
 ---

@@ -2,12 +2,14 @@
 
 ## Estado actual
 
-- NestJS 11, TypeORM, PostgreSQL 16
-- 16 módulos implementados con tests
-- 270+ tests unitarios, 11 e2e, 2 acceptance
+- NestJS 11, TypeORM, PostgreSQL 16, TypeScript 6
+- 18 módulos implementados con tests
+- 314+ tests unitarios, 11 e2e, 2 acceptance
 - JWT auth con roles (admin, technician)
 - WebSocket (Socket.IO) para notificaciones in-app
 - EventEmitter2 para desacoplamiento de eventos
+- pnpm como gestor de paquetes
+- db:reset para resetear la DB al estado seed
 
 ## PRs Abiertos (pendientes de merge)
 
@@ -15,55 +17,37 @@
 | --- | --------------------------- | ------------------------------- | ------ |
 | 41  | workOrder relation en pagos | fix/payments-workorder-relation | Open   |
 
-## Próxima Feature: Pending Items + Inquiries
+## Módulos completados
 
-### Módulo: pending-items
+1. ✅ common — BaseEntity, DTOs, filtros globales
+2. ✅ auth + users — JWT, roles, guards, login
+3. ✅ clients — CRUD
+4. ✅ suppliers — CRUD
+5. ✅ service-types — catálogo
+6. ✅ work-orders — core (trackingCode, notes, materials, tasks, payments, technicians)
+7. ✅ tasks — subtareas
+8. ✅ payments — MercadoPago + tarjetas (strategy pattern)
+9. ✅ finances — gastos operativos
+10. ✅ notifications — notificaciones in-app (WebSocket + EventEmitter)
+11. ✅ billing — facturación ARCA/AFIP (stub + PDFs)
+12. ✅ reports — reportes financieros (BFF + PDFs)
+13. ✅ portal — portal público (sin auth)
+14. ✅ database — seeds + migraciones + db:reset
+15. ✅ testing — tests unitarios, e2e, acceptance
+16. ✅ swagger — documentación OpenAPI
+17. ✅ pending-items — CRUD + cron job + notificaciones
+18. ✅ inquiries — CRUD + workflow de estados + convert a Work Order
 
-- [ ] Instalar @nestjs/schedule
-- [ ] Crear módulo pending-items:
-  - [ ] Entity PendingItem (title, description, dueDate, type, priority, status, referenceType, referenceId, assignedToId, createdById, completedAt)
-  - [ ] Enums: PendingItemType, PendingItemPriority, PendingItemStatus
-  - [ ] DTOs: CreatePendingItemDto, UpdatePendingItemDto, FilterPendingItemDto
-  - [ ] Service: CRUD + validación por rol (technician solo referenceType=work_order y asignado)
-  - [ ] Controller: endpoints REST con guards
-  - [ ] Cron job diario (8:00 AM): buscar pendientes con dueDate <= mañana, crear notificaciones
-- [ ] Nuevos tipos de notificación: pending_item.created, pending_item.due_today, pending_item.overdue
-- [ ] Tests unitarios
+## Documentación actualizada
 
-### Módulo: inquiries
+- [x] README.md — scripts, testing, db:reset, TypeScript 6
+- [x] ROADMAP.md — módulos completados, secciones pending-items e inquiries
+- [x] AGENTS.md — módulos completados, pnpm
+- [x] TODO.md — este archivo
 
-- [ ] Crear módulo inquiries:
-  - [ ] Entity Inquiry (clientName, clientPhone, clientEmail, clientAddress, description, source, status, priority, assignedToId, createdById, technicianNotes, estimatedCost, estimatedDuration, materialsNeeded, recommendation, adminDecision, adminNotes, workOrderId, contactedAt, reviewedAt)
-  - [ ] Enums: InquirySource, InquiryStatus, InquiryRecommendation, InquiryDecision
-  - [ ] DTOs: CreateInquiryDto, UpdateInquiryDto, FilterInquiryDto, ContactInquiryDto
-  - [ ] Service: CRUD + workflow de estados + lógica de convert (crear Work Order con datos de la inquiry)
-  - [ ] Controller: endpoints REST con guards
-- [ ] Nuevos tipos de notificación: inquiry.created, inquiry.assigned, inquiry.contacted, inquiry.reviewed
-- [ ] Tests unitarios
+## Próximos pasos (backend)
 
-## Documentación por actualizar
-
-- [ ] README.md:
-  - [ ] TypeScript version "5" → "6"
-  - [ ] Fix testing section (agregar test:unit, test:e2e, test:acceptance, test:all, test:unit:cov)
-  - [ ] Agregar env vars section completa
-  - [ ] Documentar pnpm seed
-  - [ ] Documentar test DB setup (.env.test, techservice_test)
-- [ ] ROADMAP.md:
-  - [ ] Angular version "21+" → "22"
-  - [ ] Agregar FilterUserDto a users section
-  - [ ] Agregar DELETE /users/:id/hard
-  - [ ] Agregar GET /payments global
-  - [ ] Documentar login response (incluye user data)
-  - [ ] Actualizar seeds section
-  - [ ] Fix entities diagram (Alert → Notification, Invoice + paymentId)
-  - [ ] Facturación: "planificado" → "implementado (stub + PDFs)"
-  - [ ] Clarificar MercadoPago (SDK ya instalado, funcional)
-  - [ ] Agregar secciones pending-items e inquiries
-- [ ] AGENTS.md:
-  - [ ] Angular version "21+" → "22"
-  - [ ] Checkmarks a módulos 1-8
-  - [ ] Agregar FilterUserDto
-  - [ ] Agregar global payments
-  - [ ] Fix MercadoPago SDK name (@mercadopago/sdk-node → mercadopago)
-  - [ ] Documentar login response y seeds
+- Completar integración MercadoPago (SDK parcialmente implementado)
+- Conectar ARCA/AFIP real (stub actual)
+- Agregar tests e2e para inquiries
+- Agregar tests e2e para pending-items
