@@ -49,22 +49,24 @@ Arquitectura modular estándar de NestJS. Cada módulo encapsula su propio contr
 
 ## Módulos (orden de implementación)
 
-1. common — BaseEntity, DTOs, filtros globales
-2. auth + users — JWT, roles (admin, technician), guards
-3. clients — CRUD (con internetProvider, internetPlan)
-4. suppliers — CRUD proveedores
-5. service-types — catálogo de servicios
-6. work-orders — CORE (trackingCode, notes, materials, tasks, payments, invoices)
-7. tasks — subtareas de work orders
-8. payments — MercadoPago (strategy pattern)
+1. ✅ common — BaseEntity, DTOs, filtros globales
+2. ✅ auth + users — JWT, roles (admin, technician), guards
+3. ✅ clients — CRUD (con internetProvider, internetPlan)
+4. ✅ suppliers — CRUD proveedores
+5. ✅ service-types — catálogo de servicios
+6. ✅ work-orders — CORE (trackingCode, notes, materials, tasks, payments, invoices)
+7. ✅ tasks — subtareas de work orders
+8. ✅ payments — MercadoPago (strategy pattern)
 9. ✅ finances — gastos operativos
 10. ✅ notifications — notificaciones in-app (WebSocket + EventEmitter)
 11. ✅ billing — ARCA/AFIP (stub + PDFs, interfaz lista para WSFEv1)
 12. ✅ reports — ingresos/gastos/ganancias por período (BFF + PDFs con pdfkit)
 13. ✅ portal — público sin auth, tracking por código/QR
 14. ✅ database — seeds y migraciones
-15. ✅ testing — unit tests (270), e2e, acceptance tests
+15. ✅ testing — unit tests (314+), e2e, acceptance tests
 16. ✅ swagger — documentación OpenAPI + CORS + prefijo /api/
+17. ✅ pending-items — CRUD + cron job + notificaciones
+18. ✅ inquiries — CRUD + workflow de estados + convert a Work Order
 
 ## Roles
 
