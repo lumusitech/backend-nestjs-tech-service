@@ -115,6 +115,7 @@ export class WorkOrdersService {
       limit = 10,
       sortBy = 'createdAt',
       order = 'ASC',
+      search,
       status,
       priority,
       clientId,
@@ -129,6 +130,13 @@ export class WorkOrdersService {
       .leftJoinAndSelect('wo.client', 'client')
       .leftJoinAndSelect('wo.serviceType', 'serviceType')
       .leftJoinAndSelect('wo.technicians', 'technicians');
+
+    if (search) {
+      qb.andWhere(
+        '(wo.tracking_code ILIKE unaccent(:search) OR unaccent(client.name) ILIKE unaccent(:search))',
+        { search: `%${search}%` },
+      );
+    }
 
     if (status) {
       qb.andWhere('wo.status = :status', { status });
