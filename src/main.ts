@@ -1,6 +1,7 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory, Reflector } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import helmet from 'helmet';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
@@ -9,8 +10,16 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // Security headers
+  app.use(helmet());
+
+  // CORS — configurable via CORS_ORIGINS env var (comma-separated)
+  const corsOrigins = (
+    process.env.CORS_ORIGINS || 'http://localhost:4200'
+  ).split(',');
+
   app.enableCors({
-    origin: ['http://localhost:4200'],
+    origin: corsOrigins,
     credentials: true,
   });
 
