@@ -21,6 +21,9 @@ export async function seedTestData(app: INestApplication): Promise<SeedData> {
   // Run migrations
   await dataSource.runMigrations();
 
+  // Cleanup first to ensure idempotency
+  await cleanupDatabase(app);
+
   // Seed admin user
   const adminRepo = dataSource.getRepository(User);
   const hashedPassword = await bcrypt.hash('test123', 10);
@@ -60,6 +63,7 @@ export async function seedTestData(app: INestApplication): Promise<SeedData> {
   const supplier = await supplierRepo.save(
     supplierRepo.create({
       name: 'Test Supplier',
+      contact: 'Test Contact',
       email: 'supplier@test.com',
       phone: '+54 11 2222-2222',
       address: 'Supplier Address 456',
@@ -83,7 +87,11 @@ export async function cleanupDatabase(app: INestApplication): Promise<void> {
   const dataSource = app.get(DataSource);
   const entities = dataSource.entityMetadatas;
 
+  // Skip TypeORM internal tables
+  const skipTables = ['migrations', 'type_metadata'];
+
   for (const entity of entities) {
+    if (skipTables.includes(entity.tableName)) continue;
     const repo = dataSource.getRepository(entity.name);
     await repo.query(`TRUNCATE TABLE "${entity.tableName}" CASCADE`);
   }

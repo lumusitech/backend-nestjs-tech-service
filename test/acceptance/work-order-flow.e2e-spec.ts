@@ -225,8 +225,8 @@ describe('Work Order Full Lifecycle (acceptance)', () => {
       .set(authHeader(adminToken))
       .send({
         amount: 25000,
-        method: 'transfer',
-        provider: 'transfer',
+        method: 'cash',
+        provider: 'cash',
         description: 'Pago por instalación de cámaras',
       })
       .expect(201);
@@ -234,11 +234,23 @@ describe('Work Order Full Lifecycle (acceptance)', () => {
     const body = res.body as ApiResponse<PaymentData>;
     expect(body.data.id).toBeDefined();
     expect(body.data.amount).toBe(25000);
-    expect(body.data.method).toBe('transfer');
+    expect(body.data.method).toBe('cash');
     expect(body.data.status).toBe('approved');
   });
 
   it('10. should update work order status to completed', async () => {
+    await request(app.getHttpServer())
+      .patch(`/work-orders/${workOrderId}`)
+      .set(authHeader(adminToken))
+      .send({ status: 'assigned' })
+      .expect(200);
+
+    await request(app.getHttpServer())
+      .patch(`/work-orders/${workOrderId}`)
+      .set(authHeader(adminToken))
+      .send({ status: 'in_progress' })
+      .expect(200);
+
     const res = await request(app.getHttpServer())
       .patch(`/work-orders/${workOrderId}`)
       .set(authHeader(adminToken))

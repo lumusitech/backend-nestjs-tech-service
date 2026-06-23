@@ -1,7 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { createTestApp } from './helpers/app.helper';
-import { seedTestData } from './helpers/seed.helper';
+import { seedTestData, cleanupDatabase } from './helpers/seed.helper';
 
 describe('Auth (e2e)', () => {
   let app: INestApplication;
@@ -12,6 +12,7 @@ describe('Auth (e2e)', () => {
   });
 
   afterAll(async () => {
+    await cleanupDatabase(app);
     await app.close();
   });
 

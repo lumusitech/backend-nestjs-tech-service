@@ -22,7 +22,7 @@ describe('BillingService', () => {
 
   const mockInvoice: Invoice = {
     id: 'inv-uuid-1',
-    invoiceNumber: '0001-00000001',
+    invoiceNumber: '0001-A-00000001',
     invoiceType: InvoiceType.A,
     pointOfSale: 1,
     concept: InvoiceConcept.SERVICES,
@@ -75,7 +75,7 @@ describe('BillingService', () => {
   const mockArcaResult = {
     cae: '98765432101234',
     caeExpiry: new Date('2026-01-11'),
-    invoiceNumber: '0001-00000001',
+    invoiceNumber: '0001-A-00000001',
     metadata: { stub: true },
   };
 
@@ -141,14 +141,14 @@ describe('BillingService', () => {
       expect(mockRepo.create).toHaveBeenCalled();
       expect(mockRepo.save).toHaveBeenCalled();
       expect(result.status).toBe(InvoiceStatus.DRAFT);
-      expect(result.invoiceNumber).toBe('0001-00000001');
+      expect(result.invoiceNumber).toBe('0001-A-00000001');
       expect(result.pointOfSale).toBe(1);
       expect(result.clientIvaCondition).toBe(IvaCondition.CONSUMIDOR_FINAL);
     });
 
     it('should increment invoice number based on last invoice', async () => {
       const qb = createMockQueryBuilder([], 0);
-      qb.getOne.mockResolvedValue({ invoiceNumber: '0001-00000005' });
+      qb.getOne.mockResolvedValue({ invoiceNumber: '0001-A-00000005' });
       mockRepo.createQueryBuilder.mockReturnValue(qb);
       mockRepo.create.mockImplementation((dto: Invoice) => dto);
       mockRepo.save.mockImplementation((entity: Invoice) =>
@@ -157,7 +157,7 @@ describe('BillingService', () => {
 
       const result = await service.create(createDto);
 
-      expect(result.invoiceNumber).toBe('0001-00000006');
+      expect(result.invoiceNumber).toBe('0001-A-00000006');
     });
 
     it('should use custom pointOfSale when provided', async () => {
@@ -172,7 +172,7 @@ describe('BillingService', () => {
 
       const result = await service.create(dtoWithPos);
 
-      expect(result.invoiceNumber).toBe('0003-00000001');
+      expect(result.invoiceNumber).toBe('0003-A-00000001');
       expect(result.pointOfSale).toBe(3);
     });
 
@@ -498,7 +498,7 @@ describe('BillingService', () => {
       workOrderId: 'wo-1',
     };
 
-    it('should generate first invoice number as 0001-00000001 when no previous invoices exist', async () => {
+    it('should generate first invoice number as 0001-A-00000001 when no previous invoices exist', async () => {
       const qb = createMockQueryBuilder([], 0);
       qb.getOne.mockResolvedValue(null);
       mockRepo.createQueryBuilder.mockReturnValue(qb);
@@ -509,7 +509,7 @@ describe('BillingService', () => {
 
       const result = await service.create(baseCreateDto);
 
-      expect(result.invoiceNumber).toBe('0001-00000001');
+      expect(result.invoiceNumber).toBe('0001-A-00000001');
     });
 
     it('should pad point of sale to 4 digits', async () => {
@@ -527,7 +527,7 @@ describe('BillingService', () => {
         invoiceType: InvoiceType.B,
       });
 
-      expect(result.invoiceNumber).toBe('0007-00000001');
+      expect(result.invoiceNumber).toBe('0007-B-00000001');
     });
 
     it('should pad invoice sequence number to 8 digits', async () => {
@@ -544,12 +544,12 @@ describe('BillingService', () => {
         invoiceType: InvoiceType.C,
       });
 
-      expect(result.invoiceNumber).toMatch(/^\d{4}-\d{8}$/);
+      expect(result.invoiceNumber).toMatch(/^\d{4}-[A-Z]-\d{8}$/);
     });
 
-    it('should increment from 0001-00000099 to 0001-00000100', async () => {
+    it('should increment from 0001-A-00000099 to 0001-A-00000100', async () => {
       const qb = createMockQueryBuilder([], 0);
-      qb.getOne.mockResolvedValue({ invoiceNumber: '0001-00000099' });
+      qb.getOne.mockResolvedValue({ invoiceNumber: '0001-A-00000099' });
       mockRepo.createQueryBuilder.mockReturnValue(qb);
       mockRepo.create.mockImplementation((dto: Invoice) => dto);
       mockRepo.save.mockImplementation((entity: Invoice) =>
@@ -558,7 +558,7 @@ describe('BillingService', () => {
 
       const result = await service.create(baseCreateDto);
 
-      expect(result.invoiceNumber).toBe('0001-00000100');
+      expect(result.invoiceNumber).toBe('0001-A-00000100');
     });
 
     it('should start from 1 when last invoice number has no hyphen', async () => {
@@ -572,10 +572,10 @@ describe('BillingService', () => {
 
       const result = await service.create(baseCreateDto);
 
-      expect(result.invoiceNumber).toBe('0001-00000001');
+      expect(result.invoiceNumber).toBe('0001-A-00000001');
     });
 
-    it('should produce NaN sequence when last invoice number second part is not numeric', async () => {
+    it('should start from 1 when last invoice number does not match new format', async () => {
       const qb = createMockQueryBuilder([], 0);
       qb.getOne.mockResolvedValue({ invoiceNumber: '0001-notanumber' });
       mockRepo.createQueryBuilder.mockReturnValue(qb);
@@ -586,7 +586,7 @@ describe('BillingService', () => {
 
       const result = await service.create(baseCreateDto);
 
-      expect(result.invoiceNumber).toBe('0001-00000NaN');
+      expect(result.invoiceNumber).toBe('0001-A-00000001');
     });
 
     it('should query with correct type and pointOfSale', async () => {

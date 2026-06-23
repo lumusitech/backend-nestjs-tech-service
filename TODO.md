@@ -4,8 +4,8 @@
 
 - NestJS 11, TypeORM, PostgreSQL 16, TypeScript 6
 - 18 módulos implementados con tests
-- 315 tests unitarios, 11 e2e, 2 acceptance
-- JWT auth con roles (admin, technician)
+- 315 tests unitarios, 252 e2e (16 suites), 2 acceptance
+- JWT auth global (JwtAuthGuard) con roles (admin, technician)
 - WebSocket (Socket.IO) para notificaciones in-app
 - EventEmitter2 para desacoplamiento de eventos
 - pnpm como gestor de paquetes
@@ -14,9 +14,7 @@
 
 ## PRs Abiertos (pendientes de merge)
 
-| #   | Título                                        | Branch                        | Estado |
-| --- | --------------------------------------------- | ----------------------------- | ------ |
-| 64  | feat: accent-insensitive search + billing search | feat/search-unaccent-billing | Open   |
+Ninguno — todos los PRs mergeados.
 
 ## Módulos completados
 
@@ -50,8 +48,6 @@
 
 - Completar integración MercadoPago (SDK parcialmente implementado)
 - Conectar ARCA/AFIP real (stub actual)
-- Agregar tests e2e para inquiries
-- Agregar tests e2e para pending-items
 
 ## Mejoras a futuro
 

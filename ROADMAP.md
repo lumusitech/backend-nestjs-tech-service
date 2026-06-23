@@ -418,7 +418,7 @@ Expense (amount, category, date)  ← gastos operativos generales
 - [x] `eslint.config.mjs` — overrides para archivos de test (relaxed rules)
 - [x] `package.json` — scripts: `test:unit`, `test:e2e`, `test:acceptance`, `test:all`
 
-#### Unit tests (270 tests, 13 suites) ✅
+#### Unit tests (315 tests, 16 suites) ✅
 
 - [x] `auth/` — validateUser, login, register (11 tests)
 - [x] `users/` — CRUD, findByEmail (15 tests)
@@ -432,8 +432,11 @@ Expense (amount, category, date)  ← gastos operativos generales
 - [x] `billing/` — CRUD, issue, cancel, invoice number gen (33 tests)
 - [x] `reports/` — all report methods (27 tests)
 - [x] `portal/` — trackByCode, paymentSummary (18 tests)
+- [x] `pending-items/` — CRUD, cron job, notifications (21 tests)
+- [x] `inquiries/` — CRUD, workflow, convert (22 tests)
+- [x] `user-preferences/` — CRUD, preferences (13 tests)
 
-#### E2E tests (11 spec files) ✅
+#### E2E tests (16 spec files, 252 tests) ✅
 
 - [x] `auth.e2e-spec.ts` — login, register, credentials
 - [x] `clients.e2e-spec.ts` — full CRUD, auth/roles
@@ -446,6 +449,8 @@ Expense (amount, category, date)  ← gastos operativos generales
 - [x] `billing.e2e-spec.ts` — create, issue, cancel, PDF
 - [x] `reports.e2e-spec.ts` — all endpoints, PDFs
 - [x] `portal.e2e-spec.ts` — public tracking
+- [x] `inquiries.e2e-spec.ts` — CRUD, workflow (contact, review, convert), roles
+- [x] `pending-items.e2e-spec.ts` — CRUD, filters, technician restrictions, roles
 
 #### Acceptance tests (2 spec files) ✅
 

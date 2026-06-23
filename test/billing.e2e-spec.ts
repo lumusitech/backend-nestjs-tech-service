@@ -150,7 +150,7 @@ describe('Billing (e2e)', () => {
           subtotal: 100,
           total: 100,
         })
-        .expect(403);
+        .expect(401);
     });
   });
 
@@ -214,7 +214,7 @@ describe('Billing (e2e)', () => {
     });
 
     it('should fail without auth', async () => {
-      await request(app.getHttpServer()).get('/billing/invoices').expect(403);
+      await request(app.getHttpServer()).get('/billing/invoices').expect(401);
     });
   });
 
