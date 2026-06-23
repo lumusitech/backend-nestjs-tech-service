@@ -10,6 +10,9 @@ import { CreateSupplierDto } from './dto/create-supplier.dto';
 import { UpdateSupplierDto } from './dto/update-supplier.dto';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { PaginatedResponseDto } from '../common/dto/paginated-response.dto';
+import { validateSortBy } from '../common/utils/sort-by.util';
+
+const ALLOWED_SORT_COLUMNS = ['createdAt', 'name', 'contact', 'email'] as const;
 
 @Injectable()
 export class SuppliersService {
@@ -43,10 +46,11 @@ export class SuppliersService {
       order = 'ASC',
     } = paginationDto;
 
+    const safeSortBy = validateSortBy(sortBy, ALLOWED_SORT_COLUMNS, 'createdAt');
     const [data, total] = await this.supplierRepository.findAndCount({
       skip: (page - 1) * limit,
       take: limit,
-      order: { [sortBy]: order },
+      order: { [safeSortBy]: order },
     });
 
     return new PaginatedResponseDto(data, total, page, limit);

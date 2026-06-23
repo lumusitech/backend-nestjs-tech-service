@@ -17,8 +17,12 @@ interface SocketData {
   userId?: string;
 }
 
+const corsOrigins = (process.env.CORS_ORIGINS || 'http://localhost:4200').split(
+  ',',
+);
+
 @WebSocketGateway({
-  cors: { origin: '*' },
+  cors: { origin: corsOrigins },
 })
 export class NotificationsGateway
   implements OnGatewayConnection, OnGatewayDisconnect

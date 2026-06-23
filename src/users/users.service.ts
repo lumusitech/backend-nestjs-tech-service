@@ -11,6 +11,9 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { FilterUserDto } from './dto/filter-user.dto';
 import { PaginatedResponseDto } from '../common/dto/paginated-response.dto';
+import { validateSortBy } from '../common/utils/sort-by.util';
+
+const ALLOWED_SORT_COLUMNS = ['createdAt', 'name', 'email', 'role'] as const;
 
 @Injectable()
 export class UsersService {
@@ -63,11 +66,12 @@ export class UsersService {
 
     const where = role ? { role } : {};
 
+    const safeSortBy = validateSortBy(sortBy, ALLOWED_SORT_COLUMNS, 'createdAt');
     const [data, total] = await this.userRepository.findAndCount({
       where,
       skip: (page - 1) * limit,
       take: limit,
-      order: { [sortBy]: order },
+      order: { [safeSortBy]: order },
     });
 
     return new PaginatedResponseDto(data, total, page, limit);

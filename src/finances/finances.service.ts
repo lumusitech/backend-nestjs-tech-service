@@ -6,6 +6,9 @@ import { CreateExpenseDto } from './dto/create-expense.dto';
 import { UpdateExpenseDto } from './dto/update-expense.dto';
 import { FilterExpenseDto } from './dto/filter-expense.dto';
 import { PaginatedResponseDto } from '../common/dto/paginated-response.dto';
+import { validateSortBy } from '../common/utils/sort-by.util';
+
+const ALLOWED_SORT_COLUMNS = ['createdAt', 'amount', 'category', 'date', 'description'] as const;
 
 @Injectable()
 export class FinancesService {
@@ -51,7 +54,8 @@ export class FinancesService {
       qb.andWhere('e.is_recurring = :isRecurring', { isRecurring });
     }
 
-    qb.orderBy(`e.${sortBy}`, order)
+    const safeSortBy = validateSortBy(sortBy, ALLOWED_SORT_COLUMNS, 'createdAt');
+    qb.orderBy(`e.${safeSortBy}`, order)
       .skip((page - 1) * limit)
       .take(limit);
 

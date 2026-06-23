@@ -14,6 +14,9 @@ import { InvoiceStatus } from './enums/invoice-status.enum';
 import { IvaCondition } from './enums/iva-condition.enum';
 import { ArcaProvider } from './providers/arca.provider';
 import { PaginatedResponseDto } from '../common/dto/paginated-response.dto';
+import { validateSortBy } from '../common/utils/sort-by.util';
+
+const ALLOWED_SORT_COLUMNS = ['createdAt', 'invoiceNumber', 'invoiceType', 'status', 'clientName', 'total'] as const;
 
 @Injectable()
 export class BillingService {
@@ -94,7 +97,8 @@ export class BillingService {
       });
     }
 
-    qb.orderBy(`i.${sortBy}`, order)
+    const safeSortBy = validateSortBy(sortBy, ALLOWED_SORT_COLUMNS, 'createdAt');
+    qb.orderBy(`i.${safeSortBy}`, order)
       .skip((page - 1) * limit)
       .take(limit);
 

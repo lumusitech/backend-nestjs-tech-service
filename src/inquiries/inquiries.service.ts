@@ -13,6 +13,7 @@ import { FilterInquiryDto } from './dto/filter-inquiry.dto';
 import { ContactInquiryDto } from './dto/contact-inquiry.dto';
 import { InquiryStatus } from './enums/inquiry-status.enum';
 import { PaginatedResponseDto } from '../common/dto/paginated-response.dto';
+import { validateSortBy } from '../common/utils/sort-by.util';
 import { User } from '../users/entities/user.entity';
 import { UserRole } from '../users/enums/user-role.enum';
 import {
@@ -21,6 +22,8 @@ import {
   InquiryContactedEvent,
   InquiryReviewedEvent,
 } from '../notifications/events/notification.events';
+
+const ALLOWED_SORT_COLUMNS = ['createdAt', 'clientName', 'status', 'priority', 'source'] as const;
 
 @Injectable()
 export class InquiriesService {
@@ -110,7 +113,8 @@ export class InquiriesService {
       qb.andWhere('i.created_at <= :dateTo', { dateTo });
     }
 
-    qb.orderBy(`i.${sortBy}`, order)
+    const safeSortBy = validateSortBy(sortBy, ALLOWED_SORT_COLUMNS, 'createdAt');
+    qb.orderBy(`i.${safeSortBy}`, order)
       .skip((page - 1) * limit)
       .take(limit);
 

@@ -17,10 +17,13 @@ import { MercadoPagoProvider } from './providers/mercadopago.provider';
 import { CashProvider } from './providers/cash.provider';
 import { TransferProvider } from './providers/transfer.provider';
 import { PaginatedResponseDto } from '../common/dto/paginated-response.dto';
+import { validateSortBy } from '../common/utils/sort-by.util';
 import {
   PaymentCreatedEvent,
   PaymentStatusChangedEvent,
 } from '../notifications/events/notification.events';
+
+const ALLOWED_SORT_COLUMNS = ['createdAt', 'amount', 'method', 'status', 'paidAt'] as const;
 
 @Injectable()
 export class PaymentsService {
@@ -126,7 +129,8 @@ export class PaymentsService {
       qb.andWhere('p.created_at <= :dateTo', { dateTo });
     }
 
-    qb.orderBy(`p.${sortBy}`, order)
+    const safeSortBy = validateSortBy(sortBy, ALLOWED_SORT_COLUMNS, 'createdAt');
+    qb.orderBy(`p.${safeSortBy}`, order)
       .skip((page - 1) * limit)
       .take(limit);
 
@@ -169,7 +173,8 @@ export class PaymentsService {
       qb.andWhere('p.created_at <= :dateTo', { dateTo });
     }
 
-    qb.orderBy(`p.${sortBy}`, order)
+    const safeSortBy = validateSortBy(sortBy, ALLOWED_SORT_COLUMNS, 'createdAt');
+    qb.orderBy(`p.${safeSortBy}`, order)
       .skip((page - 1) * limit)
       .take(limit);
 

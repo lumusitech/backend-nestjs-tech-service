@@ -10,6 +10,9 @@ import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
 import { FilterClientDto } from './dto/filter-client.dto';
 import { PaginatedResponseDto } from '../common/dto/paginated-response.dto';
+import { validateSortBy } from '../common/utils/sort-by.util';
+
+const ALLOWED_SORT_COLUMNS = ['createdAt', 'name', 'email', 'phone', 'address'] as const;
 
 @Injectable()
 export class ClientsService {
@@ -42,6 +45,8 @@ export class ClientsService {
       search,
     } = filterDto;
 
+    const safeSortBy = validateSortBy(sortBy, ALLOWED_SORT_COLUMNS, 'createdAt');
+
     const qb = this.clientRepository.createQueryBuilder('client');
 
     if (search) {
@@ -51,7 +56,7 @@ export class ClientsService {
       );
     }
 
-    qb.orderBy(`client.${sortBy}`, order)
+    qb.orderBy(`client.${safeSortBy}`, order)
       .skip((page - 1) * limit)
       .take(limit);
 
