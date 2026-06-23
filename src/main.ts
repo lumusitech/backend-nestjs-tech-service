@@ -10,6 +10,9 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // Graceful shutdown
+  app.enableShutdownHooks();
+
   // Security headers
   app.use(helmet());
 

@@ -13,6 +13,7 @@ import { UpdatePendingItemDto } from './dto/update-pending-item.dto';
 import { FilterPendingItemDto } from './dto/filter-pending-item.dto';
 import { PendingItemStatus } from './enums/pending-item-status.enum';
 import { PaginatedResponseDto } from '../common/dto/paginated-response.dto';
+import { validateSortBy } from '../common/utils/sort-by.util';
 import { User } from '../users/entities/user.entity';
 import { UserRole } from '../users/enums/user-role.enum';
 import {
@@ -20,6 +21,8 @@ import {
   PendingItemDueTodayEvent,
   PendingItemOverdueEvent,
 } from '../notifications/events/notification.events';
+
+const ALLOWED_SORT_COLUMNS = ['createdAt', 'dueDate', 'priority', 'status', 'title', 'type'] as const;
 
 @Injectable()
 export class PendingItemsService {
@@ -120,7 +123,8 @@ export class PendingItemsService {
       qb.andWhere('pi.due_date <= :dueDateTo', { dueDateTo });
     }
 
-    qb.orderBy(`pi.${sortBy}`, order)
+    const safeSortBy = validateSortBy(sortBy, ALLOWED_SORT_COLUMNS, 'dueDate');
+    qb.orderBy(`pi.${safeSortBy}`, order)
       .skip((page - 1) * limit)
       .take(limit);
 

@@ -4,7 +4,7 @@
 
 - NestJS 11, TypeORM, PostgreSQL 16, TypeScript 6
 - 19 módulos implementados con tests (incluye health)
-- 315 tests unitarios, 254 e2e (17 suites), 2 acceptance
+- 315 tests unitarios, 260 e2e (18 suites), 2 acceptance
 - JWT auth global (JwtAuthGuard) con roles (admin, technician)
 - Rate limiting global (ThrottlerGuard: 10/s, 50/10s, 200/min)
 - Helmet para security headers
@@ -58,14 +58,14 @@ Ninguno — todos los PRs mergeados.
 ## Mejoras a futuro
 
 ### Seguridad
-- [ ] CORS abierto (*) en WebSocket gateway
+- [x] CORS configurable en WebSocket gateway (usa CORS_ORIGINS env var)
 - [x] Rate limiting (@nestjs/throttler) — 10/s, 50/10s, 200/min por IP
 - [x] Helmet para headers de seguridad
 - [ ] Sin refresh tokens
 
 ### Arquitectura
 - [x] Validación de config en ConfigModule (Joi schema)
-- [ ] sortBy en paginación sin whitelist de columnas permitidas
+- [x] sortBy en paginación con whitelist de columnas permitidas
 - [ ] no-explicit-any: off en ESLint contradice la convención del proyecto
 - [ ] Listener de notificaciones de 379 líneas, podría dividirse por dominio
 
@@ -75,5 +75,5 @@ Ninguno — todos los PRs mergeados.
 
 ### Operaciones
 - [x] Health check endpoint (`/api/health`) — DB ping check
-- [ ] Sin graceful shutdown (SIGTERM/SIGINT)
+- [x] Graceful shutdown (SIGTERM/SIGINT) — enableShutdownHooks()
 - [ ] Sin logging estructurado con requestId/userId

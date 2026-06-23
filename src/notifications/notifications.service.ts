@@ -6,6 +6,9 @@ import { CreateNotificationDto } from './dto/create-notification.dto';
 import { FilterNotificationDto } from './dto/filter-notification.dto';
 import { NotificationsGateway } from './gateways/notifications.gateway';
 import { PaginatedResponseDto } from '../common/dto/paginated-response.dto';
+import { validateSortBy } from '../common/utils/sort-by.util';
+
+const ALLOWED_SORT_COLUMNS = ['createdAt', 'type', 'isRead'] as const;
 
 @Injectable()
 export class NotificationsService {
@@ -82,7 +85,8 @@ export class NotificationsService {
       qb.andWhere('n.is_read = :isRead', { isRead });
     }
 
-    qb.orderBy(`n.${sortBy}`, order)
+    const safeSortBy = validateSortBy(sortBy, ALLOWED_SORT_COLUMNS, 'createdAt');
+    qb.orderBy(`n.${safeSortBy}`, order)
       .skip((page - 1) * limit)
       .take(limit);
 

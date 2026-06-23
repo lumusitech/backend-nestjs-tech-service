@@ -20,6 +20,7 @@ import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { WorkOrderStatus } from '../common/enums/work-order-status.enum';
 import { PaginatedResponseDto } from '../common/dto/paginated-response.dto';
+import { validateSortBy } from '../common/utils/sort-by.util';
 import { User } from '../users/entities/user.entity';
 import {
   WorkOrderCreatedEvent,
@@ -28,6 +29,8 @@ import {
   TaskCreatedEvent,
   TaskCompletedEvent,
 } from '../notifications/events/notification.events';
+
+const ALLOWED_SORT_COLUMNS = ['createdAt', 'updatedAt', 'status', 'priority', 'scheduledDate', 'trackingCode'] as const;
 
 const VALID_TRANSITIONS: Record<WorkOrderStatus, WorkOrderStatus[]> = {
   [WorkOrderStatus.PENDING]: [
@@ -166,7 +169,8 @@ export class WorkOrdersService {
       qb.andWhere('wo.created_at <= :dateTo', { dateTo });
     }
 
-    qb.orderBy(`wo.${sortBy}`, order)
+    const safeSortBy = validateSortBy(sortBy, ALLOWED_SORT_COLUMNS, 'createdAt');
+    qb.orderBy(`wo.${safeSortBy}`, order)
       .skip((page - 1) * limit)
       .take(limit);
 

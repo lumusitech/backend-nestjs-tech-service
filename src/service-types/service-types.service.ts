@@ -10,6 +10,9 @@ import { CreateServiceTypeDto } from './dto/create-service-type.dto';
 import { UpdateServiceTypeDto } from './dto/update-service-type.dto';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { PaginatedResponseDto } from '../common/dto/paginated-response.dto';
+import { validateSortBy } from '../common/utils/sort-by.util';
+
+const ALLOWED_SORT_COLUMNS = ['createdAt', 'name', 'estimatedDuration'] as const;
 
 @Injectable()
 export class ServiceTypesService {
@@ -43,10 +46,11 @@ export class ServiceTypesService {
       order = 'ASC',
     } = paginationDto;
 
+    const safeSortBy = validateSortBy(sortBy, ALLOWED_SORT_COLUMNS, 'createdAt');
     const [data, total] = await this.serviceTypeRepository.findAndCount({
       skip: (page - 1) * limit,
       take: limit,
-      order: { [sortBy]: order },
+      order: { [safeSortBy]: order },
     });
 
     return new PaginatedResponseDto(data, total, page, limit);
