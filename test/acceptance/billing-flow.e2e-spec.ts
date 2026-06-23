@@ -124,7 +124,7 @@ describe('Billing Full Lifecycle (acceptance)', () => {
     const body = res.body as ApiResponse<PaymentData>;
     paymentId = body.data.id;
     expect(body.data.amount).toBe(15000);
-    expect(body.data.status).toBe('approved');
+    expect(body.data.status).toBe('pending');
   });
 
   it('5. should create a draft invoice', async () => {

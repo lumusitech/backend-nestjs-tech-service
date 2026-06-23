@@ -195,11 +195,11 @@ export class BillingService {
     let nextNumber = 1;
     if (lastInvoice) {
       const parts = lastInvoice.invoiceNumber.split('-');
-      if (parts.length === 2) {
-        nextNumber = parseInt(parts[1], 10) + 1;
+      if (parts.length === 3) {
+        nextNumber = parseInt(parts[2], 10) + 1;
       }
     }
 
-    return `${pos}-${String(nextNumber).padStart(8, '0')}`;
+    return `${pos}-${type}-${String(nextNumber).padStart(8, '0')}`;
   }
 }

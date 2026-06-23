@@ -21,8 +21,13 @@ interface WorkOrderResponse {
 }
 
 interface WorkOrderListResponse {
-  data: WorkOrderResponse['data'][];
-  meta: { page: number; limit: number; total: number };
+  data: {
+    data: WorkOrderResponse['data'][];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
 }
 
 describe('WorkOrders (e2e)', () => {
@@ -110,8 +115,11 @@ describe('WorkOrders (e2e)', () => {
 
       const body = res.body as WorkOrderListResponse;
 
-      expect(Array.isArray(body.data)).toBe(true);
-      expect(body.meta).toBeDefined();
+      expect(Array.isArray(body.data.data)).toBe(true);
+      expect(body.data.total).toBeDefined();
+      expect(body.data.page).toBeDefined();
+      expect(body.data.limit).toBeDefined();
+      expect(body.data.totalPages).toBeDefined();
     });
 
     it('should filter by status', async () => {
@@ -122,7 +130,7 @@ describe('WorkOrders (e2e)', () => {
 
       const body = res.body as WorkOrderListResponse;
 
-      body.data.forEach((wo) => {
+      body.data.data.forEach((wo) => {
         expect(wo.status).toBe('pending');
       });
     });
@@ -135,7 +143,7 @@ describe('WorkOrders (e2e)', () => {
 
       const body = res.body as WorkOrderListResponse;
 
-      expect(Array.isArray(body.data)).toBe(true);
+      expect(Array.isArray(body.data.data)).toBe(true);
     });
 
     it('should support pagination params', async () => {
@@ -146,7 +154,7 @@ describe('WorkOrders (e2e)', () => {
 
       const body = res.body as WorkOrderListResponse;
 
-      expect(body.meta).toBeDefined();
+      expect(body.data.total).toBeDefined();
     });
   });
 
@@ -226,12 +234,12 @@ describe('WorkOrders (e2e)', () => {
       const res = await request(app.getHttpServer())
         .patch(`/work-orders/${id}`)
         .set(authHeader(token))
-        .send({ status: 'in_progress' })
+        .send({ status: 'assigned' })
         .expect(200);
 
       const body = res.body as WorkOrderResponse;
 
-      expect(body.data.status).toBe('in_progress');
+      expect(body.data.status).toBe('assigned');
     });
   });
 

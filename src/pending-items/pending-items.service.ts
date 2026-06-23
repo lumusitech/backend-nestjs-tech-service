@@ -51,6 +51,7 @@ export class PendingItemsService {
 
     const item = this.pendingItemRepository.create({
       ...createDto,
+      dueDate: new Date(createDto.dueDate),
       createdById,
     });
 
@@ -170,6 +171,13 @@ export class PendingItemsService {
     }
 
     Object.assign(item, updateDto);
+
+    if (updateDto.dueDate) {
+      item.dueDate = new Date(updateDto.dueDate);
+    }
+    if (updateDto.completedAt) {
+      item.completedAt = new Date(updateDto.completedAt);
+    }
 
     return this.pendingItemRepository.save(item);
   }

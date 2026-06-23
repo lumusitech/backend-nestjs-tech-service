@@ -221,7 +221,7 @@ export class InquiriesService {
     }
 
     inquiry.status = InquiryStatus.CONVERTED;
-    inquiry.workOrderId = '';
+    inquiry.workOrderId = null!;
 
     const saved = await this.inquiryRepository.save(inquiry);
 

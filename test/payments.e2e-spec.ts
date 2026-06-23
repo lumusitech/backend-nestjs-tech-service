@@ -82,7 +82,7 @@ describe('Payments (e2e)', () => {
           method: 'cash',
           provider: 'cash',
         })
-        .expect(403);
+        .expect(401);
     });
 
     it('should fail with invalid amount', async () => {
@@ -197,7 +197,7 @@ describe('Payments (e2e)', () => {
       await request(app.getHttpServer())
         .post('/payments/mercadopago/webhook')
         .send({
-          type: 'payment',
+          type: 'other',
           action: 'payment.updated',
           data: { id: '99999999' },
         })

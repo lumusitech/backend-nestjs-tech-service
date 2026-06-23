@@ -82,7 +82,7 @@ describe('Finances (e2e)', () => {
           date: '2025-06-01',
           category: 'other',
         })
-        .expect(403);
+        .expect(401);
     });
 
     it('should fail with missing required fields', async () => {

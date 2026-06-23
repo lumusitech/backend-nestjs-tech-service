@@ -8,6 +8,7 @@ import {
   Res,
   UseGuards,
   ParseUUIDPipe,
+  HttpCode,
 } from '@nestjs/common';
 import { Response } from 'express';
 import {
@@ -60,6 +61,7 @@ export class BillingController {
   }
 
   @Post('invoices/:id/issue')
+  @HttpCode(200)
   @ApiOperation({ summary: 'Issue an invoice (generate CAE via ARCA)' })
   @ApiResponse({ status: 200, description: 'Invoice issued successfully' })
   @ApiResponse({ status: 404, description: 'Invoice not found' })
@@ -69,6 +71,7 @@ export class BillingController {
   }
 
   @Post('invoices/:id/cancel')
+  @HttpCode(200)
   @ApiOperation({ summary: 'Cancel an invoice' })
   @ApiResponse({ status: 200, description: 'Invoice cancelled successfully' })
   @ApiResponse({ status: 404, description: 'Invoice not found' })
