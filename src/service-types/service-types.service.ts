@@ -46,6 +46,8 @@ export class ServiceTypesService {
       order = 'ASC',
       search,
       isActive,
+      dateFrom,
+      dateTo,
     } = filterDto;
 
     const safeSortBy = validateSortBy(sortBy, ALLOWED_SORT_COLUMNS, 'createdAt');
@@ -61,6 +63,14 @@ export class ServiceTypesService {
 
     if (isActive !== undefined) {
       qb.andWhere('serviceType.isActive = :isActive', { isActive });
+    }
+
+    if (dateFrom) {
+      qb.andWhere('serviceType.created_at >= :dateFrom', { dateFrom });
+    }
+
+    if (dateTo) {
+      qb.andWhere('serviceType.created_at <= :dateTo', { dateTo });
     }
 
     qb.orderBy(`serviceType.${safeSortBy}`, order);
