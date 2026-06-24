@@ -51,7 +51,7 @@ export class ClientsService {
 
     if (search) {
       qb.andWhere(
-        '(unaccent(client.name) ILIKE unaccent(:search) OR unaccent(client.email) ILIKE unaccent(:search))',
+        '(unaccent(client.name) ILIKE unaccent(:search) OR unaccent(client.email) ILIKE unaccent(:search) OR client.phone ILIKE :search)',
         { search: `%${search}%` },
       );
     }
