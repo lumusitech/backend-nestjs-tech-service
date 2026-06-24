@@ -46,6 +46,8 @@ export class SuppliersService {
       order = 'ASC',
       search,
       isActive,
+      dateFrom,
+      dateTo,
     } = filterDto;
 
     const safeSortBy = validateSortBy(sortBy, ALLOWED_SORT_COLUMNS, 'createdAt');
@@ -66,6 +68,14 @@ export class SuppliersService {
 
     if (isActive !== undefined) {
       qb.andWhere('supplier.isActive = :isActive', { isActive });
+    }
+
+    if (dateFrom) {
+      qb.andWhere('supplier.created_at >= :dateFrom', { dateFrom });
+    }
+
+    if (dateTo) {
+      qb.andWhere('supplier.created_at <= :dateTo', { dateTo });
     }
 
     qb.orderBy(`supplier.${safeSortBy}`, order);

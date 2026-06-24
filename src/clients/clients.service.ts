@@ -44,6 +44,8 @@ export class ClientsService {
       order = 'ASC',
       search,
       isActive,
+      dateFrom,
+      dateTo,
     } = filterDto;
 
     const safeSortBy = validateSortBy(sortBy, ALLOWED_SORT_COLUMNS, 'createdAt');
@@ -64,6 +66,14 @@ export class ClientsService {
 
     if (isActive !== undefined) {
       qb.andWhere('client.is_active = :isActive', { isActive });
+    }
+
+    if (dateFrom) {
+      qb.andWhere('client.created_at >= :dateFrom', { dateFrom });
+    }
+
+    if (dateTo) {
+      qb.andWhere('client.created_at <= :dateTo', { dateTo });
     }
 
     qb.orderBy(`client.${safeSortBy}`, order)
