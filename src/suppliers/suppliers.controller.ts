@@ -19,7 +19,7 @@ import {
 import { SuppliersService } from './suppliers.service';
 import { CreateSupplierDto } from './dto/create-supplier.dto';
 import { UpdateSupplierDto } from './dto/update-supplier.dto';
-import { PaginationDto } from '../common/dto/pagination.dto';
+import { FilterSupplierDto } from './dto/filter-supplier.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { UserRole } from '../users/enums/user-role.enum';
@@ -44,8 +44,8 @@ export class SuppliersController {
   @Get()
   @ApiOperation({ summary: 'Get all suppliers with pagination' })
   @ApiResponse({ status: 200, description: 'List of suppliers' })
-  findAll(@Query() paginationDto: PaginationDto) {
-    return this.suppliersService.findAll(paginationDto);
+  findAll(@Query() filterDto: FilterSupplierDto) {
+    return this.suppliersService.findAll(filterDto);
   }
 
   @Get(':id')

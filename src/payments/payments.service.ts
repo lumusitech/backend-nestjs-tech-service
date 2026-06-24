@@ -149,6 +149,7 @@ export class PaymentsService {
       order = 'ASC',
       status,
       method,
+      workOrderId,
       dateFrom,
       dateTo,
     } = filterDto;
@@ -156,6 +157,10 @@ export class PaymentsService {
     const qb = this.paymentRepository
       .createQueryBuilder('p')
       .leftJoinAndSelect('p.workOrder', 'workOrder');
+
+    if (workOrderId) {
+      qb.andWhere('p.work_order_id = :workOrderId', { workOrderId });
+    }
 
     if (status) {
       qb.andWhere('p.status = :status', { status });

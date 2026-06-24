@@ -8,7 +8,7 @@ import { Repository } from 'typeorm';
 import { ServiceType } from './entities/service-type.entity';
 import { CreateServiceTypeDto } from './dto/create-service-type.dto';
 import { UpdateServiceTypeDto } from './dto/update-service-type.dto';
-import { PaginationDto } from '../common/dto/pagination.dto';
+import { FilterServiceTypeDto } from './dto/filter-service-type.dto';
 import { PaginatedResponseDto } from '../common/dto/paginated-response.dto';
 import { validateSortBy } from '../common/utils/sort-by.util';
 
@@ -37,21 +37,37 @@ export class ServiceTypesService {
   }
 
   async findAll(
-    paginationDto: PaginationDto,
+    filterDto: FilterServiceTypeDto,
   ): Promise<PaginatedResponseDto<ServiceType>> {
     const {
       page = 1,
       limit = 10,
       sortBy = 'createdAt',
       order = 'ASC',
-    } = paginationDto;
+      search,
+      isActive,
+    } = filterDto;
 
     const safeSortBy = validateSortBy(sortBy, ALLOWED_SORT_COLUMNS, 'createdAt');
-    const [data, total] = await this.serviceTypeRepository.findAndCount({
-      skip: (page - 1) * limit,
-      take: limit,
-      order: { [safeSortBy]: order },
-    });
+
+    const qb = this.serviceTypeRepository.createQueryBuilder('serviceType');
+
+    if (search) {
+      qb.andWhere(
+        '(unaccent(serviceType.name) ILIKE unaccent(:search) OR unaccent(serviceType.description) ILIKE unaccent(:search))',
+        { search: `%${search}%` },
+      );
+    }
+
+    if (isActive !== undefined) {
+      qb.andWhere('serviceType.isActive = :isActive', { isActive });
+    }
+
+    qb.orderBy(`serviceType.${safeSortBy}`, order);
+    qb.skip((page - 1) * limit);
+    qb.take(limit);
+
+    const [data, total] = await qb.getManyAndCount();
 
     return new PaginatedResponseDto(data, total, page, limit);
   }

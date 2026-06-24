@@ -3,17 +3,20 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { SuppliersService } from './suppliers.service';
 import { Supplier } from './entities/supplier.entity';
-import { createMockRepository } from '../common/testing/mock-query-builder.helper';
+import { createMockRepository, createMockQueryBuilder } from '../common/testing/mock-query-builder.helper';
 import { CreateSupplierDto } from './dto/create-supplier.dto';
 import { UpdateSupplierDto } from './dto/update-supplier.dto';
-import { PaginationDto } from '../common/dto/pagination.dto';
 
 describe('SuppliersService', () => {
   let service: SuppliersService;
   let repository: ReturnType<typeof createMockRepository>;
+  let queryBuilder: ReturnType<typeof createMockQueryBuilder>;
 
   beforeEach(async () => {
-    repository = createMockRepository();
+    queryBuilder = createMockQueryBuilder();
+    repository = createMockRepository({
+      createQueryBuilder: jest.fn().mockReturnValue(queryBuilder),
+    });
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -94,16 +97,14 @@ describe('SuppliersService', () => {
         { id: 'uuid-1', name: 'Acme', email: 'acme@example.com' },
         { id: 'uuid-2', name: 'Globex', email: 'globex@example.com' },
       ];
-      repository.findAndCount.mockResolvedValue([suppliers, 2]);
+      queryBuilder.getManyAndCount.mockResolvedValue([suppliers, 2]);
 
-      const paginationDto: PaginationDto = {};
-      const result = await service.findAll(paginationDto);
+      const result = await service.findAll({});
 
-      expect(repository.findAndCount).toHaveBeenCalledWith({
-        skip: 0,
-        take: 10,
-        order: { createdAt: 'ASC' },
-      });
+      expect(repository.createQueryBuilder).toHaveBeenCalledWith('supplier');
+      expect(queryBuilder.orderBy).toHaveBeenCalledWith('supplier.createdAt', 'ASC');
+      expect(queryBuilder.skip).toHaveBeenCalledWith(0);
+      expect(queryBuilder.take).toHaveBeenCalledWith(10);
       expect(result.data).toEqual(suppliers);
       expect(result.total).toBe(2);
       expect(result.page).toBe(1);
@@ -115,21 +116,18 @@ describe('SuppliersService', () => {
       const suppliers = [
         { id: 'uuid-1', name: 'Acme', email: 'acme@example.com' },
       ];
-      repository.findAndCount.mockResolvedValue([suppliers, 20]);
+      queryBuilder.getManyAndCount.mockResolvedValue([suppliers, 20]);
 
-      const paginationDto: PaginationDto = {
+      const result = await service.findAll({
         page: 3,
         limit: 5,
         sortBy: 'name',
         order: 'DESC',
-      };
-      const result = await service.findAll(paginationDto);
-
-      expect(repository.findAndCount).toHaveBeenCalledWith({
-        skip: 10,
-        take: 5,
-        order: { name: 'DESC' },
       });
+
+      expect(queryBuilder.orderBy).toHaveBeenCalledWith('supplier.name', 'DESC');
+      expect(queryBuilder.skip).toHaveBeenCalledWith(10);
+      expect(queryBuilder.take).toHaveBeenCalledWith(5);
       expect(result.data).toEqual(suppliers);
       expect(result.total).toBe(20);
       expect(result.page).toBe(3);
@@ -137,8 +135,30 @@ describe('SuppliersService', () => {
       expect(result.totalPages).toBe(4);
     });
 
+    it('should apply search filter', async () => {
+      queryBuilder.getManyAndCount.mockResolvedValue([[], 0]);
+
+      await service.findAll({ search: 'Acme' });
+
+      expect(queryBuilder.andWhere).toHaveBeenCalledWith(
+        expect.stringContaining('ILIKE'),
+        { search: '%Acme%' },
+      );
+    });
+
+    it('should apply isActive filter', async () => {
+      queryBuilder.getManyAndCount.mockResolvedValue([[], 0]);
+
+      await service.findAll({ isActive: true });
+
+      expect(queryBuilder.andWhere).toHaveBeenCalledWith(
+        'supplier.isActive = :isActive',
+        { isActive: true },
+      );
+    });
+
     it('should handle empty results', async () => {
-      repository.findAndCount.mockResolvedValue([[], 0]);
+      queryBuilder.getManyAndCount.mockResolvedValue([[], 0]);
 
       const result = await service.findAll({});
 

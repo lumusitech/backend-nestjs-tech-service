@@ -13,7 +13,7 @@ import {
 import { ServiceTypesService } from './service-types.service';
 import { CreateServiceTypeDto } from './dto/create-service-type.dto';
 import { UpdateServiceTypeDto } from './dto/update-service-type.dto';
-import { PaginationDto } from '../common/dto/pagination.dto';
+import { FilterServiceTypeDto } from './dto/filter-service-type.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { UserRole } from '../users/enums/user-role.enum';
@@ -48,8 +48,8 @@ export class ServiceTypesController {
   @Get()
   @ApiOperation({ summary: 'Get all service types with pagination' })
   @ApiResponse({ status: 200, description: 'List of service types returned' })
-  findAll(@Query() paginationDto: PaginationDto) {
-    return this.serviceTypesService.findAll(paginationDto);
+  findAll(@Query() filterDto: FilterServiceTypeDto) {
+    return this.serviceTypesService.findAll(filterDto);
   }
 
   @Get(':id')
