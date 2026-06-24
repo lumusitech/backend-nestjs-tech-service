@@ -88,6 +88,7 @@ export class PendingItemsService {
       assignedToId,
       dueDateFrom,
       dueDateTo,
+      search,
     } = filterDto;
 
     const qb = this.pendingItemRepository
@@ -97,6 +98,14 @@ export class PendingItemsService {
 
     if (userRole === UserRole.TECHNICIAN && userId) {
       qb.andWhere('pi.assigned_to_id = :userId', { userId });
+    }
+
+    if (search) {
+      qb.andWhere(
+        `(unaccent(pi.title) ILIKE unaccent(:search)
+          OR unaccent(pi.description) ILIKE unaccent(:search))`,
+        { search: `%${search}%` },
+      );
     }
 
     if (status) {

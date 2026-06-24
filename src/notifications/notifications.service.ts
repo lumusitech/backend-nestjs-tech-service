@@ -71,11 +71,20 @@ export class NotificationsService {
       order = 'DESC',
       type,
       isRead,
+      search,
     } = filterDto;
 
     const qb = this.notificationRepository
       .createQueryBuilder('n')
       .where('n.user_id = :userId', { userId });
+
+    if (search) {
+      qb.andWhere(
+        `(unaccent(n.title) ILIKE unaccent(:search)
+          OR unaccent(n.message) ILIKE unaccent(:search))`,
+        { search: `%${search}%` },
+      );
+    }
 
     if (type) {
       qb.andWhere('n.type = :type', { type });

@@ -1,4 +1,4 @@
-import { IsOptional, IsEnum, IsUUID, IsDateString } from 'class-validator';
+import { IsOptional, IsEnum, IsUUID, IsDateString, IsString } from 'class-validator';
 import { PaginationDto } from '../../common/dto/pagination.dto';
 import { PendingItemType } from '../enums/pending-item-type.enum';
 import { PendingItemPriority } from '../enums/pending-item-priority.enum';
@@ -6,6 +6,11 @@ import { PendingItemStatus } from '../enums/pending-item-status.enum';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class FilterPendingItemDto extends PaginationDto {
+  @ApiPropertyOptional({ description: 'Search by title or description' })
+  @IsOptional()
+  @IsString()
+  search?: string;
+
   @ApiPropertyOptional({
     enum: PendingItemStatus,
     example: PendingItemStatus.PENDING,

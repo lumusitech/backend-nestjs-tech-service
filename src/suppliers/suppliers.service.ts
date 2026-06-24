@@ -54,7 +54,12 @@ export class SuppliersService {
 
     if (search) {
       qb.andWhere(
-        '(unaccent(supplier.name) ILIKE unaccent(:search) OR unaccent(supplier.contact) ILIKE unaccent(:search) OR unaccent(supplier.email) ILIKE unaccent(:search))',
+        `(unaccent(supplier.name) ILIKE unaccent(:search)
+          OR unaccent(supplier.contact) ILIKE unaccent(:search)
+          OR supplier.phone ILIKE :search
+          OR unaccent(supplier.email) ILIKE unaccent(:search)
+          OR unaccent(supplier.address) ILIKE unaccent(:search)
+          OR unaccent(supplier.notes) ILIKE unaccent(:search))`,
         { search: `%${search}%` },
       );
     }
