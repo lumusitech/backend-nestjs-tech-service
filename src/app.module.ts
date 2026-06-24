@@ -24,6 +24,7 @@ import { BillingModule } from './billing/billing.module';
 import { PendingItemsModule } from './pending-items/pending-items.module';
 import { InquiriesModule } from './inquiries/inquiries.module';
 import { UserPreferencesModule } from './user-preferences/user-preferences.module';
+import { BusinessSettingsModule } from './business-settings/business-settings.module';
 import { HealthModule } from './health/health.module';
 
 @Module({
@@ -93,6 +94,7 @@ import { HealthModule } from './health/health.module';
     PendingItemsModule,
     InquiriesModule,
     UserPreferencesModule,
+    BusinessSettingsModule,
   ],
   controllers: [AppController],
   providers: [
