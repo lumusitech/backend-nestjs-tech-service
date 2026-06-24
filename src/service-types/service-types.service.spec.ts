@@ -3,11 +3,12 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { ServiceTypesService } from './service-types.service';
 import { ServiceType } from './entities/service-type.entity';
-import { createMockRepository } from '../common/testing/mock-query-builder.helper';
+import { createMockRepository, createMockQueryBuilder } from '../common/testing/mock-query-builder.helper';
 
 describe('ServiceTypesService', () => {
   let service: ServiceTypesService;
   let repository: ReturnType<typeof createMockRepository>;
+  let queryBuilder: ReturnType<typeof createMockQueryBuilder>;
 
   const mockServiceType: ServiceType = Object.assign(new ServiceType(), {
     id: 'uuid-1',
@@ -20,7 +21,10 @@ describe('ServiceTypesService', () => {
   });
 
   beforeEach(async () => {
-    repository = createMockRepository();
+    queryBuilder = createMockQueryBuilder();
+    repository = createMockRepository({
+      createQueryBuilder: jest.fn().mockReturnValue(queryBuilder),
+    });
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -72,15 +76,14 @@ describe('ServiceTypesService', () => {
   describe('findAll', () => {
     it('should return paginated service types with default params', async () => {
       const data = [mockServiceType];
-      repository.findAndCount.mockResolvedValue([data, 1]);
+      queryBuilder.getManyAndCount.mockResolvedValue([data, 1]);
 
       const result = await service.findAll({});
 
-      expect(repository.findAndCount).toHaveBeenCalledWith({
-        skip: 0,
-        take: 10,
-        order: { createdAt: 'ASC' },
-      });
+      expect(repository.createQueryBuilder).toHaveBeenCalledWith('serviceType');
+      expect(queryBuilder.orderBy).toHaveBeenCalledWith('serviceType.createdAt', 'ASC');
+      expect(queryBuilder.skip).toHaveBeenCalledWith(0);
+      expect(queryBuilder.take).toHaveBeenCalledWith(10);
       expect(result.data).toEqual(data);
       expect(result.total).toBe(1);
       expect(result.page).toBe(1);
@@ -89,7 +92,7 @@ describe('ServiceTypesService', () => {
     });
 
     it('should handle custom pagination and sorting', async () => {
-      repository.findAndCount.mockResolvedValue([[], 0]);
+      queryBuilder.getManyAndCount.mockResolvedValue([[], 0]);
 
       await service.findAll({
         page: 2,
@@ -98,11 +101,9 @@ describe('ServiceTypesService', () => {
         order: 'DESC',
       });
 
-      expect(repository.findAndCount).toHaveBeenCalledWith({
-        skip: 5,
-        take: 5,
-        order: { name: 'DESC' },
-      });
+      expect(queryBuilder.orderBy).toHaveBeenCalledWith('serviceType.name', 'DESC');
+      expect(queryBuilder.skip).toHaveBeenCalledWith(5);
+      expect(queryBuilder.take).toHaveBeenCalledWith(5);
     });
 
     it('should return correct totalPages for multiple pages', async () => {
@@ -110,11 +111,33 @@ describe('ServiceTypesService', () => {
         ...mockServiceType,
         id: `uuid-${i}`,
       }));
-      repository.findAndCount.mockResolvedValue([data, 25]);
+      queryBuilder.getManyAndCount.mockResolvedValue([data, 25]);
 
       const result = await service.findAll({ page: 1, limit: 10 });
 
       expect(result.totalPages).toBe(3);
+    });
+
+    it('should apply search filter', async () => {
+      queryBuilder.getManyAndCount.mockResolvedValue([[], 0]);
+
+      await service.findAll({ search: 'CCTV' });
+
+      expect(queryBuilder.andWhere).toHaveBeenCalledWith(
+        expect.stringContaining('ILIKE'),
+        { search: '%CCTV%' },
+      );
+    });
+
+    it('should apply isActive filter', async () => {
+      queryBuilder.getManyAndCount.mockResolvedValue([[], 0]);
+
+      await service.findAll({ isActive: true });
+
+      expect(queryBuilder.andWhere).toHaveBeenCalledWith(
+        'serviceType.isActive = :isActive',
+        { isActive: true },
+      );
     });
   });
 

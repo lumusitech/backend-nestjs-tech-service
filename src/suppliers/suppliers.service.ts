@@ -8,7 +8,7 @@ import { Repository } from 'typeorm';
 import { Supplier } from './entities/supplier.entity';
 import { CreateSupplierDto } from './dto/create-supplier.dto';
 import { UpdateSupplierDto } from './dto/update-supplier.dto';
-import { PaginationDto } from '../common/dto/pagination.dto';
+import { FilterSupplierDto } from './dto/filter-supplier.dto';
 import { PaginatedResponseDto } from '../common/dto/paginated-response.dto';
 import { validateSortBy } from '../common/utils/sort-by.util';
 
@@ -37,21 +37,37 @@ export class SuppliersService {
   }
 
   async findAll(
-    paginationDto: PaginationDto,
+    filterDto: FilterSupplierDto,
   ): Promise<PaginatedResponseDto<Supplier>> {
     const {
       page = 1,
       limit = 10,
       sortBy = 'createdAt',
       order = 'ASC',
-    } = paginationDto;
+      search,
+      isActive,
+    } = filterDto;
 
     const safeSortBy = validateSortBy(sortBy, ALLOWED_SORT_COLUMNS, 'createdAt');
-    const [data, total] = await this.supplierRepository.findAndCount({
-      skip: (page - 1) * limit,
-      take: limit,
-      order: { [safeSortBy]: order },
-    });
+
+    const qb = this.supplierRepository.createQueryBuilder('supplier');
+
+    if (search) {
+      qb.andWhere(
+        '(unaccent(supplier.name) ILIKE unaccent(:search) OR unaccent(supplier.contact) ILIKE unaccent(:search) OR unaccent(supplier.email) ILIKE unaccent(:search))',
+        { search: `%${search}%` },
+      );
+    }
+
+    if (isActive !== undefined) {
+      qb.andWhere('supplier.isActive = :isActive', { isActive });
+    }
+
+    qb.orderBy(`supplier.${safeSortBy}`, order);
+    qb.skip((page - 1) * limit);
+    qb.take(limit);
+
+    const [data, total] = await qb.getManyAndCount();
 
     return new PaginatedResponseDto(data, total, page, limit);
   }
