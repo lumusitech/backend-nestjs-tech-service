@@ -46,6 +46,11 @@ export class CreateWorkOrderDto {
   @IsOptional()
   diagnosis?: string;
 
+  @ApiPropertyOptional({ example: 'Av. Corrientes 1234, Piso 5' })
+  @IsString()
+  @IsOptional()
+  workAddress?: string;
+
   @ApiPropertyOptional({ example: '2026-12-31' })
   @IsDateString()
   @IsOptional()

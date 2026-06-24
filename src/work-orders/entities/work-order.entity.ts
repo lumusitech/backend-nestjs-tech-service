@@ -54,6 +54,10 @@ export class WorkOrder extends BaseEntity {
   @Column({ nullable: true })
   diagnosis!: string;
 
+  @ApiProperty({ example: 'Av. Corrientes 1234, Piso 5' })
+  @Column({ name: 'work_address', nullable: true })
+  workAddress!: string;
+
   @ApiProperty({ example: '2026-12-31' })
   @Column({ name: 'warranty_until', type: 'date', nullable: true })
   warrantyUntil!: Date;
