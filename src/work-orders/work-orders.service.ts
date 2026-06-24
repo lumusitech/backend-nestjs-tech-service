@@ -136,7 +136,12 @@ export class WorkOrdersService {
 
     if (search) {
       qb.andWhere(
-        '(wo.tracking_code ILIKE unaccent(:search) OR unaccent(client.name) ILIKE unaccent(:search))',
+        `(wo.tracking_code ILIKE :search
+          OR unaccent(client.name) ILIKE unaccent(:search)
+          OR unaccent(client.email) ILIKE unaccent(:search)
+          OR client.phone ILIKE :search
+          OR unaccent(serviceType.name) ILIKE unaccent(:search)
+          OR unaccent(wo.diagnosis) ILIKE unaccent(:search))`,
         { search: `%${search}%` },
       );
     }

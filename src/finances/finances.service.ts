@@ -31,12 +31,21 @@ export class FinancesService {
       sortBy = 'createdAt',
       order = 'ASC',
       category,
+      search,
       dateFrom,
       dateTo,
       isRecurring,
     } = filterDto;
 
     const qb = this.expenseRepository.createQueryBuilder('e');
+
+    if (search) {
+      qb.andWhere(
+        `(unaccent(e.description) ILIKE unaccent(:search)
+          OR unaccent(e.notes) ILIKE unaccent(:search))`,
+        { search: `%${search}%` },
+      );
+    }
 
     if (category) {
       qb.andWhere('e.category = :category', { category });

@@ -83,6 +83,7 @@ export class InquiriesService {
       assignedToId,
       dateFrom,
       dateTo,
+      search,
     } = filterDto;
 
     const qb = this.inquiryRepository
@@ -92,6 +93,16 @@ export class InquiriesService {
 
     if (userRole === UserRole.TECHNICIAN && userId) {
       qb.andWhere('i.assigned_to_id = :userId', { userId });
+    }
+
+    if (search) {
+      qb.andWhere(
+        `(unaccent(i.client_name) ILIKE unaccent(:search)
+          OR i.client_phone ILIKE :search
+          OR unaccent(i.client_email) ILIKE unaccent(:search)
+          OR unaccent(i.description) ILIKE unaccent(:search))`,
+        { search: `%${search}%` },
+      );
     }
 
     if (status) {

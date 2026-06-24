@@ -150,6 +150,7 @@ export class PaymentsService {
       status,
       method,
       workOrderId,
+      search,
       dateFrom,
       dateTo,
     } = filterDto;
@@ -157,6 +158,15 @@ export class PaymentsService {
     const qb = this.paymentRepository
       .createQueryBuilder('p')
       .leftJoinAndSelect('p.workOrder', 'workOrder');
+
+    if (search) {
+      qb.andWhere(
+        `(p.description ILIKE :search
+          OR p.provider ILIKE :search
+          OR p.provider_payment_id ILIKE :search)`,
+        { search: `%${search}%` },
+      );
+    }
 
     if (workOrderId) {
       qb.andWhere('p.work_order_id = :workOrderId', { workOrderId });

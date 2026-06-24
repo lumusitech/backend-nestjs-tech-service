@@ -1,9 +1,14 @@
-import { IsOptional, IsEnum, IsDateString, IsBoolean } from 'class-validator';
+import { IsOptional, IsEnum, IsDateString, IsBoolean, IsString } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { PaginationDto } from '../../common/dto/pagination.dto';
 import { ExpenseCategory } from '../enums/expense-category.enum';
 
 export class FilterExpenseDto extends PaginationDto {
+  @ApiPropertyOptional({ description: 'Search by description or notes' })
+  @IsOptional()
+  @IsString()
+  search?: string;
+
   @ApiPropertyOptional({
     enum: ExpenseCategory,
     example: ExpenseCategory.TOOLS,
