@@ -43,6 +43,7 @@ export class ClientsService {
       sortBy = 'createdAt',
       order = 'ASC',
       search,
+      isActive,
     } = filterDto;
 
     const safeSortBy = validateSortBy(sortBy, ALLOWED_SORT_COLUMNS, 'createdAt');
@@ -59,6 +60,10 @@ export class ClientsService {
           OR unaccent(client.internet_provider) ILIKE unaccent(:search))`,
         { search: `%${search}%` },
       );
+    }
+
+    if (isActive !== undefined) {
+      qb.andWhere('client.is_active = :isActive', { isActive });
     }
 
     qb.orderBy(`client.${safeSortBy}`, order)
