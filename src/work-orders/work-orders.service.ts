@@ -126,13 +126,15 @@ export class WorkOrdersService {
       serviceTypeId,
       dateFrom,
       dateTo,
+      sellerId,
     } = filterDto;
 
     const qb = this.workOrderRepository
       .createQueryBuilder('wo')
       .leftJoinAndSelect('wo.client', 'client')
       .leftJoinAndSelect('wo.serviceType', 'serviceType')
-      .leftJoinAndSelect('wo.technicians', 'technicians');
+      .leftJoinAndSelect('wo.technicians', 'technicians')
+      .leftJoinAndSelect('wo.seller', 'seller');
 
     if (search) {
       qb.andWhere(
@@ -160,6 +162,10 @@ export class WorkOrdersService {
 
     if (technicianId) {
       qb.andWhere('technicians.id = :technicianId', { technicianId });
+    }
+
+    if (sellerId) {
+      qb.andWhere('wo.seller_id = :sellerId', { sellerId });
     }
 
     if (serviceTypeId) {
@@ -191,6 +197,7 @@ export class WorkOrdersService {
         client: true,
         serviceType: true,
         technicians: true,
+        seller: true,
         notes: true,
         materials: {
           supplier: true,

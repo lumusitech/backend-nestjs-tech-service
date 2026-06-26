@@ -1,5 +1,5 @@
 import { PartialType } from '@nestjs/mapped-types';
-import { IsEnum, IsOptional, IsDateString } from 'class-validator';
+import { IsEnum, IsOptional, IsDateString, IsNumber, Min, Max } from 'class-validator';
 import { CreateWorkOrderDto } from './create-work-order.dto';
 import { WorkOrderStatus } from '../../common/enums/work-order-status.enum';
 import { ApiPropertyOptional } from '@nestjs/swagger';
@@ -22,4 +22,11 @@ export class UpdateWorkOrderDto extends PartialType(CreateWorkOrderDto) {
   @IsDateString()
   @IsOptional()
   completedAt?: string;
+
+  @ApiPropertyOptional({ example: 5.0 })
+  @IsNumber()
+  @Min(0)
+  @Max(100)
+  @IsOptional()
+  commissionPercent?: number;
 }

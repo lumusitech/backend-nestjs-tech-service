@@ -38,6 +38,11 @@ export class FilterWorkOrderDto extends PaginationDto {
   @IsOptional()
   serviceTypeId?: string;
 
+  @ApiPropertyOptional({ example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890' })
+  @IsUUID()
+  @IsOptional()
+  sellerId?: string;
+
   @ApiPropertyOptional({ example: '2026-06-01' })
   @IsDateString()
   @IsOptional()
