@@ -167,11 +167,11 @@ export class WorkOrdersService {
     }
 
     if (dateFrom) {
-      qb.andWhere('wo.created_at >= :dateFrom', { dateFrom });
+      qb.andWhere('wo.scheduled_date >= :dateFrom', { dateFrom });
     }
 
     if (dateTo) {
-      qb.andWhere('wo.created_at <= :dateTo', { dateTo });
+      qb.andWhere('wo.scheduled_date <= :dateTo', { dateTo });
     }
 
     const safeSortBy = validateSortBy(sortBy, ALLOWED_SORT_COLUMNS, 'createdAt');

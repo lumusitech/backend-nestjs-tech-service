@@ -163,7 +163,8 @@ export class PaymentsService {
       qb.andWhere(
         `(p.description ILIKE :search
           OR p.provider ILIKE :search
-          OR p.provider_payment_id ILIKE :search)`,
+          OR p.provider_payment_id ILIKE :search
+          OR workOrder.tracking_code ILIKE :search)`,
         { search: `%${search}%` },
       );
     }

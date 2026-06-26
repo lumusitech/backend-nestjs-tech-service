@@ -4,9 +4,10 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { User } from './entities/user.entity';
+import { Skill } from '../skills/entities/skill.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { FilterUserDto } from './dto/filter-user.dto';
@@ -20,6 +21,8 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(Skill)
+    private readonly skillRepository: Repository<Skill>,
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
@@ -31,12 +34,17 @@ export class UsersService {
       throw new ConflictException('Email already exists');
     }
 
-    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+    const { skillIds, ...rest } = createUserDto;
+    const hashedPassword = await bcrypt.hash(rest.password, 10);
 
     const user = this.userRepository.create({
-      ...createUserDto,
+      ...rest,
       password: hashedPassword,
     });
+
+    if (skillIds?.length) {
+      user.skills = await this.skillRepository.findBy({ id: In(skillIds) });
+    }
 
     return this.userRepository.save(user);
   }
@@ -72,13 +80,17 @@ export class UsersService {
       skip: (page - 1) * limit,
       take: limit,
       order: { [safeSortBy]: order },
+      relations: { skills: true },
     });
 
     return new PaginatedResponseDto(data, total, page, limit);
   }
 
   async findOne(id: string): Promise<User> {
-    const user = await this.userRepository.findOne({ where: { id } });
+    const user = await this.userRepository.findOne({
+      where: { id },
+      relations: { skills: true },
+    });
 
     if (!user) {
       throw new NotFoundException(`User #${id} not found`);
@@ -100,7 +112,20 @@ export class UsersService {
       }
     }
 
-    Object.assign(user, updateUserDto);
+    const { skillIds, ...rest } = updateUserDto;
+
+    if (skillIds !== undefined) {
+      user.skills = skillIds.length
+        ? await this.skillRepository.findBy({ id: In(skillIds) })
+        : [];
+    }
+
+    Object.assign(user, rest);
+
+    if (rest.password) {
+      user.password = await bcrypt.hash(rest.password, 10);
+    }
+
     return this.userRepository.save(user);
   }
 

@@ -16,15 +16,14 @@ import { UpdateBusinessSettingDto } from './dto/update-business-settings.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { UserRole } from '../users/enums/user-role.enum';
+import { Public } from '../auth/decorators/public.decorator';
 
 @ApiTags('Business Settings')
-@ApiBearerAuth()
 @Controller('business-settings')
-@UseGuards(RolesGuard)
-@Roles(UserRole.ADMIN)
 export class BusinessSettingsController {
   constructor(private readonly settingsService: BusinessSettingsService) {}
 
+  @Public()
   @Get()
   @ApiOperation({ summary: 'Get business settings' })
   @ApiResponse({ status: 200, description: 'Business settings returned' })
@@ -32,6 +31,9 @@ export class BusinessSettingsController {
     return this.settingsService.get();
   }
 
+  @ApiBearerAuth()
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN)
   @Patch()
   @ApiOperation({ summary: 'Update business settings' })
   @ApiResponse({ status: 200, description: 'Business settings updated' })
