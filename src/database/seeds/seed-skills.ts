@@ -2,16 +2,16 @@ import { DataSource } from 'typeorm';
 import { Skill } from '../../skills/entities/skill.entity';
 
 const SKILLS = [
-  { name: 'Redes y Conectividad', description: 'Configuración de redes LAN/WAN, routers, switches y cableado estructurado', category: 'Redes' },
-  { name: 'Instalación de Cámaras', description: 'Instalación y configuración de cámaras IP, analógicas y NVR/DVR', category: 'Electrónica' },
-  { name: 'Reparación de PC', description: 'Diagnóstico y reparación de hardware de computadoras de escritorio y notebooks', category: 'Hardware' },
-  { name: 'Soporte de Software', description: 'Instalación, configuración y resolución de problemas de software', category: 'Software' },
-  { name: 'Electricidad', description: 'Trabajos eléctricos básicos: instalación de tomas, llaves y tableros', category: 'Electrónica' },
-  { name: 'Configuración de Routers', description: 'Configuración de routers WiFi, mesh, VLANs y control parental', category: 'Redes' },
-  { name: 'Instalación de Alarmas', description: 'Instalación y configuración de sistemas de alarma y sensores', category: 'Electrónica' },
-  { name: 'Mantenimiento Preventivo', description: 'Limpieza, revisión y mantenimiento periódico de equipos', category: 'Hardware' },
-  { name: 'Instalación de Software', description: 'Instalación de sistemas operativos, office y programas específicos', category: 'Software' },
-  { name: 'Soporte Remoto', description: 'Asistencia técnica a distancia mediante herramientas de escritorio remoto', category: 'Software' },
+  { name: 'Network Setup', description: 'LAN/WAN configuration, routers, switches and structured cabling', category: 'networks' },
+  { name: 'Camera Installation', description: 'IP camera, analog camera and NVR/DVR installation and configuration', category: 'electronics' },
+  { name: 'PC Repair', description: 'Desktop and laptop hardware diagnostics and repair', category: 'hardware' },
+  { name: 'Software Support', description: 'Software installation, configuration and troubleshooting', category: 'software' },
+  { name: 'Electrical Work', description: 'Basic electrical tasks: outlet, switch and panel installation', category: 'electronics' },
+  { name: 'Router Configuration', description: 'WiFi, mesh, VLAN and parental control router configuration', category: 'networks' },
+  { name: 'Alarm Installation', description: 'Alarm system and sensor installation and configuration', category: 'electronics' },
+  { name: 'Preventive Maintenance', description: 'Equipment cleaning, inspection and periodic maintenance', category: 'hardware' },
+  { name: 'Software Installation', description: 'OS, office and specific software installation', category: 'software' },
+  { name: 'Remote Support', description: 'Remote desktop assistance and technical support', category: 'software' },
 ];
 
 export async function seedSkills(dataSource: DataSource) {
