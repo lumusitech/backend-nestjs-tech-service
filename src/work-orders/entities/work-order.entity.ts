@@ -54,6 +54,18 @@ export class WorkOrder extends BaseEntity {
   @Column({ nullable: true })
   diagnosis!: string;
 
+  @ApiProperty({ example: 5.0 })
+  @Column({ name: 'commission_percent', type: 'decimal', precision: 5, scale: 2, default: 5.0 })
+  commissionPercent!: number;
+
+  @ManyToOne(() => User, { nullable: true })
+  @JoinColumn({ name: 'seller_id' })
+  seller?: User;
+
+  @ApiProperty({ example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890' })
+  @Column({ name: 'seller_id', nullable: true })
+  sellerId?: string;
+
   @ApiProperty({ example: 'Av. Corrientes 1234, Piso 5' })
   @Column({ name: 'work_address', nullable: true })
   workAddress!: string;
