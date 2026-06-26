@@ -13,6 +13,8 @@ interface WorkOrderSeed {
   priority: Priority;
   location: WorkOrderLocation;
   diagnosis: string | undefined;
+  commissionPercent: number | undefined;
+  sellerEmail: string | undefined;
   warrantyUntil: string | undefined;
   scheduledDate: string | undefined;
   startedAt: string | undefined;
@@ -29,6 +31,8 @@ const WORK_ORDERS: WorkOrderSeed[] = [
     priority: Priority.MEDIUM,
     location: WorkOrderLocation.WORKSHOP,
     diagnosis: 'Disco duro dañado, se reemplazó por SSD de 480GB. Se reinstaló Windows 11 y drivers.',
+    commissionPercent: 5,
+    sellerEmail: 'sofia.ramirez@techservice.local',
     warrantyUntil: '2026-12-15',
     scheduledDate: '2026-05-10',
     startedAt: '2026-05-10T09:00:00.000Z',
@@ -43,6 +47,8 @@ const WORK_ORDERS: WorkOrderSeed[] = [
     priority: Priority.HIGH,
     location: WorkOrderLocation.WORKSHOP,
     diagnosis: 'Pantalla con líneas verticales, posible problema de flex o display. Pendiente repuesto.',
+    commissionPercent: 7,
+    sellerEmail: 'martin.torres@techservice.local',
     warrantyUntil: undefined,
     scheduledDate: '2026-06-01',
     startedAt: '2026-06-02T10:00:00.000Z',
@@ -57,6 +63,8 @@ const WORK_ORDERS: WorkOrderSeed[] = [
     priority: Priority.MEDIUM,
     location: WorkOrderLocation.ON_SITE,
     diagnosis: undefined,
+    commissionPercent: 5,
+    sellerEmail: 'sofia.ramirez@techservice.local',
     warrantyUntil: undefined,
     scheduledDate: '2026-06-10',
     startedAt: undefined,
@@ -71,6 +79,8 @@ const WORK_ORDERS: WorkOrderSeed[] = [
     priority: Priority.LOW,
     location: WorkOrderLocation.WORKSHOP,
     diagnosis: 'Fuente de alimentación quemada. Se reemplazó fuente y se verificó funcionamiento completo.',
+    commissionPercent: 5,
+    sellerEmail: 'sofia.ramirez@techservice.local',
     warrantyUntil: '2026-09-20',
     scheduledDate: '2026-05-15',
     startedAt: '2026-05-15T14:00:00.000Z',
@@ -85,6 +95,8 @@ const WORK_ORDERS: WorkOrderSeed[] = [
     priority: Priority.URGENT,
     location: WorkOrderLocation.ON_SITE,
     diagnosis: 'Cortocircuito en línea eléctrica del local. Se identificó cableado defectuoso en sector mostrador.',
+    commissionPercent: undefined,
+    sellerEmail: undefined,
     warrantyUntil: undefined,
     scheduledDate: '2026-06-04',
     startedAt: '2026-06-04T08:00:00.000Z',
@@ -99,6 +111,8 @@ const WORK_ORDERS: WorkOrderSeed[] = [
     priority: Priority.MEDIUM,
     location: WorkOrderLocation.ON_SITE,
     diagnosis: 'Se instaló Access Point Ubiquiti, se configuró red WiFi con VLAN para invitados. Cobertura optimizada.',
+    commissionPercent: 7,
+    sellerEmail: 'martin.torres@techservice.local',
     warrantyUntil: '2026-12-01',
     scheduledDate: '2026-05-20',
     startedAt: '2026-05-20T09:30:00.000Z',
@@ -113,6 +127,8 @@ const WORK_ORDERS: WorkOrderSeed[] = [
     priority: Priority.LOW,
     location: WorkOrderLocation.WORKSHOP,
     diagnosis: undefined,
+    commissionPercent: undefined,
+    sellerEmail: undefined,
     warrantyUntil: undefined,
     scheduledDate: '2026-05-25',
     startedAt: undefined,
@@ -127,6 +143,8 @@ const WORK_ORDERS: WorkOrderSeed[] = [
     priority: Priority.MEDIUM,
     location: WorkOrderLocation.WORKSHOP,
     diagnosis: 'Esperando repuesto (fuente ATX 650W). Reprogramado para la próxima semana.',
+    commissionPercent: 5,
+    sellerEmail: 'sofia.ramirez@techservice.local',
     warrantyUntil: undefined,
     scheduledDate: '2026-06-03',
     startedAt: '2026-06-03T10:00:00.000Z',
@@ -141,6 +159,8 @@ const WORK_ORDERS: WorkOrderSeed[] = [
     priority: Priority.MEDIUM,
     location: WorkOrderLocation.WORKSHOP,
     diagnosis: undefined,
+    commissionPercent: 7,
+    sellerEmail: 'martin.torres@techservice.local',
     warrantyUntil: undefined,
     scheduledDate: undefined,
     startedAt: undefined,
@@ -155,6 +175,8 @@ const WORK_ORDERS: WorkOrderSeed[] = [
     priority: Priority.HIGH,
     location: WorkOrderLocation.ON_SITE,
     diagnosis: 'Se reemplazó router averiado, se configuró red mesh con 3 nodos. WiFi 6 en toda la oficina.',
+    commissionPercent: 5,
+    sellerEmail: 'sofia.ramirez@techservice.local',
     warrantyUntil: '2027-06-01',
     scheduledDate: '2026-05-28',
     startedAt: '2026-05-28T08:30:00.000Z',
@@ -169,6 +191,8 @@ const WORK_ORDERS: WorkOrderSeed[] = [
     priority: Priority.MEDIUM,
     location: WorkOrderLocation.WORKSHOP,
     diagnosis: 'Panel LED con zonas oscuras. Se ordenó panel de reemplazo compatible.',
+    commissionPercent: undefined,
+    sellerEmail: undefined,
     warrantyUntil: undefined,
     scheduledDate: '2026-06-02',
     startedAt: '2026-06-03T11:00:00.000Z',
@@ -183,6 +207,8 @@ const WORK_ORDERS: WorkOrderSeed[] = [
     priority: Priority.HIGH,
     location: WorkOrderLocation.ON_SITE,
     diagnosis: 'Se instalaron 4 tomas nuevas en oficina, se agregó disyuntor diferencial y termica dedicada.',
+    commissionPercent: 7,
+    sellerEmail: 'martin.torres@techservice.local',
     warrantyUntil: '2026-12-10',
     scheduledDate: '2026-05-22',
     startedAt: '2026-05-22T08:00:00.000Z',
@@ -197,6 +223,8 @@ const WORK_ORDERS: WorkOrderSeed[] = [
     priority: Priority.HIGH,
     location: WorkOrderLocation.ON_SITE,
     diagnosis: 'Se instalaron 8 cámaras Hikvision 4MP con DVR de 8 canales. Monitoreo remoto configurado via app.',
+    commissionPercent: 5,
+    sellerEmail: 'sofia.ramirez@techservice.local',
     warrantyUntil: '2027-06-05',
     scheduledDate: '2026-05-12',
     startedAt: '2026-05-12T08:00:00.000Z',
@@ -211,6 +239,8 @@ const WORK_ORDERS: WorkOrderSeed[] = [
     priority: Priority.LOW,
     location: WorkOrderLocation.WORKSHOP,
     diagnosis: undefined,
+    commissionPercent: undefined,
+    sellerEmail: undefined,
     warrantyUntil: undefined,
     scheduledDate: undefined,
     startedAt: undefined,
@@ -225,6 +255,8 @@ const WORK_ORDERS: WorkOrderSeed[] = [
     priority: Priority.MEDIUM,
     location: WorkOrderLocation.ON_SITE,
     diagnosis: undefined,
+    commissionPercent: 5,
+    sellerEmail: 'sofia.ramirez@techservice.local',
     warrantyUntil: undefined,
     scheduledDate: '2026-06-08',
     startedAt: undefined,
@@ -271,12 +303,22 @@ export async function seedWorkOrders(dataSource: DataSource) {
       }
     }
 
+    let sellerId: string | undefined = undefined;
+    if (wo.sellerEmail) {
+      const seller = await userRepo.findOne({ where: { email: wo.sellerEmail } });
+      if (seller) {
+        sellerId = seller.id;
+      }
+    }
+
     const workOrder = workOrderRepo.create({
       trackingCode: wo.trackingCode,
       status: wo.status,
       priority: wo.priority,
       location: wo.location,
       diagnosis: wo.diagnosis,
+      commissionPercent: wo.commissionPercent,
+      sellerId,
       warrantyUntil: wo.warrantyUntil ? new Date(wo.warrantyUntil) : undefined,
       scheduledDate: wo.scheduledDate ? new Date(wo.scheduledDate) : undefined,
       startedAt: wo.startedAt ? new Date(wo.startedAt) : undefined,

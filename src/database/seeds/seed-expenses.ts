@@ -37,22 +37,6 @@ const EXPENSES: ExpenseSeed[] = [
     notes: 'Factura de luz del período mayo',
   },
   {
-    description: 'Compra de herramientas - Kit destornilladores de precisión',
-    amount: 35000,
-    date: '2026-05-15',
-    category: ExpenseCategory.TOOLS,
-    isRecurring: false,
-    notes: 'Juego de 60 piezas para electrónica',
-  },
-  {
-    description: 'Estación de soldado Hakko FX-888D',
-    amount: 120000,
-    date: '2026-05-20',
-    category: ExpenseCategory.TOOLS,
-    isRecurring: false,
-    notes: 'Estación de soldado profesional para reparaciones SMD',
-  },
-  {
     description: 'Combustible - Viajes a clientes Junio',
     amount: 22000,
     date: '2026-06-04',
@@ -78,7 +62,7 @@ const EXPENSES: ExpenseSeed[] = [
   },
   {
     description: 'Sueldos personal técnico - Junio 2026',
-    amount: 450000,
+    amount: 350000,
     date: '2026-06-05',
     category: ExpenseCategory.SALARIES,
     isRecurring: true,

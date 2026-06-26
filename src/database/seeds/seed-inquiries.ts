@@ -256,6 +256,29 @@ const INQUIRIES: InquirySeed[] = [
     contactedAt: '2026-06-19T15:30:00.000Z',
     reviewedAt: '2026-06-20T09:00:00.000Z',
   },
+  {
+    clientName: 'Lucas Gutiérrez',
+    clientPhone: '+54 11 5678-0123',
+    clientEmail: 'lucas.g@gmail.com',
+    clientAddress: 'Av. Corrientes 6789, Balvanera, CABA',
+    description:
+      'Mi notebook Lenovo no enciende. La usé ayer sin problemas y hoy no funciona. La necesito para trabajar.',
+    source: InquirySource.WHATSAPP,
+    status: InquiryStatus.CONVERTED,
+    priority: 'high',
+    assignedToEmail: 'carlos.garcia@techservice.local',
+    createdByEmail: 'admin@techservice.local',
+    technicianNotes:
+      'Diagnóstico realizado: fuente de alimentación defectuosa. Se reemplazó fuente y notebook funciona correctamente.',
+    estimatedCost: 35000,
+    estimatedDuration: 3,
+    materialsNeeded: 'Fuente de alimentación notebook Lenovo 65W',
+    recommendation: InquiryRecommendation.REPAIR,
+    adminDecision: InquiryDecision.APPROVED,
+    adminNotes: 'Cliente aprobado. Trabajo realizado exitosamente.',
+    contactedAt: '2026-06-18T09:30:00.000Z',
+    reviewedAt: '2026-06-18T14:00:00.000Z',
+  },
 ];
 
 export async function seedInquiries(dataSource: DataSource): Promise<void> {
