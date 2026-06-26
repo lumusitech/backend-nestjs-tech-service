@@ -25,6 +25,7 @@ import { PendingItemsModule } from './pending-items/pending-items.module';
 import { InquiriesModule } from './inquiries/inquiries.module';
 import { UserPreferencesModule } from './user-preferences/user-preferences.module';
 import { BusinessSettingsModule } from './business-settings/business-settings.module';
+import { SkillsModule } from './skills/skills.module';
 import { HealthModule } from './health/health.module';
 
 @Module({
@@ -95,6 +96,7 @@ import { HealthModule } from './health/health.module';
     InquiriesModule,
     UserPreferencesModule,
     BusinessSettingsModule,
+    SkillsModule,
   ],
   controllers: [AppController],
   providers: [

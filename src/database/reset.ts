@@ -2,7 +2,9 @@ import 'dotenv/config';
 import dataSource from './data-source';
 import { seedAdmin } from './seeds/seed-admin';
 import { seedServiceTypes } from './seeds/seed-service-types';
+import { seedSkills } from './seeds/seed-skills';
 import { seedTechnicians } from './seeds/seed-technicians';
+import { seedSellers } from './seeds/seed-sellers';
 import { seedClients } from './seeds/seed-clients';
 import { seedSuppliers } from './seeds/seed-suppliers';
 import { seedWorkOrders } from './seeds/seed-work-orders';
@@ -29,6 +31,8 @@ const TABLES = [
   'pending_items',
   'expenses',
   'user_preferences',
+  'user_skills',
+  'skills',
   'service_types',
   'clients',
   'suppliers',
@@ -50,7 +54,9 @@ async function reset() {
 
   await seedAdmin(dataSource);
   await seedServiceTypes(dataSource);
+  await seedSkills(dataSource);
   await seedTechnicians(dataSource);
+  await seedSellers(dataSource);
   await seedClients(dataSource);
   await seedSuppliers(dataSource);
   await seedWorkOrders(dataSource);
