@@ -31,7 +31,7 @@ const PAYMENTS: PaymentSeed[] = [
     totalInstallments: 1,
   },
   {
-    amount: 120000,
+    amount: 150000,
     method: PaymentMethod.TRANSFER,
     status: PaymentStatus.APPROVED,
     provider: 'Transferencia bancaria',
@@ -43,7 +43,7 @@ const PAYMENTS: PaymentSeed[] = [
     totalInstallments: 1,
   },
   {
-    amount: 180000,
+    amount: 250000,
     method: PaymentMethod.CREDIT_CARD,
     status: PaymentStatus.APPROVED,
     provider: 'MercadoPago',
@@ -55,7 +55,7 @@ const PAYMENTS: PaymentSeed[] = [
     totalInstallments: 1,
   },
   {
-    amount: 95000,
+    amount: 400000,
     method: PaymentMethod.DEBIT_CARD,
     status: PaymentStatus.APPROVED,
     provider: 'MercadoPago',
@@ -67,7 +67,7 @@ const PAYMENTS: PaymentSeed[] = [
     totalInstallments: 1,
   },
   {
-    amount: 75000,
+    amount: 150000,
     method: PaymentMethod.TRANSFER,
     status: PaymentStatus.APPROVED,
     provider: 'Transferencia bancaria',
@@ -79,19 +79,19 @@ const PAYMENTS: PaymentSeed[] = [
     totalInstallments: 1,
   },
   {
-    amount: 350000,
+    amount: 1000000,
     method: PaymentMethod.CREDIT_CARD,
     status: PaymentStatus.APPROVED,
     provider: 'MercadoPago',
     providerPaymentId: 'MP-20260514-005',
-    description: 'Pago por instalación de sistema de cámaras de seguridad completo',
+    description: 'Pago por instalación de sistema de cámaras de seguridad completo - 8 cámaras Hikvision',
     trackingCode: 'TS-CAM013',
     paidAt: '2026-05-14T18:00:00.000Z',
     installmentNumber: 1,
     totalInstallments: 1,
   },
   {
-    amount: 350000,
+    amount: 800000,
     method: PaymentMethod.CREDIT_CARD,
     status: PaymentStatus.APPROVED,
     provider: 'MercadoPago',
@@ -103,7 +103,7 @@ const PAYMENTS: PaymentSeed[] = [
     totalInstallments: 3,
   },
   {
-    amount: 95000,
+    amount: 150000,
     method: PaymentMethod.TRANSFER,
     status: PaymentStatus.APPROVED,
     provider: 'Transferencia bancaria',
@@ -115,7 +115,7 @@ const PAYMENTS: PaymentSeed[] = [
     totalInstallments: 1,
   },
   {
-    amount: 85000,
+    amount: 200000,
     method: PaymentMethod.CASH,
     status: PaymentStatus.APPROVED,
     provider: 'Efectivo',
@@ -139,7 +139,7 @@ const PAYMENTS: PaymentSeed[] = [
     totalInstallments: 1,
   },
   {
-    amount: 30000,
+    amount: 150000,
     method: PaymentMethod.TRANSFER,
     status: PaymentStatus.REFUNDED,
     provider: 'Transferencia bancaria',
