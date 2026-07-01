@@ -93,6 +93,24 @@ docker compose ps
 pnpm install
 ```
 
+### ⚠️ Si `pnpm install` falla con errores de lockfile
+
+Si ves errores como:
+- `Broken lockfile: no entry for ...`
+- `ERR_PNPM_LOCKFILE_MISSING_DEPENDENCY`
+- `Lockfile failed supply-chain policy check`
+
+**Solución:**
+
+```bash
+pnpm clean --lockfile   # Elimina lockfile y node_modules
+pnpm install            # Regenera desde cero
+```
+
+**¿Por qué pasa?** El lockfile queda desincronizado cuando dependencias se actualizan parcialmente (merges, dependabot, installs interrumpidos). No es un error del código — es un problema de resolución de paquetes.
+
+**Prevención:** No editar `pnpm-lock.yaml` manualmente. Siempre hacer `pnpm install` completo después de.pull.
+
 ---
 
 ## 🧠 Base de datos y migraciones (MUY IMPORTANTE)
