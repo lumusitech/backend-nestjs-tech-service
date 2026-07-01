@@ -420,6 +420,7 @@ export class ReportsService {
     averageResolutionDays: number;
     totalRevenue: number;
     recentOrders: {
+      id: string;
       trackingCode: string;
       serviceTypeName: string;
       status: string;
@@ -463,6 +464,7 @@ export class ReportsService {
       .getRawMany();
 
     const recentOrders: {
+      id: string;
       tracking_code: string;
       service_name: string;
       status: string;
@@ -471,7 +473,8 @@ export class ReportsService {
       .createQueryBuilder('wo')
       .innerJoin('wo.technicians', 't')
       .innerJoin('wo.serviceType', 'st')
-      .select('wo.tracking_code', 'tracking_code')
+      .select('wo.id', 'id')
+      .addSelect('wo.tracking_code', 'tracking_code')
       .addSelect('st.name', 'service_name')
       .addSelect('wo.status', 'status')
       .addSelect('wo.completed_at', 'completed_at')
@@ -489,6 +492,7 @@ export class ReportsService {
         Math.round(Number(stats[0]?.avg_days ?? 0) * 10) / 10,
       totalRevenue: Number(stats[0]?.revenue ?? 0),
       recentOrders: recentOrders.map((r) => ({
+        id: r.id,
         trackingCode: r.tracking_code,
         serviceTypeName: r.service_name,
         status: r.status,
