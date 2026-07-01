@@ -41,6 +41,10 @@ export class User extends BaseEntity {
   @Column({ type: 'decimal', precision: 2, scale: 1, nullable: true })
   trustRating?: number;
 
+  @ApiPropertyOptional({ example: '🔧' })
+  @Column({ type: 'text', nullable: true })
+  avatar?: string;
+
   @ManyToMany(() => Skill)
   @JoinTable({
     name: 'user_skills',

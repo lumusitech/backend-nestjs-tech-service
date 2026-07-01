@@ -16,4 +16,9 @@ export class UpdateProfileDto {
   @IsOptional()
   @IsString()
   phone?: string;
+
+  @ApiPropertyOptional({ example: '🔧' })
+  @IsOptional()
+  @IsString()
+  avatar?: string;
 }
