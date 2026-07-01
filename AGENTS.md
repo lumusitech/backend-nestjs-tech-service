@@ -114,3 +114,38 @@ Arquitectura modular estándar de NestJS. Cada módulo encapsula su propio contr
 - No hardcodear secrets — todo por ConfigModule (.env)
 - No hacer sync de base de datos en producción
 - No commitear secrets ni archivos .env
+
+---
+
+## REGLA OBLIGATORIA: Crear PR para cada cambio
+
+**Cada grupo de cambios relacionados DEBE tener su propia Pull Request:**
+
+1. Crear un branch descriptivo: `feat/nombre-feature`, `fix/nombre-fix`, `docs/que-se-actualizo`
+2. Commitear con mensajes descriptivos
+3. Hacer push al branch
+4. Crear PR con título claro usando `gh pr create`
+5. Si el branch ya tiene una PR abierta, los nuevos commits se agregan automáticamente
+
+**No commitear directamente a `main`** — siempre a través de PR.
+
+---
+
+## Solución a problemas de lockfile (pnpm)
+
+Cuando `pnpm i` falla con errores como:
+- `Broken lockfile: no entry for ...`
+- `Lockfile failed supply-chain policy check`
+- `ERR_PNPM_LOCKFILE_MISSING_DEPENDENCY`
+- `ERR_PNPM_MINIMUM_RELEASE_AGE_VIOLATION`
+
+**Solución:**
+
+```bash
+pnpm clean --lockfile   # Elimina lockfile y node_modules
+pnpm i                  # Regenera desde cero
+```
+
+**Causa:** El lockfile queda desincronizado cuando dependencias se actualizan parcialmente (dependabot, merge manual de package.json sin lockfile, o installs parciales).
+
+**Prevención:** Siempre hacer `pnpm i` completo después de pull, nunca editar `pnpm-lock.yaml` manualmente.
