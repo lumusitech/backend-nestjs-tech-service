@@ -2,6 +2,7 @@ import {
   Injectable,
   UnauthorizedException,
   ConflictException,
+  BadRequestException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
@@ -9,6 +10,8 @@ import { UsersService } from '../users/users.service';
 import { UserPreferencesService } from '../user-preferences/user-preferences.service';
 import { LoginDto } from './dto/login.dto';
 import { CreateUserDto } from '../users/dto/create-user.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { JwtPayload } from './strategies/jwt-payload.interface';
 
 @Injectable()
@@ -73,5 +76,36 @@ export class AuthService {
     }
 
     return this.usersService.create(createUserDto);
+  }
+
+  async getProfile(userId: string) {
+    return this.usersService.findOne(userId);
+  }
+
+  async updateProfile(userId: string, updateProfileDto: UpdateProfileDto) {
+    return this.usersService.update(userId, updateProfileDto);
+  }
+
+  async changePassword(userId: string, changePasswordDto: ChangePasswordDto) {
+    const user = await this.usersService.findByEmail(
+      (await this.usersService.findOne(userId)).email,
+    );
+
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+
+    const isPasswordValid = await bcrypt.compare(
+      changePasswordDto.currentPassword,
+      user.password,
+    );
+
+    if (!isPasswordValid) {
+      throw new BadRequestException('Current password is incorrect');
+    }
+
+    return this.usersService.update(userId, {
+      password: changePasswordDto.newPassword,
+    });
   }
 }
