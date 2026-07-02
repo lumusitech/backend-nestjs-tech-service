@@ -27,6 +27,7 @@ import { UserPreferencesModule } from './user-preferences/user-preferences.modul
 import { BusinessSettingsModule } from './business-settings/business-settings.module';
 import { SkillsModule } from './skills/skills.module';
 import { HealthModule } from './health/health.module';
+import { PushNotificationsModule } from './push-notifications/push-notifications.module';
 
 @Module({
   imports: [
@@ -97,6 +98,7 @@ import { HealthModule } from './health/health.module';
     UserPreferencesModule,
     BusinessSettingsModule,
     SkillsModule,
+    PushNotificationsModule,
   ],
   controllers: [AppController],
   providers: [

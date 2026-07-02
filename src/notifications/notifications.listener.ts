@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { NotificationsService } from './notifications.service';
+import { PushNotificationsService } from '../push-notifications/push-notifications.service';
 import { NotificationType } from './enums/notification-type.enum';
 import { User } from '../users/entities/user.entity';
 import { UserRole } from '../users/enums/user-role.enum';
@@ -26,8 +27,11 @@ import { CreateNotificationDto } from './dto/create-notification.dto';
 
 @Injectable()
 export class NotificationsListener {
+  private readonly logger = new Logger(NotificationsListener.name);
+
   constructor(
     private readonly notificationsService: NotificationsService,
+    private readonly pushNotificationsService: PushNotificationsService,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
   ) {}
@@ -51,6 +55,7 @@ export class NotificationsListener {
     }));
 
     await this.notificationsService.createBulk(dtos);
+    this.sendPush(recipientIds, 'Nueva orden de trabajo', `Se creó la orden ${event.trackingCode}`);
   }
 
   @OnEvent('workorder.status_changed')
@@ -88,6 +93,7 @@ export class NotificationsListener {
     }));
 
     await this.notificationsService.createBulk(dtos);
+    this.sendPush(recipientIds, `Orden ${event.trackingCode} actualizada`, `Estado: '${oldLabel}' → '${newLabel}'`);
   }
 
   @OnEvent('workorder.technician_assigned')
@@ -105,6 +111,7 @@ export class NotificationsListener {
     }));
 
     await this.notificationsService.createBulk(dtos);
+    this.sendPush(event.technicianIds, 'Nueva asignación', `Fuiste asignado a la orden ${event.trackingCode}`);
   }
 
   @OnEvent('task.created')
@@ -150,6 +157,7 @@ export class NotificationsListener {
     }));
 
     await this.notificationsService.createBulk(dtos);
+    this.sendPush(recipientIds, 'Tarea completada', `${event.completedByName} completó '${event.taskTitle}'`);
   }
 
   @OnEvent('payment.created')
@@ -172,6 +180,7 @@ export class NotificationsListener {
     }));
 
     await this.notificationsService.createBulk(dtos);
+    this.sendPush(adminIds, 'Nuevo pago registrado', `Pago de ${event.amount} ARS`);
   }
 
   @OnEvent('payment.status_changed')
@@ -213,6 +222,7 @@ export class NotificationsListener {
     }));
 
     await this.notificationsService.createBulk(dtos);
+    this.sendPush(recipientIds, title, message);
   }
 
   private async getAdminIds(): Promise<string[]> {
@@ -247,6 +257,7 @@ export class NotificationsListener {
     }));
 
     await this.notificationsService.createBulk(dtos);
+    this.sendPush(recipientIds, 'Nuevo trabajo pendiente', `'${event.title}' con vencimiento ${event.dueDate}`);
   }
 
   @OnEvent('pending_item.due_today')
@@ -332,6 +343,7 @@ export class NotificationsListener {
     ];
 
     await this.notificationsService.createBulk(dtos);
+    this.sendPush([event.assignedToId], 'Consulta asignada', `Se te asignó la consulta de ${event.clientName}`);
   }
 
   @OnEvent('inquiry.contacted')
@@ -375,5 +387,18 @@ export class NotificationsListener {
     }));
 
     await this.notificationsService.createBulk(dtos);
+    this.sendPush(adminIds, `Consulta ${decisionLabel}`, `La consulta de ${event.clientName} fue ${decisionLabel}`);
+  }
+
+  private async sendPush(
+    userIds: string[],
+    title: string,
+    body: string,
+  ): Promise<void> {
+    try {
+      await this.pushNotificationsService.sendToAll(userIds, { title, body });
+    } catch (error) {
+      this.logger.warn(`Push notification failed: ${error}`);
+    }
   }
 }
