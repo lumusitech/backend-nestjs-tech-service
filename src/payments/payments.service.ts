@@ -302,6 +302,18 @@ export class PaymentsService {
     }
   }
 
+  async remove(id: string): Promise<void> {
+    const payment = await this.findOne(id);
+    await this.paymentRepository.softRemove(payment);
+    this.logger.log(`Payment soft deleted: ${id}`);
+  }
+
+  async hardRemove(id: string): Promise<void> {
+    const payment = await this.findOne(id);
+    await this.paymentRepository.remove(payment);
+    this.logger.log(`Payment permanently deleted: ${id}`);
+  }
+
   private getProvider(providerName: string): PaymentProvider {
     const provider = this.providers.get(providerName);
 

@@ -121,6 +121,6 @@ export class WorkOrder extends BaseEntity {
   @OneToMany(() => Task, (task) => task.workOrder, { cascade: true })
   tasks!: Task[];
 
-  @OneToMany(() => Payment, (payment) => payment.workOrder)
+  @OneToMany(() => Payment, (payment) => payment.workOrder, { cascade: true })
   payments!: Payment[];
 }

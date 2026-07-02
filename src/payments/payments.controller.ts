@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Patch,
+  Delete,
   Body,
   Param,
   Query,
@@ -101,6 +102,38 @@ export class PaymentsApiController {
   @ApiResponse({ status: 200, description: 'Payments retrieved successfully' })
   findAllGlobal(@Query() filterDto: FilterPaymentDto) {
     return this.paymentsService.findAllGlobal(filterDto);
+  }
+
+  @Patch(':id')
+  @ApiOperation({ summary: 'Update a payment' })
+  @ApiResponse({ status: 200, description: 'Payment updated successfully' })
+  @ApiResponse({ status: 404, description: 'Payment not found' })
+  @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
+  update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() updatePaymentDto: UpdatePaymentDto,
+  ) {
+    return this.paymentsService.update(id, updatePaymentDto);
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Soft delete a payment' })
+  @ApiResponse({ status: 200, description: 'Payment soft deleted' })
+  @ApiResponse({ status: 404, description: 'Payment not found' })
+  @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
+  remove(@Param('id', ParseUUIDPipe) id: string) {
+    return this.paymentsService.remove(id);
+  }
+
+  @Delete(':id/hard')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Permanently delete a payment' })
+  @ApiResponse({ status: 200, description: 'Payment permanently deleted' })
+  @ApiResponse({ status: 404, description: 'Payment not found' })
+  @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
+  hardRemove(@Param('id', ParseUUIDPipe) id: string) {
+    return this.paymentsService.hardRemove(id);
   }
 }
 
