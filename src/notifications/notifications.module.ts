@@ -8,10 +8,12 @@ import { NotificationsListener } from './notifications.listener';
 import { NotificationsGateway } from './gateways/notifications.gateway';
 import { Notification } from './entities/notification.entity';
 import { User } from '../users/entities/user.entity';
+import { PushNotificationsModule } from '../push-notifications/push-notifications.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Notification, User]),
+    PushNotificationsModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
