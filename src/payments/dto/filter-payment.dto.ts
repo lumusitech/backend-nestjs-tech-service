@@ -34,4 +34,9 @@ export class FilterPaymentDto extends PaginationDto {
   @IsDateString()
   @IsOptional()
   dateTo?: string;
+
+  @ApiPropertyOptional({ enum: ['createdAt', 'paidAt'], example: 'createdAt', description: 'Date field to filter by' })
+  @IsOptional()
+  @IsString()
+  dateField?: string;
 }

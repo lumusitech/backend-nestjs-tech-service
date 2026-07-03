@@ -122,11 +122,11 @@ export class PaymentsService {
     }
 
     if (dateFrom) {
-      qb.andWhere('p.created_at >= :dateFrom', { dateFrom });
+      qb.andWhere(`p.${dateField} >= :dateFrom`, { dateFrom });
     }
 
     if (dateTo) {
-      qb.andWhere('p.created_at <= :dateTo', { dateTo });
+      qb.andWhere(`p.${dateField} <= :dateTo`, { dateTo });
     }
 
     const safeSortBy = validateSortBy(sortBy, ALLOWED_SORT_COLUMNS, 'createdAt');
@@ -153,6 +153,7 @@ export class PaymentsService {
       search,
       dateFrom,
       dateTo,
+      dateField = 'createdAt',
     } = filterDto;
 
     const qb = this.paymentRepository
@@ -182,11 +183,11 @@ export class PaymentsService {
     }
 
     if (dateFrom) {
-      qb.andWhere('p.created_at >= :dateFrom', { dateFrom });
+      qb.andWhere(`p.${dateField} >= :dateFrom`, { dateFrom });
     }
 
     if (dateTo) {
-      qb.andWhere('p.created_at <= :dateTo', { dateTo });
+      qb.andWhere(`p.${dateField} <= :dateTo`, { dateTo });
     }
 
     const safeSortBy = validateSortBy(sortBy, ALLOWED_SORT_COLUMNS, 'createdAt');
