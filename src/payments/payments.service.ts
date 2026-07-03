@@ -127,7 +127,10 @@ export class PaymentsService {
     }
 
     if (dateTo) {
-      qb.andWhere(`p.${dateField} <= :dateTo`, { dateTo });
+      const nextDay = new Date(dateTo);
+      nextDay.setDate(nextDay.getDate() + 1);
+      const dateToEnd = nextDay.toISOString().split('T')[0];
+      qb.andWhere(`p.${dateField} < :dateToEnd`, { dateToEnd });
     }
 
     const safeSortBy = validateSortBy(sortBy, ALLOWED_SORT_COLUMNS, 'createdAt');
@@ -188,7 +191,10 @@ export class PaymentsService {
     }
 
     if (dateTo) {
-      qb.andWhere(`p.${dateField} <= :dateTo`, { dateTo });
+      const nextDay = new Date(dateTo);
+      nextDay.setDate(nextDay.getDate() + 1);
+      const dateToEnd = nextDay.toISOString().split('T')[0];
+      qb.andWhere(`p.${dateField} < :dateToEnd`, { dateToEnd });
     }
 
     const safeSortBy = validateSortBy(sortBy, ALLOWED_SORT_COLUMNS, 'createdAt');
