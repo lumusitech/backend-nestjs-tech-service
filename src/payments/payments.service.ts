@@ -106,6 +106,7 @@ export class PaymentsService {
       method,
       dateFrom,
       dateTo,
+      dateField = 'createdAt',
     } = filterDto;
 
     const qb = this.paymentRepository
