@@ -471,6 +471,89 @@ describe('WorkOrdersService', () => {
         });
       });
     });
+
+    describe('updateNote', () => {
+      it('should update a note successfully', async () => {
+        workOrderRepo.findOne.mockResolvedValue({
+          id: 'wo-1',
+          trackingCode: 'TS-AAAAA',
+          technicians: [{ id: 'tech-1' }],
+        });
+        noteRepo.findOne.mockResolvedValue({
+          id: 'note-1',
+          type: NoteType.DIAGNOSIS,
+          content: 'Original content',
+          workOrderId: 'wo-1',
+        });
+        noteRepo.save.mockResolvedValue({
+          id: 'note-1',
+          type: NoteType.OBSERVATION,
+          content: 'Updated content',
+          workOrderId: 'wo-1',
+        });
+
+        const result = await service.updateNote('wo-1', 'note-1', {
+          type: NoteType.OBSERVATION,
+          content: 'Updated content',
+        });
+
+        expect(noteRepo.save).toHaveBeenCalled();
+        expect(eventEmitter.emit).toHaveBeenCalledWith(
+          'workorder.note_updated',
+          expect.objectContaining({
+            workOrderId: 'wo-1',
+            noteId: 'note-1',
+          }),
+        );
+        expect(result.content).toBe('Updated content');
+      });
+
+      it('should throw NotFoundException if note not found', async () => {
+        workOrderRepo.findOne.mockResolvedValue({ id: 'wo-1', trackingCode: 'TS-AAAAA', technicians: [] });
+        noteRepo.findOne.mockResolvedValue(null);
+
+        await expect(
+          service.updateNote('wo-1', 'nonexistent', { content: 'test' }),
+        ).rejects.toThrow(NotFoundException);
+      });
+    });
+
+    describe('deleteNote', () => {
+      it('should soft delete a note', async () => {
+        workOrderRepo.findOne.mockResolvedValue({
+          id: 'wo-1',
+          trackingCode: 'TS-AAAAA',
+          technicians: [{ id: 'tech-1' }],
+        });
+        noteRepo.findOne.mockResolvedValue({
+          id: 'note-1',
+          type: NoteType.DIAGNOSIS,
+          content: 'To delete',
+          workOrderId: 'wo-1',
+        });
+        noteRepo.softRemove.mockResolvedValue({} as never);
+
+        await service.deleteNote('wo-1', 'note-1');
+
+        expect(noteRepo.softRemove).toHaveBeenCalled();
+        expect(eventEmitter.emit).toHaveBeenCalledWith(
+          'workorder.note_deleted',
+          expect.objectContaining({
+            workOrderId: 'wo-1',
+            noteId: 'note-1',
+          }),
+        );
+      });
+
+      it('should throw NotFoundException if note not found', async () => {
+        workOrderRepo.findOne.mockResolvedValue({ id: 'wo-1', trackingCode: 'TS-AAAAA', technicians: [] });
+        noteRepo.findOne.mockResolvedValue(null);
+
+        await expect(
+          service.deleteNote('wo-1', 'nonexistent'),
+        ).rejects.toThrow(NotFoundException);
+      });
+    });
   });
 
   describe('materials', () => {

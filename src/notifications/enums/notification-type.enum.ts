@@ -15,5 +15,7 @@ export enum NotificationType {
   INQUIRY_CONTACTED = 'inquiry.contacted',
   INQUIRY_REVIEWED = 'inquiry.reviewed',
   WORK_ORDER_NOTE_ADDED = 'work_order.note_added',
+  WORK_ORDER_NOTE_UPDATED = 'work_order.note_updated',
+  WORK_ORDER_NOTE_DELETED = 'work_order.note_deleted',
   WORK_ORDER_MATERIAL_ADDED = 'work_order.material_added',
 }
