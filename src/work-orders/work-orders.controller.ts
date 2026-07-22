@@ -75,15 +75,22 @@ export class WorkOrdersController {
   }
 
   @Patch(':id')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.TECHNICIAN)
   @ApiOperation({ summary: 'Update a work order' })
   @ApiParam({ name: 'id', description: 'Work order UUID' })
   @ApiResponse({ status: 200, description: 'Work order updated successfully' })
   @ApiResponse({ status: 404, description: 'Work order not found' })
-  update(
+  async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateWorkOrderDto: UpdateWorkOrderDto,
+    @Req() req: Request,
   ) {
+    const user = req.user as { id: string; role: UserRole };
+
+    if (user.role === UserRole.TECHNICIAN) {
+      await this.workOrdersService.validateTechnicianOwnership(id, user.id);
+    }
+
     return this.workOrdersService.update(id, updateWorkOrderDto);
   }
 
@@ -138,7 +145,12 @@ export class WorkOrdersController {
     @Body() createNoteDto: CreateWorkOrderNoteDto,
     @CurrentUser() user: { id: string; role: string },
   ) {
-    return this.workOrdersService.createNote(id, createNoteDto, user.id, user.role);
+    return this.workOrdersService.createNote(
+      id,
+      createNoteDto,
+      user.id,
+      user.role,
+    );
   }
 
   @Get(':id/notes')
@@ -251,7 +263,10 @@ export class WorkOrdersController {
   @ApiParam({ name: 'taskId', description: 'Task UUID' })
   @ApiResponse({ status: 200, description: 'Task updated successfully' })
   @ApiResponse({ status: 404, description: 'Work order or task not found' })
-  @ApiResponse({ status: 403, description: 'Technician not assigned to this work order' })
+  @ApiResponse({
+    status: 403,
+    description: 'Technician not assigned to this work order',
+  })
   async updateTask(
     @Param('id', ParseUUIDPipe) id: string,
     @Param('taskId', ParseUUIDPipe) taskId: string,
