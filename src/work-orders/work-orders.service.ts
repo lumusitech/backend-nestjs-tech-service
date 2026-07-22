@@ -28,6 +28,8 @@ import {
   WorkOrderTechnicianAssignedEvent,
   TaskCreatedEvent,
   TaskCompletedEvent,
+  WorkOrderNoteAddedEvent,
+  WorkOrderMaterialAddedEvent,
 } from '../notifications/events/notification.events';
 
 const ALLOWED_SORT_COLUMNS = ['createdAt', 'updatedAt', 'status', 'priority', 'scheduledDate', 'trackingCode'] as const;
@@ -326,15 +328,34 @@ export class WorkOrdersService {
   async createNote(
     workOrderId: string,
     dto: CreateWorkOrderNoteDto,
+    createdById: string,
+    createdByRole: string,
   ): Promise<WorkOrderNote> {
-    await this.findOne(workOrderId);
+    const workOrder = await this.findOne(workOrderId);
+
+    const createdByUser = await this.userRepository.findOne({
+      where: { id: createdById },
+      select: { id: true, name: true },
+    });
 
     const note = this.noteRepository.create({
       ...dto,
       workOrderId,
     });
 
-    return this.noteRepository.save(note);
+    const saved = await this.noteRepository.save(note);
+
+    const event = new WorkOrderNoteAddedEvent();
+    event.workOrderId = workOrderId;
+    event.trackingCode = workOrder.trackingCode;
+    event.noteType = dto.type;
+    event.contentPreview = dto.content.substring(0, 80);
+    event.createdByName = createdByUser?.name ?? 'Usuario';
+    event.createdByRole = createdByRole;
+    event.technicianIds = workOrder.technicians?.map((t) => t.id) ?? [];
+    this.eventEmitter.emit('workorder.note_added', event);
+
+    return saved;
   }
 
   async findNotes(workOrderId: string): Promise<WorkOrderNote[]> {
@@ -352,14 +373,24 @@ export class WorkOrdersService {
     workOrderId: string,
     dto: CreateWorkOrderMaterialDto,
   ): Promise<WorkOrderMaterial> {
-    await this.findOne(workOrderId);
+    const workOrder = await this.findOne(workOrderId);
 
     const material = this.materialRepository.create({
       ...dto,
       workOrderId,
     });
 
-    return this.materialRepository.save(material);
+    const saved = await this.materialRepository.save(material);
+
+    const event = new WorkOrderMaterialAddedEvent();
+    event.workOrderId = workOrderId;
+    event.trackingCode = workOrder.trackingCode;
+    event.materialDescription = dto.description;
+    event.quantity = dto.quantity;
+    event.technicianIds = workOrder.technicians?.map((t) => t.id) ?? [];
+    this.eventEmitter.emit('workorder.material_added', event);
+
+    return saved;
   }
 
   async findMaterials(workOrderId: string): Promise<WorkOrderMaterial[]> {

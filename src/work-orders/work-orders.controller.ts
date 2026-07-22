@@ -22,6 +22,7 @@ import { CreateWorkOrderMaterialDto } from './dto/create-work-order-material.dto
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { UserRole } from '../users/enums/user-role.enum';
 import {
@@ -134,8 +135,9 @@ export class WorkOrdersController {
   createNote(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() createNoteDto: CreateWorkOrderNoteDto,
+    @CurrentUser() user: { id: string; role: string },
   ) {
-    return this.workOrdersService.createNote(id, createNoteDto);
+    return this.workOrdersService.createNote(id, createNoteDto, user.id, user.role);
   }
 
   @Get(':id/notes')

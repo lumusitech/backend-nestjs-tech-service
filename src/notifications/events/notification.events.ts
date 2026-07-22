@@ -108,3 +108,21 @@ export class InquiryReviewedEvent {
   adminDecision!: string;
   adminNotes?: string;
 }
+
+export class WorkOrderNoteAddedEvent {
+  workOrderId!: string;
+  trackingCode!: string;
+  noteType!: string;
+  contentPreview!: string;
+  createdByName!: string;
+  createdByRole!: string;
+  technicianIds!: string[];
+}
+
+export class WorkOrderMaterialAddedEvent {
+  workOrderId!: string;
+  trackingCode!: string;
+  materialDescription!: string;
+  quantity!: number;
+  technicianIds!: string[];
+}

@@ -17,12 +17,20 @@ interface SocketData {
   userId?: string;
 }
 
-const corsOrigins = (process.env.CORS_ORIGINS || 'http://localhost:4200').split(
-  ',',
-);
+function resolveCorsOrigin(): boolean | string | string[] {
+  const raw = process.env.CORS_ORIGINS || 'http://localhost:4200';
+  // Reflect request origin — required when accessing via LAN IP from phone
+  if (raw === '*' || raw.includes('*')) {
+    return true;
+  }
+  return raw.split(',').map((o) => o.trim());
+}
 
 @WebSocketGateway({
-  cors: { origin: corsOrigins },
+  cors: {
+    origin: resolveCorsOrigin(),
+    credentials: true,
+  },
 })
 export class NotificationsGateway
   implements OnGatewayConnection, OnGatewayDisconnect
@@ -31,7 +39,6 @@ export class NotificationsGateway
   server!: Server;
 
   private readonly logger = new Logger(NotificationsGateway.name);
-  private readonly connectedUsers = new Map<string, Socket>();
 
   constructor(private readonly jwtService: JwtService) {}
 
@@ -50,10 +57,11 @@ export class NotificationsGateway
       const payload = this.jwtService.verify<JwtPayload>(token);
       const userId = payload.sub;
 
-      this.connectedUsers.set(userId, client);
       (client.data as SocketData).userId = userId;
+      // Rooms support multiple sockets per user (PC + phone, tabs, reconnects)
+      void client.join(`user:${userId}`);
 
-      this.logger.log(`Client connected: ${userId}`);
+      this.logger.log(`Client connected: ${userId} (${client.id})`);
     } catch {
       this.logger.warn('Connection rejected: invalid token');
       client.disconnect();
@@ -64,16 +72,15 @@ export class NotificationsGateway
     const data = client.data as SocketData;
     const userId = data.userId;
     if (userId) {
-      this.connectedUsers.delete(userId);
-      this.logger.log(`Client disconnected: ${userId}`);
+      this.logger.log(`Client disconnected: ${userId} (${client.id})`);
     }
   }
 
   emitToUser(userId: string, event: string, data: unknown): void {
-    const socket = this.connectedUsers.get(userId);
-    if (socket) {
-      socket.emit(event, data);
-    }
+    const room = `user:${userId}`;
+    const size = this.server.sockets.adapter.rooms.get(room)?.size ?? 0;
+    this.logger.debug(`emit '${event}' → ${room} (${size} socket(s))`);
+    this.server.to(room).emit(event, data);
   }
 
   emitToAll(event: string, data: unknown): void {

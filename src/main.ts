@@ -16,13 +16,15 @@ async function bootstrap() {
   // Security headers
   app.use(helmet());
 
-  // CORS — configurable via CORS_ORIGINS env var (comma-separated)
-  const corsOrigins = (
-    process.env.CORS_ORIGINS || 'http://localhost:4200'
-  ).split(',');
+  // CORS — comma-separated list, or * to reflect any origin (LAN phone access)
+  const corsRaw = process.env.CORS_ORIGINS || 'http://localhost:4200';
+  const corsOrigin =
+    corsRaw === '*' || corsRaw.includes('*')
+      ? true
+      : corsRaw.split(',').map((o) => o.trim());
 
   app.enableCors({
-    origin: corsOrigins,
+    origin: corsOrigin,
     credentials: true,
   });
 
