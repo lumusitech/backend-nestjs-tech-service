@@ -21,4 +21,8 @@ export class ServiceType extends BaseEntity {
   @ApiProperty({ example: true })
   @Column({ name: 'is_active', default: true })
   isActive!: boolean;
+
+  @ApiProperty({ example: false, description: 'Si el servicio requiere entrega al cliente (taller) o se completa en el lugar' })
+  @Column({ name: 'requires_delivery', default: false })
+  requiresDelivery!: boolean;
 }

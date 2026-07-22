@@ -29,4 +29,9 @@ export class CreateServiceTypeDto {
   @IsBoolean()
   @IsOptional()
   isActive?: boolean;
+
+  @ApiPropertyOptional({ example: false, description: 'Requiere entrega al cliente (taller)' })
+  @IsBoolean()
+  @IsOptional()
+  requiresDelivery?: boolean;
 }
