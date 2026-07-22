@@ -126,3 +126,17 @@ export class WorkOrderMaterialAddedEvent {
   quantity!: number;
   technicianIds!: string[];
 }
+
+export class WorkOrderNoteUpdatedEvent {
+  workOrderId!: string;
+  trackingCode!: string;
+  noteId!: string;
+  technicianIds!: string[];
+}
+
+export class WorkOrderNoteDeletedEvent {
+  workOrderId!: string;
+  trackingCode!: string;
+  noteId!: string;
+  technicianIds!: string[];
+}

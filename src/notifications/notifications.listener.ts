@@ -23,6 +23,8 @@ import {
   InquiryContactedEvent,
   InquiryReviewedEvent,
   WorkOrderNoteAddedEvent,
+  WorkOrderNoteUpdatedEvent,
+  WorkOrderNoteDeletedEvent,
   WorkOrderMaterialAddedEvent,
 } from './events/notification.events';
 import { CreateNotificationDto } from './dto/create-notification.dto';
@@ -291,6 +293,58 @@ export class NotificationsListener {
       event.technicianIds,
       `Nuevo material en ${event.trackingCode}`,
       `Se agregó '${event.materialDescription}' a la orden`,
+    );
+  }
+
+  @OnEvent('workorder.note_updated')
+  async handleWorkOrderNoteUpdated(
+    event: WorkOrderNoteUpdatedEvent,
+  ): Promise<void> {
+    if (event.technicianIds.length === 0) return;
+
+    const dtos: CreateNotificationDto[] = event.technicianIds.map((userId) => ({
+      type: NotificationType.WORK_ORDER_NOTE_UPDATED,
+      title: `Nota actualizada en ${event.trackingCode}`,
+      message: `Una nota fue actualizada en la orden ${event.trackingCode}`,
+      userId,
+      referenceId: event.workOrderId,
+      referenceType: 'work_order',
+      metadata: {
+        trackingCode: event.trackingCode,
+      },
+    }));
+
+    await this.notificationsService.createBulk(dtos);
+    this.sendPush(
+      event.technicianIds,
+      `Nota actualizada en ${event.trackingCode}`,
+      `Una nota fue actualizada en la orden`,
+    );
+  }
+
+  @OnEvent('workorder.note_deleted')
+  async handleWorkOrderNoteDeleted(
+    event: WorkOrderNoteDeletedEvent,
+  ): Promise<void> {
+    if (event.technicianIds.length === 0) return;
+
+    const dtos: CreateNotificationDto[] = event.technicianIds.map((userId) => ({
+      type: NotificationType.WORK_ORDER_NOTE_DELETED,
+      title: `Nota eliminada en ${event.trackingCode}`,
+      message: `Una nota fue eliminada en la orden ${event.trackingCode}`,
+      userId,
+      referenceId: event.workOrderId,
+      referenceType: 'work_order',
+      metadata: {
+        trackingCode: event.trackingCode,
+      },
+    }));
+
+    await this.notificationsService.createBulk(dtos);
+    this.sendPush(
+      event.technicianIds,
+      `Nota eliminada en ${event.trackingCode}`,
+      `Una nota fue eliminada en la orden`,
     );
   }
 

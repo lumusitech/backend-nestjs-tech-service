@@ -15,6 +15,7 @@ import { CreateWorkOrderDto } from './dto/create-work-order.dto';
 import { UpdateWorkOrderDto } from './dto/update-work-order.dto';
 import { FilterWorkOrderDto } from './dto/filter-work-order.dto';
 import { CreateWorkOrderNoteDto } from './dto/create-work-order-note.dto';
+import { UpdateWorkOrderNoteDto } from './dto/update-work-order-note.dto';
 import { CreateWorkOrderMaterialDto } from './dto/create-work-order-material.dto';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
@@ -29,6 +30,8 @@ import {
   TaskCreatedEvent,
   TaskCompletedEvent,
   WorkOrderNoteAddedEvent,
+  WorkOrderNoteUpdatedEvent,
+  WorkOrderNoteDeletedEvent,
   WorkOrderMaterialAddedEvent,
 } from '../notifications/events/notification.events';
 
@@ -365,6 +368,59 @@ export class WorkOrdersService {
       where: { workOrderId },
       order: { createdAt: 'DESC' },
     });
+  }
+
+  async updateNote(
+    workOrderId: string,
+    noteId: string,
+    dto: UpdateWorkOrderNoteDto,
+  ): Promise<WorkOrderNote> {
+    const workOrder = await this.findOne(workOrderId);
+
+    const note = await this.noteRepository.findOne({
+      where: { id: noteId, workOrderId },
+    });
+
+    if (!note) {
+      throw new NotFoundException(
+        `Note #${noteId} not found in work order #${workOrderId}`,
+      );
+    }
+
+    Object.assign(note, dto);
+    const saved = await this.noteRepository.save(note);
+
+    const event = new WorkOrderNoteUpdatedEvent();
+    event.workOrderId = workOrderId;
+    event.trackingCode = workOrder.trackingCode;
+    event.noteId = noteId;
+    event.technicianIds = workOrder.technicians?.map((t) => t.id) ?? [];
+    this.eventEmitter.emit('workorder.note_updated', event);
+
+    return saved;
+  }
+
+  async deleteNote(workOrderId: string, noteId: string): Promise<void> {
+    const workOrder = await this.findOne(workOrderId);
+
+    const note = await this.noteRepository.findOne({
+      where: { id: noteId, workOrderId },
+    });
+
+    if (!note) {
+      throw new NotFoundException(
+        `Note #${noteId} not found in work order #${workOrderId}`,
+      );
+    }
+
+    await this.noteRepository.softRemove(note);
+
+    const event = new WorkOrderNoteDeletedEvent();
+    event.workOrderId = workOrderId;
+    event.trackingCode = workOrder.trackingCode;
+    event.noteId = noteId;
+    event.technicianIds = workOrder.technicians?.map((t) => t.id) ?? [];
+    this.eventEmitter.emit('workorder.note_deleted', event);
   }
 
   // ─── Materials ───────────────────────────────────────

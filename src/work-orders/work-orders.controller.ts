@@ -18,6 +18,7 @@ import { CreateWorkOrderDto } from './dto/create-work-order.dto';
 import { UpdateWorkOrderDto } from './dto/update-work-order.dto';
 import { FilterWorkOrderDto } from './dto/filter-work-order.dto';
 import { CreateWorkOrderNoteDto } from './dto/create-work-order-note.dto';
+import { UpdateWorkOrderNoteDto } from './dto/update-work-order-note.dto';
 import { CreateWorkOrderMaterialDto } from './dto/create-work-order-material.dto';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
@@ -148,6 +149,35 @@ export class WorkOrdersController {
   @ApiResponse({ status: 404, description: 'Work order not found' })
   findNotes(@Param('id', ParseUUIDPipe) id: string) {
     return this.workOrdersService.findNotes(id);
+  }
+
+  @Patch(':id/notes/:noteId')
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Update a note in a work order' })
+  @ApiParam({ name: 'id', description: 'Work order UUID' })
+  @ApiParam({ name: 'noteId', description: 'Note UUID' })
+  @ApiResponse({ status: 200, description: 'Note updated successfully' })
+  @ApiResponse({ status: 404, description: 'Work order or note not found' })
+  updateNote(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('noteId', ParseUUIDPipe) noteId: string,
+    @Body() updateNoteDto: UpdateWorkOrderNoteDto,
+  ) {
+    return this.workOrdersService.updateNote(id, noteId, updateNoteDto);
+  }
+
+  @Delete(':id/notes/:noteId')
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Delete a note from a work order' })
+  @ApiParam({ name: 'id', description: 'Work order UUID' })
+  @ApiParam({ name: 'noteId', description: 'Note UUID' })
+  @ApiResponse({ status: 200, description: 'Note deleted successfully' })
+  @ApiResponse({ status: 404, description: 'Work order or note not found' })
+  deleteNote(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('noteId', ParseUUIDPipe) noteId: string,
+  ) {
+    return this.workOrdersService.deleteNote(id, noteId);
   }
 
   // ─── Materials ───────────────────────────────────────
