@@ -133,6 +133,7 @@ src/
 - [x] Búsqueda con `search` param (accent-insensitive: tracking code + client name)
 - [x] Endpoints anidados:
   - `POST/GET /work-orders/:id/notes`
+  - `PATCH/DELETE /work-orders/:id/notes/:noteId`
   - `POST/GET/DELETE /work-orders/:id/materials`
 - [x] Gestión de técnicos: `PUT /work-orders/:id/technicians` (reemplazo de array)
 
@@ -187,12 +188,12 @@ src/
 ### 11. `notifications/` — Notificaciones in-app
 
 - [x] Notification entity (type, title, message, userId, referenceId, referenceType, metadata, isRead, readAt)
-- [x] NotificationType enum: work_order.created, work_order.status_changed, work_order.technician_assigned, task.created, task.completed, payment.created, payment.approved, payment.rejected
+- [x] NotificationType enum: work_order.created, work_order.status_changed, work_order.technician_assigned, task.created, task.completed, payment.created, payment.approved, payment.rejected, pending_item.created/due_today/overdue, inquiry.created/assigned/contacted/reviewed, work_order.note_added/updated/deleted, work_order.material_added
 - [x] WebSocket Gateway (Socket.IO) con autenticación JWT en handshake
 - [x] EventEmitter2 para desacoplamiento entre servicios y notificaciones
 - [x] NotificationsListener (@OnEvent) genera notificaciones automáticamente
 - [x] Endpoints: `GET /notifications`, `GET /notifications/unread-count`, `PATCH /notifications/:id/read`, `PATCH /notifications/read-all`
-- [x] Integración en work-orders: create, update (status), replaceTechnicians, createTask, updateTask
+- [x] Integración en work-orders: create, update (status), replaceTechnicians, createTask, updateTask, createNote (notifica técnicos/admins según rol), createMaterial (notifica técnicos), updateNote, deleteNote
 - [x] Integración en payments: create, update, handleMercadoPagoWebhook
 - [x] Admin recibe todas las notificaciones, técnicos solo las suyas
 

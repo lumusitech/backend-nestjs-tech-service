@@ -21,6 +21,14 @@
 
 Ninguno — todos los PRs mergeados.
 
+## Últimas features implementadas (22/07/2026)
+
+- Notificaciones en tiempo real para notas y materiales (workorder.note_updated, workorder.note_deleted)
+- Edición y eliminación de notas por admin (PATCH/DELETE /work-orders/:id/notes/:noteId)
+- Gateway migrado de Map a Rooms de Socket.IO (soporte multi-dispositivo)
+- CORS dinámico para acceso LAN desde celular
+- Migraciones para nuevos tipos de notificación
+
 ## Módulos completados
 
 1. ✅ common — BaseEntity, DTOs, filtros globales
