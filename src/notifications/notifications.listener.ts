@@ -22,6 +22,8 @@ import {
   InquiryAssignedEvent,
   InquiryContactedEvent,
   InquiryReviewedEvent,
+  WorkOrderNoteAddedEvent,
+  WorkOrderMaterialAddedEvent,
 } from './events/notification.events';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 
@@ -223,6 +225,73 @@ export class NotificationsListener {
 
     await this.notificationsService.createBulk(dtos);
     this.sendPush(recipientIds, title, message);
+  }
+
+  @OnEvent('workorder.note_added')
+  async handleWorkOrderNoteAdded(
+    event: WorkOrderNoteAddedEvent,
+  ): Promise<void> {
+    const isFromTechnician = event.createdByRole === 'technician';
+
+    let recipientIds: string[];
+
+    if (isFromTechnician) {
+      const adminIds = await this.getAdminIds();
+      recipientIds = adminIds;
+    } else {
+      recipientIds = event.technicianIds;
+    }
+
+    if (recipientIds.length === 0) return;
+
+    const dtos: CreateNotificationDto[] = recipientIds.map((userId) => ({
+      type: NotificationType.WORK_ORDER_NOTE_ADDED,
+      title: `Nueva nota en ${event.trackingCode}`,
+      message: `${event.createdByName} agregó una nota (${event.noteType}): ${event.contentPreview}`,
+      userId,
+      referenceId: event.workOrderId,
+      referenceType: 'work_order',
+      metadata: {
+        trackingCode: event.trackingCode,
+        noteType: event.noteType,
+        createdByName: event.createdByName,
+      },
+    }));
+
+    await this.notificationsService.createBulk(dtos);
+    this.sendPush(
+      recipientIds,
+      `Nueva nota en ${event.trackingCode}`,
+      `${event.createdByName} agregó una nota`,
+    );
+  }
+
+  @OnEvent('workorder.material_added')
+  async handleWorkOrderMaterialAdded(
+    event: WorkOrderMaterialAddedEvent,
+  ): Promise<void> {
+    if (event.technicianIds.length === 0) return;
+
+    const dtos: CreateNotificationDto[] = event.technicianIds.map((userId) => ({
+      type: NotificationType.WORK_ORDER_MATERIAL_ADDED,
+      title: `Nuevo material en ${event.trackingCode}`,
+      message: `Se agregó '${event.materialDescription}' (x${event.quantity}) a la orden ${event.trackingCode}`,
+      userId,
+      referenceId: event.workOrderId,
+      referenceType: 'work_order',
+      metadata: {
+        trackingCode: event.trackingCode,
+        materialDescription: event.materialDescription,
+        quantity: event.quantity,
+      },
+    }));
+
+    await this.notificationsService.createBulk(dtos);
+    this.sendPush(
+      event.technicianIds,
+      `Nuevo material en ${event.trackingCode}`,
+      `Se agregó '${event.materialDescription}' a la orden`,
+    );
   }
 
   private async getAdminIds(): Promise<string[]> {

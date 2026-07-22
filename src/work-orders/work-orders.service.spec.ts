@@ -399,7 +399,12 @@ describe('WorkOrdersService', () => {
   describe('notes', () => {
     describe('createNote', () => {
       it('should create a note for a work order', async () => {
-        workOrderRepo.findOne.mockResolvedValue({ id: 'wo-1' });
+        workOrderRepo.findOne.mockResolvedValue({
+          id: 'wo-1',
+          trackingCode: 'TS-AAAAA',
+          technicians: [{ id: 'tech-1' }],
+        });
+        userRepo.findOne.mockResolvedValue({ id: 'user-1', name: 'Test User' });
         noteRepo.create.mockReturnValue({
           type: NoteType.DIAGNOSIS,
           content: 'Screen broken',
@@ -412,13 +417,25 @@ describe('WorkOrdersService', () => {
           workOrderId: 'wo-1',
         });
 
-        const result = await service.createNote('wo-1', {
-          type: NoteType.DIAGNOSIS,
-          content: 'Screen broken',
-        });
+        const result = await service.createNote(
+          'wo-1',
+          { type: NoteType.DIAGNOSIS, content: 'Screen broken' },
+          'user-1',
+          'technician',
+        );
 
         expect(noteRepo.create).toHaveBeenCalled();
         expect(noteRepo.save).toHaveBeenCalled();
+        expect(eventEmitter.emit).toHaveBeenCalledWith(
+          'workorder.note_added',
+          expect.objectContaining({
+            workOrderId: 'wo-1',
+            trackingCode: 'TS-AAAAA',
+            noteType: NoteType.DIAGNOSIS,
+            createdByName: 'Test User',
+            createdByRole: 'technician',
+          }),
+        );
         expect(result.id).toBe('note-1');
       });
 
@@ -426,10 +443,12 @@ describe('WorkOrdersService', () => {
         workOrderRepo.findOne.mockResolvedValue(null);
 
         await expect(
-          service.createNote('nonexistent', {
-            type: NoteType.DIAGNOSIS,
-            content: 'test',
-          }),
+          service.createNote(
+            'nonexistent',
+            { type: NoteType.DIAGNOSIS, content: 'test' },
+            'user-1',
+            'technician',
+          ),
         ).rejects.toThrow(NotFoundException);
       });
     });
@@ -457,7 +476,11 @@ describe('WorkOrdersService', () => {
   describe('materials', () => {
     describe('createMaterial', () => {
       it('should create a material for a work order', async () => {
-        workOrderRepo.findOne.mockResolvedValue({ id: 'wo-1' });
+        workOrderRepo.findOne.mockResolvedValue({
+          id: 'wo-1',
+          trackingCode: 'TS-AAAAA',
+          technicians: [{ id: 'tech-1' }],
+        });
         materialRepo.create.mockReturnValue({
           description: 'LCD Screen',
           quantity: 1,
@@ -480,6 +503,15 @@ describe('WorkOrdersService', () => {
 
         expect(materialRepo.create).toHaveBeenCalled();
         expect(materialRepo.save).toHaveBeenCalled();
+        expect(eventEmitter.emit).toHaveBeenCalledWith(
+          'workorder.material_added',
+          expect.objectContaining({
+            workOrderId: 'wo-1',
+            trackingCode: 'TS-AAAAA',
+            materialDescription: 'LCD Screen',
+            quantity: 1,
+          }),
+        );
         expect(result.id).toBe('mat-1');
       });
 
