@@ -65,7 +65,7 @@ const VALID_TRANSITIONS: Record<WorkOrderStatus, WorkOrderStatus[]> = {
     WorkOrderStatus.IN_PROGRESS,
     WorkOrderStatus.CANCELLED,
   ],
-  [WorkOrderStatus.COMPLETED]: [WorkOrderStatus.DELIVERED],
+  [WorkOrderStatus.COMPLETED]: [WorkOrderStatus.DELIVERED, WorkOrderStatus.IN_PROGRESS],
   [WorkOrderStatus.DELIVERED]: [],
   [WorkOrderStatus.CANCELLED]: [],
 };
