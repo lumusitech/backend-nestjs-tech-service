@@ -94,7 +94,11 @@ export class NotificationsService {
       qb.andWhere('n.is_read = :isRead', { isRead });
     }
 
-    const safeSortBy = validateSortBy(sortBy, ALLOWED_SORT_COLUMNS, 'createdAt');
+    const safeSortBy = validateSortBy(
+      sortBy,
+      ALLOWED_SORT_COLUMNS,
+      'createdAt',
+    );
     qb.orderBy(`n.${safeSortBy}`, order)
       .skip((page - 1) * limit)
       .take(limit);

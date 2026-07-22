@@ -27,6 +27,7 @@ import {
   WorkOrderCreatedEvent,
   WorkOrderStatusChangedEvent,
   WorkOrderTechnicianAssignedEvent,
+  WorkOrderTechnicianUnassignedEvent,
   TaskCreatedEvent,
   TaskCompletedEvent,
   WorkOrderNoteAddedEvent,
@@ -35,7 +36,14 @@ import {
   WorkOrderMaterialAddedEvent,
 } from '../notifications/events/notification.events';
 
-const ALLOWED_SORT_COLUMNS = ['createdAt', 'updatedAt', 'status', 'priority', 'scheduledDate', 'trackingCode'] as const;
+const ALLOWED_SORT_COLUMNS = [
+  'createdAt',
+  'updatedAt',
+  'status',
+  'priority',
+  'scheduledDate',
+  'trackingCode',
+] as const;
 
 const VALID_TRANSITIONS: Record<WorkOrderStatus, WorkOrderStatus[]> = {
   [WorkOrderStatus.PENDING]: [
@@ -185,7 +193,11 @@ export class WorkOrdersService {
       qb.andWhere('wo.scheduled_date <= :dateTo', { dateTo });
     }
 
-    const safeSortBy = validateSortBy(sortBy, ALLOWED_SORT_COLUMNS, 'createdAt');
+    const safeSortBy = validateSortBy(
+      sortBy,
+      ALLOWED_SORT_COLUMNS,
+      'createdAt',
+    );
     qb.orderBy(`wo.${safeSortBy}`, order)
       .skip((page - 1) * limit)
       .take(limit);
@@ -230,14 +242,10 @@ export class WorkOrdersService {
       throw new NotFoundException(`Work order #${workOrderId} not found`);
     }
 
-    const isAssigned = workOrder.technicians.some(
-      (t) => t.id === technicianId,
-    );
+    const isAssigned = workOrder.technicians.some((t) => t.id === technicianId);
 
     if (!isAssigned) {
-      throw new ForbiddenException(
-        'You are not assigned to this work order',
-      );
+      throw new ForbiddenException('You are not assigned to this work order');
     }
   }
 
@@ -287,11 +295,20 @@ export class WorkOrdersService {
     }
 
     if (technicianIds !== undefined) {
-      const event = new WorkOrderTechnicianAssignedEvent();
-      event.workOrderId = saved.id;
-      event.trackingCode = saved.trackingCode;
-      event.technicianIds = technicianIds;
-      this.eventEmitter.emit('workorder.technician_assigned', event);
+      const assignedEvent = new WorkOrderTechnicianAssignedEvent();
+      assignedEvent.workOrderId = saved.id;
+      assignedEvent.trackingCode = saved.trackingCode;
+      assignedEvent.technicianIds = technicianIds;
+      this.eventEmitter.emit('workorder.technician_assigned', assignedEvent);
+
+      const removedIds = oldTechnicianIds.filter((id) => !technicianIds.includes(id));
+      if (removedIds.length > 0) {
+        const unassignedEvent = new WorkOrderTechnicianUnassignedEvent();
+        unassignedEvent.workOrderId = saved.id;
+        unassignedEvent.trackingCode = saved.trackingCode;
+        unassignedEvent.technicianIds = removedIds;
+        this.eventEmitter.emit('workorder.technician_unassigned', unassignedEvent);
+      }
     }
 
     return saved;
@@ -312,16 +329,27 @@ export class WorkOrdersService {
     technicianIds: string[],
   ): Promise<WorkOrder> {
     const workOrder = await this.findOne(id);
+    const oldTechnicianIds = workOrder.technicians?.map((t) => t.id) ?? [];
+
     workOrder.technicians = await this.userRepository.findBy({
       id: In(technicianIds),
     });
     const saved = await this.workOrderRepository.save(workOrder);
 
-    const event = new WorkOrderTechnicianAssignedEvent();
-    event.workOrderId = saved.id;
-    event.trackingCode = saved.trackingCode;
-    event.technicianIds = technicianIds;
-    this.eventEmitter.emit('workorder.technician_assigned', event);
+    const assignedEvent = new WorkOrderTechnicianAssignedEvent();
+    assignedEvent.workOrderId = saved.id;
+    assignedEvent.trackingCode = saved.trackingCode;
+    assignedEvent.technicianIds = technicianIds;
+    this.eventEmitter.emit('workorder.technician_assigned', assignedEvent);
+
+    const removedIds = oldTechnicianIds.filter((id) => !technicianIds.includes(id));
+    if (removedIds.length > 0) {
+      const unassignedEvent = new WorkOrderTechnicianUnassignedEvent();
+      unassignedEvent.workOrderId = saved.id;
+      unassignedEvent.trackingCode = saved.trackingCode;
+      unassignedEvent.technicianIds = removedIds;
+      this.eventEmitter.emit('workorder.technician_unassigned', unassignedEvent);
+    }
 
     return saved;
   }

@@ -11,6 +11,7 @@ import {
   WorkOrderCreatedEvent,
   WorkOrderStatusChangedEvent,
   WorkOrderTechnicianAssignedEvent,
+  WorkOrderTechnicianUnassignedEvent,
   TaskCreatedEvent,
   TaskCompletedEvent,
   PaymentCreatedEvent,
@@ -59,7 +60,11 @@ export class NotificationsListener {
     }));
 
     await this.notificationsService.createBulk(dtos);
-    this.sendPush(recipientIds, 'Nueva orden de trabajo', `Se creó la orden ${event.trackingCode}`);
+    this.sendPush(
+      recipientIds,
+      'Nueva orden de trabajo',
+      `Se creó la orden ${event.trackingCode}`,
+    );
   }
 
   @OnEvent('workorder.status_changed')
@@ -97,7 +102,11 @@ export class NotificationsListener {
     }));
 
     await this.notificationsService.createBulk(dtos);
-    this.sendPush(recipientIds, `Orden ${event.trackingCode} actualizada`, `Estado: '${oldLabel}' → '${newLabel}'`);
+    this.sendPush(
+      recipientIds,
+      `Orden ${event.trackingCode} actualizada`,
+      `Estado: '${oldLabel}' → '${newLabel}'`,
+    );
   }
 
   @OnEvent('workorder.technician_assigned')
@@ -115,7 +124,33 @@ export class NotificationsListener {
     }));
 
     await this.notificationsService.createBulk(dtos);
-    this.sendPush(event.technicianIds, 'Nueva asignación', `Fuiste asignado a la orden ${event.trackingCode}`);
+    this.sendPush(
+      event.technicianIds,
+      'Nueva asignación',
+      `Fuiste asignado a la orden ${event.trackingCode}`,
+    );
+  }
+
+  @OnEvent('workorder.technician_unassigned')
+  async handleWorkOrderTechnicianUnassigned(
+    event: WorkOrderTechnicianUnassignedEvent,
+  ): Promise<void> {
+    const dtos: CreateNotificationDto[] = event.technicianIds.map((userId) => ({
+      type: NotificationType.WORK_ORDER_TECHNICIAN_UNASSIGNED,
+      title: 'Asignación removida',
+      message: `Fuiste desasignado de la orden ${event.trackingCode}`,
+      userId,
+      referenceId: event.workOrderId,
+      referenceType: 'work_order',
+      metadata: { trackingCode: event.trackingCode },
+    }));
+
+    await this.notificationsService.createBulk(dtos);
+    this.sendPush(
+      event.technicianIds,
+      'Asignación removida',
+      `Fuiste desasignado de la orden ${event.trackingCode}`,
+    );
   }
 
   @OnEvent('task.created')
@@ -161,7 +196,11 @@ export class NotificationsListener {
     }));
 
     await this.notificationsService.createBulk(dtos);
-    this.sendPush(recipientIds, 'Tarea completada', `${event.completedByName} completó '${event.taskTitle}'`);
+    this.sendPush(
+      recipientIds,
+      'Tarea completada',
+      `${event.completedByName} completó '${event.taskTitle}'`,
+    );
   }
 
   @OnEvent('payment.created')
@@ -184,7 +223,11 @@ export class NotificationsListener {
     }));
 
     await this.notificationsService.createBulk(dtos);
-    this.sendPush(adminIds, 'Nuevo pago registrado', `Pago de ${event.amount} ARS`);
+    this.sendPush(
+      adminIds,
+      'Nuevo pago registrado',
+      `Pago de ${event.amount} ARS`,
+    );
   }
 
   @OnEvent('payment.status_changed')
@@ -380,7 +423,11 @@ export class NotificationsListener {
     }));
 
     await this.notificationsService.createBulk(dtos);
-    this.sendPush(recipientIds, 'Nuevo trabajo pendiente', `'${event.title}' con vencimiento ${event.dueDate}`);
+    this.sendPush(
+      recipientIds,
+      'Nuevo trabajo pendiente',
+      `'${event.title}' con vencimiento ${event.dueDate}`,
+    );
   }
 
   @OnEvent('pending_item.due_today')
@@ -466,7 +513,11 @@ export class NotificationsListener {
     ];
 
     await this.notificationsService.createBulk(dtos);
-    this.sendPush([event.assignedToId], 'Consulta asignada', `Se te asignó la consulta de ${event.clientName}`);
+    this.sendPush(
+      [event.assignedToId],
+      'Consulta asignada',
+      `Se te asignó la consulta de ${event.clientName}`,
+    );
   }
 
   @OnEvent('inquiry.contacted')
@@ -510,7 +561,11 @@ export class NotificationsListener {
     }));
 
     await this.notificationsService.createBulk(dtos);
-    this.sendPush(adminIds, `Consulta ${decisionLabel}`, `La consulta de ${event.clientName} fue ${decisionLabel}`);
+    this.sendPush(
+      adminIds,
+      `Consulta ${decisionLabel}`,
+      `La consulta de ${event.clientName} fue ${decisionLabel}`,
+    );
   }
 
   private async sendPush(
