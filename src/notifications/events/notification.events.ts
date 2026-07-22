@@ -19,6 +19,13 @@ export class WorkOrderTechnicianAssignedEvent {
   workOrderId!: string;
   trackingCode!: string;
   technicianIds!: string[];
+  previousTechnicianIds?: string[];
+}
+
+export class WorkOrderTechnicianUnassignedEvent {
+  workOrderId!: string;
+  trackingCode!: string;
+  technicianIds!: string[];
 }
 
 export class TaskCreatedEvent {
