@@ -87,7 +87,20 @@ docker compose ps
 - PostgreSQL: localhost:5432
 - pgAdmin: [http://localhost:8080](http://localhost:8080)
 
-### 4. Instalar dependencias
+### 4. Instalar extensión unaccent (OBLIGATORIO para búsqueda)
+
+Los filtros de búsqueda por texto usan `unaccent()` de PostgreSQL para búsqueda sin tildes.
+Sin esta extensión, **cualquier búsqueda en el filtro de texto devuelve error 500**.
+
+```bash
+docker exec -i techservice-postgres psql -U admin -d techservice \
+  -c "CREATE EXTENSION IF NOT EXISTS unaccent;"
+```
+
+> ⚠️ Si omites este paso, los filtros de búsqueda en el dashboard y todas las listas
+> (work-orders, clients, etc.) fallarán con `function unaccent(character varying) does not exist`.
+
+### 5. Instalar dependencias
 
 ```bash
 pnpm install
@@ -172,7 +185,10 @@ pnpm migration:revert
 ```bash
 docker compose up -d
 pnpm install
+docker exec -i techservice-postgres psql -U admin -d techservice \
+  -c "CREATE EXTENSION IF NOT EXISTS unaccent;"
 pnpm migration:run
+pnpm db:reset       # Seeds datos iniciales (admin, técnicos, etc.)
 pnpm start:dev
 ```
 
