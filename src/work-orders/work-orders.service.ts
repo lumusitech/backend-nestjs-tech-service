@@ -52,8 +52,14 @@ const VALID_TRANSITIONS: Record<WorkOrderStatus, WorkOrderStatus[]> = {
     WorkOrderStatus.CANCELLED,
   ],
   [WorkOrderStatus.ASSIGNED]: [
+    WorkOrderStatus.ON_THE_WAY,
     WorkOrderStatus.IN_PROGRESS,
     WorkOrderStatus.POSTPONED,
+    WorkOrderStatus.CANCELLED,
+  ],
+  [WorkOrderStatus.ON_THE_WAY]: [
+    WorkOrderStatus.ASSIGNED,
+    WorkOrderStatus.IN_PROGRESS,
     WorkOrderStatus.CANCELLED,
   ],
   [WorkOrderStatus.IN_PROGRESS]: [
@@ -65,9 +71,9 @@ const VALID_TRANSITIONS: Record<WorkOrderStatus, WorkOrderStatus[]> = {
     WorkOrderStatus.IN_PROGRESS,
     WorkOrderStatus.CANCELLED,
   ],
-  [WorkOrderStatus.COMPLETED]: [WorkOrderStatus.DELIVERED],
+  [WorkOrderStatus.COMPLETED]: [WorkOrderStatus.DELIVERED, WorkOrderStatus.IN_PROGRESS],
   [WorkOrderStatus.DELIVERED]: [],
-  [WorkOrderStatus.CANCELLED]: [],
+  [WorkOrderStatus.CANCELLED]: [WorkOrderStatus.PENDING],
 };
 
 @Injectable()
