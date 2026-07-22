@@ -280,6 +280,14 @@ export class WorkOrdersService {
       workOrder.technicians = await this.userRepository.findBy({
         id: In(technicianIds),
       });
+
+      if (
+        technicianIds.length > 0 &&
+        workOrder.status === WorkOrderStatus.PENDING &&
+        !updateWorkOrderDto.status
+      ) {
+        workOrder.status = WorkOrderStatus.ASSIGNED;
+      }
     }
 
     const saved = await this.workOrderRepository.save(workOrder);
@@ -330,11 +338,30 @@ export class WorkOrdersService {
   ): Promise<WorkOrder> {
     const workOrder = await this.findOne(id);
     const oldTechnicianIds = workOrder.technicians?.map((t) => t.id) ?? [];
+    const oldStatus = workOrder.status;
 
     workOrder.technicians = await this.userRepository.findBy({
       id: In(technicianIds),
     });
+
+    if (
+      technicianIds.length > 0 &&
+      workOrder.status === WorkOrderStatus.PENDING
+    ) {
+      workOrder.status = WorkOrderStatus.ASSIGNED;
+    }
+
     const saved = await this.workOrderRepository.save(workOrder);
+
+    if (saved.status !== oldStatus) {
+      const statusEvent = new WorkOrderStatusChangedEvent();
+      statusEvent.workOrderId = saved.id;
+      statusEvent.trackingCode = saved.trackingCode;
+      statusEvent.oldStatus = oldStatus;
+      statusEvent.newStatus = saved.status;
+      statusEvent.technicianIds = technicianIds;
+      this.eventEmitter.emit('workorder.status_changed', statusEvent);
+    }
 
     const assignedEvent = new WorkOrderTechnicianAssignedEvent();
     assignedEvent.workOrderId = saved.id;
