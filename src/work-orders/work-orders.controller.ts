@@ -91,7 +91,7 @@ export class WorkOrdersController {
       await this.workOrdersService.validateTechnicianOwnership(id, user.id);
     }
 
-    return this.workOrdersService.update(id, updateWorkOrderDto);
+    return this.workOrdersService.update(id, updateWorkOrderDto, user.id, user.role);
   }
 
   @Delete(':id')
@@ -128,8 +128,10 @@ export class WorkOrdersController {
   replaceTechnicians(
     @Param('id', ParseUUIDPipe) id: string,
     @Body('technicianIds') technicianIds: string[],
+    @Req() req: Request,
   ) {
-    return this.workOrdersService.replaceTechnicians(id, technicianIds);
+    const user = req.user as { id: string; role: UserRole };
+    return this.workOrdersService.replaceTechnicians(id, technicianIds, user.id, user.role);
   }
 
   // ─── Notes ───────────────────────────────────────────
@@ -229,6 +231,18 @@ export class WorkOrdersController {
     @Param('materialId', ParseUUIDPipe) materialId: string,
   ) {
     return this.workOrdersService.removeMaterial(id, materialId);
+  }
+
+  // ─── Status Logs ────────────────────────────────────
+
+  @Get(':id/status-logs')
+  @Roles(UserRole.ADMIN, UserRole.TECHNICIAN)
+  @ApiOperation({ summary: 'Get status change timeline for a work order' })
+  @ApiParam({ name: 'id', description: 'Work order UUID' })
+  @ApiResponse({ status: 200, description: 'Status timeline returned' })
+  @ApiResponse({ status: 404, description: 'Work order not found' })
+  findStatusLogs(@Param('id', ParseUUIDPipe) id: string) {
+    return this.workOrdersService.findStatusLogs(id);
   }
 
   // ─── Tasks ──────────────────────────────────────────
