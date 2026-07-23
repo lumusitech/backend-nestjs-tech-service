@@ -33,12 +33,12 @@ export class WorkOrderStatusLog extends BaseEntity {
   @JoinColumn({ name: 'changed_by_user_id' })
   changedBy?: User;
 
-  @Column({ name: 'changed_by_role' })
+  @Column({ name: 'changed_by_role', type: 'varchar' })
   changedByRole!: string;
 
   @Column({ type: 'timestamp' })
   timestamp!: Date;
 
-  @Column({ nullable: true })
+  @Column({ type: 'int', nullable: true })
   duration!: number | null;
 }
