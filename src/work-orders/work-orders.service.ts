@@ -10,6 +10,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { WorkOrder } from './entities/work-order.entity';
 import { WorkOrderNote } from './entities/work-order-note.entity';
 import { WorkOrderMaterial } from './entities/work-order-material.entity';
+import { WorkOrderStatusLog } from './entities/work-order-status-log.entity';
 import { Task } from './entities/task.entity';
 import { CreateWorkOrderDto } from './dto/create-work-order.dto';
 import { UpdateWorkOrderDto } from './dto/update-work-order.dto';
@@ -89,6 +90,8 @@ export class WorkOrdersService {
     private readonly taskRepository: Repository<Task>,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(WorkOrderStatusLog)
+    private readonly statusLogRepository: Repository<WorkOrderStatusLog>,
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
@@ -258,6 +261,8 @@ export class WorkOrdersService {
   async update(
     id: string,
     updateWorkOrderDto: UpdateWorkOrderDto,
+    userId?: string,
+    userRole?: string,
   ): Promise<WorkOrder> {
     const workOrder = await this.findOne(id);
     const oldStatus = workOrder.status;
@@ -297,6 +302,16 @@ export class WorkOrdersService {
     }
 
     const saved = await this.workOrderRepository.save(workOrder);
+
+    if (saved.status !== oldStatus && userId && userRole) {
+      await this.logStatusTransition(
+        saved.id,
+        oldStatus,
+        saved.status,
+        userId,
+        userRole,
+      );
+    }
 
     if (updateWorkOrderDto.status && updateWorkOrderDto.status !== oldStatus) {
       const event = new WorkOrderStatusChangedEvent();
@@ -341,6 +356,8 @@ export class WorkOrdersService {
   async replaceTechnicians(
     id: string,
     technicianIds: string[],
+    userId?: string,
+    userRole?: string,
   ): Promise<WorkOrder> {
     const workOrder = await this.findOne(id);
     const oldTechnicianIds = workOrder.technicians?.map((t) => t.id) ?? [];
@@ -360,6 +377,16 @@ export class WorkOrdersService {
     const saved = await this.workOrderRepository.save(workOrder);
 
     if (saved.status !== oldStatus) {
+      if (userId && userRole) {
+        await this.logStatusTransition(
+          saved.id,
+          oldStatus,
+          saved.status,
+          userId,
+          userRole,
+        );
+      }
+
       const statusEvent = new WorkOrderStatusChangedEvent();
       statusEvent.workOrderId = saved.id;
       statusEvent.trackingCode = saved.trackingCode;
@@ -630,6 +657,45 @@ export class WorkOrdersService {
   }
 
   // ─── Private helpers ─────────────────────────────────
+
+  async findStatusLogs(workOrderId: string): Promise<WorkOrderStatusLog[]> {
+    return this.statusLogRepository.find({
+      where: { workOrderId },
+      relations: { changedBy: true },
+      order: { timestamp: 'ASC' },
+    });
+  }
+
+  private async logStatusTransition(
+    workOrderId: string,
+    fromStatus: WorkOrderStatus | null,
+    toStatus: WorkOrderStatus,
+    userId: string,
+    userRole: string,
+  ): Promise<void> {
+    const now = new Date();
+
+    const previousLog = await this.statusLogRepository.findOne({
+      where: { workOrderId },
+      order: { timestamp: 'DESC' },
+    });
+
+    const duration = previousLog
+      ? Math.floor((now.getTime() - new Date(previousLog.timestamp).getTime()) / 1000)
+      : null;
+
+    const log = this.statusLogRepository.create({
+      workOrderId,
+      fromStatus,
+      toStatus,
+      changedByUserId: userId,
+      changedByRole: userRole,
+      timestamp: now,
+      duration,
+    });
+
+    await this.statusLogRepository.save(log);
+  }
 
   private async generateTrackingCode(): Promise<string> {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
