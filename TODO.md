@@ -63,6 +63,14 @@ Ninguno — todos los PRs mergeados.
 - Completar integración MercadoPago (SDK parcialmente implementado)
 - Conectar ARCA/AFIP real (stub actual)
 
+## Bugs conocidos (frontend)
+
+### BUG-003: 🔴 Flicker en detalle de órdenes (no resuelto — en investigación)
+
+El frontend tiene un pestañeo al navegar al detalle de una orden. Se investigó
+a fondo sin encontrar la causa raíz. Ver `frontend/TODO.md` para el detalle completo.
+El backend no presenta issues relacionados.
+
 ## Mejoras a futuro
 
 ### Seguridad
