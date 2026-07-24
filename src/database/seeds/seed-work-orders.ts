@@ -1,11 +1,56 @@
 import { DataSource } from 'typeorm';
 import { WorkOrder } from '../../work-orders/entities/work-order.entity';
+import { WorkOrderStatusLog } from '../../work-orders/entities/work-order-status-log.entity';
 import { WorkOrderStatus } from '../../common/enums/work-order-status.enum';
 import { Priority } from '../../common/enums/priority.enum';
 import { WorkOrderLocation } from '../../work-orders/enums/work-order-location.enum';
 import { Client } from '../../clients/entities/client.entity';
 import { ServiceType } from '../../service-types/entities/service-type.entity';
 import { User } from '../../users/entities/user.entity';
+
+const STATUS_FLOW: Record<WorkOrderStatus, WorkOrderStatus[]> = {
+  [WorkOrderStatus.PENDING]: [],
+  [WorkOrderStatus.ASSIGNED]: [WorkOrderStatus.PENDING],
+  [WorkOrderStatus.ON_THE_WAY]: [WorkOrderStatus.PENDING, WorkOrderStatus.ASSIGNED],
+  [WorkOrderStatus.IN_PROGRESS]: [WorkOrderStatus.PENDING, WorkOrderStatus.ASSIGNED],
+  [WorkOrderStatus.POSTPONED]: [WorkOrderStatus.PENDING, WorkOrderStatus.ASSIGNED, WorkOrderStatus.IN_PROGRESS],
+  [WorkOrderStatus.COMPLETED]: [WorkOrderStatus.PENDING, WorkOrderStatus.ASSIGNED, WorkOrderStatus.IN_PROGRESS],
+  [WorkOrderStatus.DELIVERED]: [WorkOrderStatus.PENDING, WorkOrderStatus.ASSIGNED, WorkOrderStatus.IN_PROGRESS, WorkOrderStatus.COMPLETED],
+  [WorkOrderStatus.CANCELLED]: [WorkOrderStatus.PENDING, WorkOrderStatus.ASSIGNED, WorkOrderStatus.IN_PROGRESS],
+};
+
+function buildTimestamps(
+  currentStatus: WorkOrderStatus,
+  scheduledDate: Date | undefined,
+  startedAt: Date | undefined,
+  completedAt: Date | undefined,
+): Date[] {
+  const now = new Date();
+  const dayMs = 86400000;
+  const hourMs = 3600000;
+  const base = scheduledDate ? new Date(scheduledDate) : new Date(now.getTime() - dayMs);
+
+  const flow = STATUS_FLOW[currentStatus];
+  const steps = [...flow, currentStatus];
+  const timestamps: Date[] = [];
+
+  for (let i = 0; i < steps.length; i++) {
+    const status = steps[i];
+    if (status === WorkOrderStatus.IN_PROGRESS && startedAt) {
+      timestamps.push(new Date(startedAt));
+    } else if (status === WorkOrderStatus.COMPLETED && completedAt) {
+      timestamps.push(new Date(completedAt));
+    } else if (status === WorkOrderStatus.ASSIGNED && currentStatus !== WorkOrderStatus.PENDING) {
+      timestamps.push(new Date(base.getTime() + dayMs * i * 0.3));
+    } else if (status === WorkOrderStatus.DELIVERED && completedAt) {
+      timestamps.push(new Date(completedAt.getTime() + hourMs * 2));
+    } else {
+      timestamps.push(new Date(base.getTime() + dayMs * i * 0.3));
+    }
+  }
+
+  return timestamps;
+}
 
 interface WorkOrderSeed {
   trackingCode: string;
@@ -269,9 +314,15 @@ const WORK_ORDERS: WorkOrderSeed[] = [
 
 export async function seedWorkOrders(dataSource: DataSource) {
   const workOrderRepo = dataSource.getRepository(WorkOrder);
+  const logRepo = dataSource.getRepository(WorkOrderStatusLog);
   const clientRepo = dataSource.getRepository(Client);
   const serviceTypeRepo = dataSource.getRepository(ServiceType);
   const userRepo = dataSource.getRepository(User);
+
+  const adminUser = await userRepo.findOne({ where: { role: 'admin' as any } });
+  if (!adminUser) {
+    console.log('  No admin user found, status logs will skip changedByUserId validation');
+  }
 
   for (const wo of WORK_ORDERS) {
     const existing = await workOrderRepo.findOne({
@@ -328,7 +379,50 @@ export async function seedWorkOrders(dataSource: DataSource) {
       technicians,
     });
 
-    await workOrderRepo.save(workOrder);
-    console.log('  Work order created:', wo.trackingCode, '-', wo.status);
+    const saved = await workOrderRepo.save(workOrder);
+
+    // Create status timeline logs for the work order
+    const flow = STATUS_FLOW[wo.status];
+    const steps = [...flow, wo.status];
+    const timestamps = buildTimestamps(
+      wo.status,
+      wo.scheduledDate ? new Date(wo.scheduledDate) : undefined,
+      wo.startedAt ? new Date(wo.startedAt) : undefined,
+      wo.completedAt ? new Date(wo.completedAt) : undefined,
+    );
+
+    const logs: WorkOrderStatusLog[] = [];
+    for (let i = 0; i < steps.length; i++) {
+      const fromStatus: WorkOrderStatus | null = i === 0 ? null : steps[i - 1];
+      const toStatus = steps[i];
+      const timestamp = timestamps[i] || new Date();
+
+      const previousLog = i > 0 ? logs[i - 1] : null;
+      const duration = previousLog
+        ? Math.floor((timestamp.getTime() - new Date(previousLog.timestamp).getTime()) / 1000)
+        : null;
+
+      const changedByUserId = saved.sellerId
+        || saved.technicians?.[0]?.id
+        || adminUser?.id
+        || '00000000-0000-0000-0000-000000000000';
+
+      const log = logRepo.create({
+        workOrderId: saved.id,
+        fromStatus,
+        toStatus,
+        changedByUserId,
+        changedByRole: 'system',
+        timestamp,
+        duration,
+      });
+      logs.push(log);
+    }
+
+    if (logs.length > 0) {
+      await logRepo.save(logs);
+    }
+
+    console.log('  Work order created:', wo.trackingCode, '-', wo.status, `(${logs.length} status logs)`);
   }
 }
