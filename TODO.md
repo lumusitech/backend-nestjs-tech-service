@@ -58,18 +58,20 @@ Ninguno — todos los PRs mergeados.
 - [x] AGENTS.md — módulos completados, pnpm
 - [x] TODO.md — este archivo
 
-## Próximos pasos (backend)
+## Próximos pasos priorizados
 
-- Completar integración MercadoPago (SDK parcialmente implementado)
-- Conectar ARCA/AFIP real (stub actual)
+### 🟡 Media prioridad (valor de negocio)
 
-## Bugs conocidos (frontend)
+- [ ] Completar integración MercadoPago — SDK instalado, implementación parcial. Completar preferencia de checkout, webhook handler con verificación de firma, reembolsos. Bloquea cobros online reales.
+- [ ] Conectar ARCA/AFIP real (WSFEv1) — Stub listo con interfaz, entidades, flujo admin y PDFs. Requiere certificados AFIP. Necesario para facturación legal en producción.
 
-### BUG-003: 🔴 Flicker en detalle de órdenes (no resuelto — en investigación)
+### 🟢 Baja prioridad (mejoras incrementales)
 
-El frontend tiene un pestañeo al navegar al detalle de una orden. Se investigó
-a fondo sin encontrar la causa raíz. Ver `frontend/TODO.md` para el detalle completo.
-El backend no presenta issues relacionados.
+- [ ] Refactor: dividir notifications listener (379 líneas) por dominio (work-order, payment, inquiry, pending-item)
+- [ ] Refresh tokens — JWT expiry corto + refresh token endpoint
+- [ ] Logging estructurado — `requestId` y `userId` en cada log
+- [ ] Threshold mínimo de cobertura en Jest
+- [ ] Fix `no-explicit-any: off` en ESLint — contradice la regla de tipado estricto
 
 ## Mejoras a futuro
 
