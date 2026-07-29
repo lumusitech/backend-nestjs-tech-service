@@ -622,3 +622,24 @@ MERCADOPAGO_WEBHOOK_SECRET=xxxx (opcional, para verificar firma)
 - **Unit test:** Mock del SDK de MercadoPago, testear parsing de webhooks
 - **E2E:** Testear contra sandbox de MercadoPago con credenciales de prueba
 - **Producción:** Requiere credenciales de producción y webhook URL con HTTPS
+
+---
+
+## Próximos pasos priorizados
+
+### 🟡 Media prioridad (valor de negocio)
+
+| # | Item | Descripción | Esfuerzo |
+|---|------|-------------|----------|
+| 1 | **Completar integración MercadoPago** | SDK instalado, implementación parcial. Completar preferencia de checkout, webhook handler con verificación de firma, reembolsos. Bloquea cobros online reales. | Medio |
+| 2 | **Conectar ARCA/AFIP real (WSFEv1)** | Stub listo con interfaz, entidades, flujo admin y PDFs. Requiere certificados AFIP, CUIT habilitado y punto de venta. Necesario para facturación legal en producción. | Alto |
+
+### 🟢 Baja prioridad (mejoras incrementales)
+
+| # | Item | Descripción | Esfuerzo |
+|---|------|-------------|----------|
+| 3 | **Refactor: dividir notifications listener** | El listener actual tiene 379 líneas. Dividir por dominio (work-order, payment, inquiry, pending-item) para mejorar mantenibilidad. | Bajo |
+| 4 | **Refresh tokens** | Mejorar seguridad con JWT expiry corto + refresh token endpoint. Actual: `1d` expiry es suficiente para MVP. | Medio |
+| 5 | **Logging estructurado** | Agregar `requestId` y `userId` a cada log. Necesario para observabilidad en producción. | Bajo |
+| 6 | **Threshold mínimo de cobertura** | Configurar Jest coverage thresholds para evitar regresiones. Requiere estabilizar coverage actual primero. | Bajo |
+| 7 | **Fix `no-explicit-any: off` en ESLint** | Contradice la regla de tipado estricto del AGENTS.md. Habilitar y corregir violaciones existentes. | Bajo |
