@@ -4,7 +4,7 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In } from 'typeorm';
+import { Repository, In, ILike } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { User } from './entities/user.entity';
 import { Skill } from '../skills/entities/skill.entity';
@@ -70,11 +70,28 @@ export class UsersService {
       sortBy = 'createdAt',
       order = 'ASC',
       role,
+      search,
     } = filterDto;
 
-    const where = role ? { role } : {};
+    let where: Record<string, unknown> | Record<string, unknown>[] = {};
 
-    const safeSortBy = validateSortBy(sortBy, ALLOWED_SORT_COLUMNS, 'createdAt');
+    if (search) {
+      const searchCondition = [
+        { name: ILike(`%${search}%`) },
+        { email: ILike(`%${search}%`) },
+      ];
+      where = role
+        ? searchCondition.map((cond) => ({ ...cond, role }))
+        : searchCondition;
+    } else if (role) {
+      where = { role };
+    }
+
+    const safeSortBy = validateSortBy(
+      sortBy,
+      ALLOWED_SORT_COLUMNS,
+      'createdAt',
+    );
     const [data, total] = await this.userRepository.findAndCount({
       where,
       skip: (page - 1) * limit,
