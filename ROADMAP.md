@@ -73,6 +73,7 @@ src/
 - [x] Password hashing (bcrypt)
 - [x] Solo admin puede crear/modificar usuarios
 - [x] Relación con WorkOrder (ManyToMany — múltiples técnicos por orden)
+- [x] Búsqueda por texto (`GET /api/users?search=`) — busca en name y email con ILIKE
 
 > Usuarios del sistema: admin y technicians. No incluye clientes (acceden por portal sin login).
 
