@@ -16,6 +16,7 @@
 - pnpm como gestor de paquetes
 - db:reset para resetear la DB al estado seed
 - Búsqueda sin tildes (unaccent) en clients, work-orders y billing
+- Búsqueda por texto en GET /api/users (name ILIKE + email ILIKE, case-insensitive)
 
 ## PRs Abiertos (pendientes de merge)
 

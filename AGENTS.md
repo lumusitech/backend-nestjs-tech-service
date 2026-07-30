@@ -365,4 +365,5 @@ pnpm i
 | `POST /api/auth/login` | No | Login — devuelve JWT |
 | `GET /api/portal/track/:code` | No | Portal público — tracking por código |
 | `POST /api/payments/mercadopago/webhook` | No | Webhook de MercadoPago |
+| `GET /api/users?search=` | Sí (JWT) | Lista usuarios con filtro por texto (name ILIKE + email ILIKE) |
 | Resto de endpoints | Sí (JWT) | Roles: admin (total), technician (solo sus órdenes) |
