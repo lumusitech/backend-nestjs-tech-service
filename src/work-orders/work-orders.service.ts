@@ -73,7 +73,10 @@ const VALID_TRANSITIONS: Record<WorkOrderStatus, WorkOrderStatus[]> = {
     WorkOrderStatus.IN_PROGRESS,
     WorkOrderStatus.CANCELLED,
   ],
-  [WorkOrderStatus.COMPLETED]: [WorkOrderStatus.DELIVERED, WorkOrderStatus.IN_PROGRESS],
+  [WorkOrderStatus.COMPLETED]: [
+    WorkOrderStatus.DELIVERED,
+    WorkOrderStatus.IN_PROGRESS,
+  ],
   [WorkOrderStatus.DELIVERED]: [],
   [WorkOrderStatus.CANCELLED]: [WorkOrderStatus.PENDING],
 };
@@ -304,11 +307,13 @@ export class WorkOrdersService {
 
     const saved = await this.workOrderRepository.save(workOrder);
 
-    if (saved.status !== oldStatus && userId && userRole) {
+    const newStatus = saved.status ?? workOrder.status;
+
+    if (newStatus !== oldStatus && userId && userRole) {
       await this.logStatusTransition(
         saved.id,
         oldStatus,
-        saved.status,
+        newStatus,
         userId,
         userRole,
       );
@@ -319,7 +324,7 @@ export class WorkOrdersService {
       event.workOrderId = saved.id;
       event.trackingCode = saved.trackingCode;
       event.oldStatus = oldStatus;
-      event.newStatus = saved.status;
+      event.newStatus = newStatus;
       event.technicianIds = oldTechnicianIds;
       this.eventEmitter.emit('workorder.status_changed', event);
     }
@@ -331,13 +336,18 @@ export class WorkOrdersService {
       assignedEvent.technicianIds = technicianIds;
       this.eventEmitter.emit('workorder.technician_assigned', assignedEvent);
 
-      const removedIds = oldTechnicianIds.filter((id) => !technicianIds.includes(id));
+      const removedIds = oldTechnicianIds.filter(
+        (id) => !technicianIds.includes(id),
+      );
       if (removedIds.length > 0) {
         const unassignedEvent = new WorkOrderTechnicianUnassignedEvent();
         unassignedEvent.workOrderId = saved.id;
         unassignedEvent.trackingCode = saved.trackingCode;
         unassignedEvent.technicianIds = removedIds;
-        this.eventEmitter.emit('workorder.technician_unassigned', unassignedEvent);
+        this.eventEmitter.emit(
+          'workorder.technician_unassigned',
+          unassignedEvent,
+        );
       }
     }
 
@@ -403,13 +413,18 @@ export class WorkOrdersService {
     assignedEvent.technicianIds = technicianIds;
     this.eventEmitter.emit('workorder.technician_assigned', assignedEvent);
 
-    const removedIds = oldTechnicianIds.filter((id) => !technicianIds.includes(id));
+    const removedIds = oldTechnicianIds.filter(
+      (id) => !technicianIds.includes(id),
+    );
     if (removedIds.length > 0) {
       const unassignedEvent = new WorkOrderTechnicianUnassignedEvent();
       unassignedEvent.workOrderId = saved.id;
       unassignedEvent.trackingCode = saved.trackingCode;
       unassignedEvent.technicianIds = removedIds;
-      this.eventEmitter.emit('workorder.technician_unassigned', unassignedEvent);
+      this.eventEmitter.emit(
+        'workorder.technician_unassigned',
+        unassignedEvent,
+      );
     }
 
     return saved;
@@ -682,7 +697,9 @@ export class WorkOrdersService {
     });
 
     const duration = previousLog
-      ? Math.floor((now.getTime() - new Date(previousLog.timestamp).getTime()) / 1000)
+      ? Math.floor(
+          (now.getTime() - new Date(previousLog.timestamp).getTime()) / 1000,
+        )
       : null;
 
     const log = this.statusLogRepository.create({
