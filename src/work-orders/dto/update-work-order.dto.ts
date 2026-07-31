@@ -1,5 +1,14 @@
 import { PartialType } from '@nestjs/mapped-types';
-import { IsEnum, IsOptional, IsDateString, IsNumber, Min, Max } from 'class-validator';
+import {
+  IsEnum,
+  IsOptional,
+  IsDateString,
+  IsNumber,
+  Min,
+  Max,
+  IsString,
+  MaxLength,
+} from 'class-validator';
 import { CreateWorkOrderDto } from './create-work-order.dto';
 import { WorkOrderStatus } from '../../common/enums/work-order-status.enum';
 import { ApiPropertyOptional } from '@nestjs/swagger';
@@ -12,6 +21,16 @@ export class UpdateWorkOrderDto extends PartialType(CreateWorkOrderDto) {
   @IsEnum(WorkOrderStatus)
   @IsOptional()
   status?: WorkOrderStatus;
+
+  @ApiPropertyOptional({
+    example: 'El cliente se tuvo que ir temprano, coordinar día para terminar',
+    description:
+      'Detalle opcional del cambio de estado (aparece en el timeline)',
+  })
+  @IsString()
+  @MaxLength(1000)
+  @IsOptional()
+  statusDetail?: string;
 
   @ApiPropertyOptional({ example: '2026-06-10T08:00:00.000Z' })
   @IsDateString()

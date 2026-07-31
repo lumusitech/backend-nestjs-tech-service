@@ -287,7 +287,7 @@ export class WorkOrdersService {
       }
     }
 
-    const { technicianIds, ...rest } = updateWorkOrderDto;
+    const { technicianIds, statusDetail, ...rest } = updateWorkOrderDto;
 
     const filteredRest = Object.fromEntries(
       Object.entries(rest).filter(([_, v]) => v !== undefined),
@@ -325,6 +325,7 @@ export class WorkOrdersService {
         newStatus,
         userId,
         userRole,
+        statusDetail,
       );
     }
 
@@ -699,6 +700,7 @@ export class WorkOrdersService {
     toStatus: WorkOrderStatus,
     userId: string,
     userRole: string,
+    detail?: string | null,
   ): Promise<void> {
     const now = new Date();
 
@@ -721,9 +723,26 @@ export class WorkOrdersService {
       changedByRole: userRole,
       timestamp: now,
       duration,
+      detail: detail ?? null,
     });
 
     await this.statusLogRepository.save(log);
+  }
+
+  async updateStatusLogDetail(
+    logId: string,
+    detail: string | null,
+  ): Promise<WorkOrderStatusLog> {
+    const log = await this.statusLogRepository.findOne({
+      where: { id: logId },
+    });
+
+    if (!log) {
+      throw new NotFoundException(`Status log #${logId} not found`);
+    }
+
+    log.detail = detail;
+    return this.statusLogRepository.save(log);
   }
 
   private async generateTrackingCode(): Promise<string> {

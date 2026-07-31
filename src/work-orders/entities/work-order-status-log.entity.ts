@@ -41,4 +41,7 @@ export class WorkOrderStatusLog extends BaseEntity {
 
   @Column({ type: 'int', nullable: true })
   duration!: number | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  detail!: string | null;
 }

@@ -22,6 +22,7 @@ import { UpdateWorkOrderNoteDto } from './dto/update-work-order-note.dto';
 import { CreateWorkOrderMaterialDto } from './dto/create-work-order-material.dto';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
+import { UpdateStatusLogDetailDto } from './dto/update-status-log-detail.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -91,7 +92,12 @@ export class WorkOrdersController {
       await this.workOrdersService.validateTechnicianOwnership(id, user.id);
     }
 
-    return this.workOrdersService.update(id, updateWorkOrderDto, user.id, user.role);
+    return this.workOrdersService.update(
+      id,
+      updateWorkOrderDto,
+      user.id,
+      user.role,
+    );
   }
 
   @Delete(':id')
@@ -131,7 +137,12 @@ export class WorkOrdersController {
     @Req() req: Request,
   ) {
     const user = req.user as { id: string; role: UserRole };
-    return this.workOrdersService.replaceTechnicians(id, technicianIds, user.id, user.role);
+    return this.workOrdersService.replaceTechnicians(
+      id,
+      technicianIds,
+      user.id,
+      user.role,
+    );
   }
 
   // ─── Notes ───────────────────────────────────────────
@@ -243,6 +254,38 @@ export class WorkOrdersController {
   @ApiResponse({ status: 404, description: 'Work order not found' })
   findStatusLogs(@Param('id', ParseUUIDPipe) id: string) {
     return this.workOrdersService.findStatusLogs(id);
+  }
+
+  @Patch(':id/status-logs/:logId/detail')
+  @Roles(UserRole.ADMIN, UserRole.TECHNICIAN)
+  @ApiOperation({ summary: 'Update the detail of a status change log' })
+  @ApiParam({ name: 'id', description: 'Work order UUID' })
+  @ApiParam({ name: 'logId', description: 'Status log UUID' })
+  @ApiResponse({ status: 200, description: 'Status log detail updated' })
+  @ApiResponse({ status: 404, description: 'Status log not found' })
+  updateStatusLogDetail(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('logId', ParseUUIDPipe) logId: string,
+    @Body() dto: UpdateStatusLogDetailDto,
+  ) {
+    return this.workOrdersService.updateStatusLogDetail(
+      logId,
+      dto.detail ?? null,
+    );
+  }
+
+  @Delete(':id/status-logs/:logId/detail')
+  @Roles(UserRole.ADMIN, UserRole.TECHNICIAN)
+  @ApiOperation({ summary: 'Remove the detail of a status change log' })
+  @ApiParam({ name: 'id', description: 'Work order UUID' })
+  @ApiParam({ name: 'logId', description: 'Status log UUID' })
+  @ApiResponse({ status: 200, description: 'Status log detail removed' })
+  @ApiResponse({ status: 404, description: 'Status log not found' })
+  removeStatusLogDetail(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('logId', ParseUUIDPipe) logId: string,
+  ) {
+    return this.workOrdersService.updateStatusLogDetail(logId, null);
   }
 
   // ─── Tasks ──────────────────────────────────────────

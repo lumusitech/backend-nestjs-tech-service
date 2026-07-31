@@ -11,12 +11,35 @@ import { User } from '../../users/entities/user.entity';
 const STATUS_FLOW: Record<WorkOrderStatus, WorkOrderStatus[]> = {
   [WorkOrderStatus.PENDING]: [],
   [WorkOrderStatus.ASSIGNED]: [WorkOrderStatus.PENDING],
-  [WorkOrderStatus.ON_THE_WAY]: [WorkOrderStatus.PENDING, WorkOrderStatus.ASSIGNED],
-  [WorkOrderStatus.IN_PROGRESS]: [WorkOrderStatus.PENDING, WorkOrderStatus.ASSIGNED],
-  [WorkOrderStatus.POSTPONED]: [WorkOrderStatus.PENDING, WorkOrderStatus.ASSIGNED, WorkOrderStatus.IN_PROGRESS],
-  [WorkOrderStatus.COMPLETED]: [WorkOrderStatus.PENDING, WorkOrderStatus.ASSIGNED, WorkOrderStatus.IN_PROGRESS],
-  [WorkOrderStatus.DELIVERED]: [WorkOrderStatus.PENDING, WorkOrderStatus.ASSIGNED, WorkOrderStatus.IN_PROGRESS, WorkOrderStatus.COMPLETED],
-  [WorkOrderStatus.CANCELLED]: [WorkOrderStatus.PENDING, WorkOrderStatus.ASSIGNED, WorkOrderStatus.IN_PROGRESS],
+  [WorkOrderStatus.ON_THE_WAY]: [
+    WorkOrderStatus.PENDING,
+    WorkOrderStatus.ASSIGNED,
+  ],
+  [WorkOrderStatus.IN_PROGRESS]: [
+    WorkOrderStatus.PENDING,
+    WorkOrderStatus.ASSIGNED,
+  ],
+  [WorkOrderStatus.POSTPONED]: [
+    WorkOrderStatus.PENDING,
+    WorkOrderStatus.ASSIGNED,
+    WorkOrderStatus.IN_PROGRESS,
+  ],
+  [WorkOrderStatus.COMPLETED]: [
+    WorkOrderStatus.PENDING,
+    WorkOrderStatus.ASSIGNED,
+    WorkOrderStatus.IN_PROGRESS,
+  ],
+  [WorkOrderStatus.DELIVERED]: [
+    WorkOrderStatus.PENDING,
+    WorkOrderStatus.ASSIGNED,
+    WorkOrderStatus.IN_PROGRESS,
+    WorkOrderStatus.COMPLETED,
+  ],
+  [WorkOrderStatus.CANCELLED]: [
+    WorkOrderStatus.PENDING,
+    WorkOrderStatus.ASSIGNED,
+    WorkOrderStatus.IN_PROGRESS,
+  ],
 };
 
 function buildTimestamps(
@@ -28,7 +51,9 @@ function buildTimestamps(
   const now = new Date();
   const dayMs = 86400000;
   const hourMs = 3600000;
-  const base = scheduledDate ? new Date(scheduledDate) : new Date(now.getTime() - dayMs);
+  const base = scheduledDate
+    ? new Date(scheduledDate)
+    : new Date(now.getTime() - dayMs);
 
   const flow = STATUS_FLOW[currentStatus];
   const steps = [...flow, currentStatus];
@@ -40,7 +65,10 @@ function buildTimestamps(
       timestamps.push(new Date(startedAt));
     } else if (status === WorkOrderStatus.COMPLETED && completedAt) {
       timestamps.push(new Date(completedAt));
-    } else if (status === WorkOrderStatus.ASSIGNED && currentStatus !== WorkOrderStatus.PENDING) {
+    } else if (
+      status === WorkOrderStatus.ASSIGNED &&
+      currentStatus !== WorkOrderStatus.PENDING
+    ) {
       timestamps.push(new Date(base.getTime() + dayMs * i * 0.3));
     } else if (status === WorkOrderStatus.DELIVERED && completedAt) {
       timestamps.push(new Date(completedAt.getTime() + hourMs * 2));
@@ -67,6 +95,7 @@ interface WorkOrderSeed {
   clientEmail: string;
   serviceTypeName: string;
   technicianEmails: string[];
+  statusLogDetail?: string;
 }
 
 const WORK_ORDERS: WorkOrderSeed[] = [
@@ -75,7 +104,8 @@ const WORK_ORDERS: WorkOrderSeed[] = [
     status: WorkOrderStatus.DELIVERED,
     priority: Priority.MEDIUM,
     location: WorkOrderLocation.WORKSHOP,
-    diagnosis: 'Disco duro dañado, se reemplazó por SSD de 480GB. Se reinstaló Windows 11 y drivers.',
+    diagnosis:
+      'Disco duro dañado, se reemplazó por SSD de 480GB. Se reinstaló Windows 11 y drivers.',
     commissionPercent: 5,
     sellerEmail: 'sofia.ramirez@techservice.local',
     warrantyUntil: '2026-12-15',
@@ -91,7 +121,8 @@ const WORK_ORDERS: WorkOrderSeed[] = [
     status: WorkOrderStatus.IN_PROGRESS,
     priority: Priority.HIGH,
     location: WorkOrderLocation.WORKSHOP,
-    diagnosis: 'Pantalla con líneas verticales, posible problema de flex o display. Pendiente repuesto.',
+    diagnosis:
+      'Pantalla con líneas verticales, posible problema de flex o display. Pendiente repuesto.',
     commissionPercent: 7,
     sellerEmail: 'martin.torres@techservice.local',
     warrantyUntil: undefined,
@@ -116,14 +147,18 @@ const WORK_ORDERS: WorkOrderSeed[] = [
     completedAt: undefined,
     clientEmail: 'roberto.gonzalez@gmail.com',
     serviceTypeName: 'Instalación de cámaras de seguridad',
-    technicianEmails: ['diego.martinez@techservice.local', 'pablo.sanchez@techservice.local'],
+    technicianEmails: [
+      'diego.martinez@techservice.local',
+      'pablo.sanchez@techservice.local',
+    ],
   },
   {
     trackingCode: 'TS-TV0004',
     status: WorkOrderStatus.DELIVERED,
     priority: Priority.LOW,
     location: WorkOrderLocation.WORKSHOP,
-    diagnosis: 'Fuente de alimentación quemada. Se reemplazó fuente y se verificó funcionamiento completo.',
+    diagnosis:
+      'Fuente de alimentación quemada. Se reemplazó fuente y se verificó funcionamiento completo.',
     commissionPercent: 5,
     sellerEmail: 'sofia.ramirez@techservice.local',
     warrantyUntil: '2026-09-20',
@@ -139,7 +174,8 @@ const WORK_ORDERS: WorkOrderSeed[] = [
     status: WorkOrderStatus.IN_PROGRESS,
     priority: Priority.URGENT,
     location: WorkOrderLocation.ON_SITE,
-    diagnosis: 'Cortocircuito en línea eléctrica del local. Se identificó cableado defectuoso en sector mostrador.',
+    diagnosis:
+      'Cortocircuito en línea eléctrica del local. Se identificó cableado defectuoso en sector mostrador.',
     commissionPercent: undefined,
     sellerEmail: undefined,
     warrantyUntil: undefined,
@@ -155,7 +191,8 @@ const WORK_ORDERS: WorkOrderSeed[] = [
     status: WorkOrderStatus.COMPLETED,
     priority: Priority.MEDIUM,
     location: WorkOrderLocation.ON_SITE,
-    diagnosis: 'Se instaló Access Point Ubiquiti, se configuró red WiFi con VLAN para invitados. Cobertura optimizada.',
+    diagnosis:
+      'Se instaló Access Point Ubiquiti, se configuró red WiFi con VLAN para invitados. Cobertura optimizada.',
     commissionPercent: 7,
     sellerEmail: 'martin.torres@techservice.local',
     warrantyUntil: '2026-12-01',
@@ -181,13 +218,16 @@ const WORK_ORDERS: WorkOrderSeed[] = [
     clientEmail: 'martin.romero@gmail.com',
     serviceTypeName: 'Mantenimiento general',
     technicianEmails: [],
+    statusLogDetail:
+      'El cliente se tuvo que ir temprano, coordinar día para terminar.',
   },
   {
     trackingCode: 'TS-PC0008',
     status: WorkOrderStatus.POSTPONED,
     priority: Priority.MEDIUM,
     location: WorkOrderLocation.WORKSHOP,
-    diagnosis: 'Esperando repuesto (fuente ATX 650W). Reprogramado para la próxima semana.',
+    diagnosis:
+      'Esperando repuesto (fuente ATX 650W). Reprogramado para la próxima semana.',
     commissionPercent: 5,
     sellerEmail: 'sofia.ramirez@techservice.local',
     warrantyUntil: undefined,
@@ -197,6 +237,8 @@ const WORK_ORDERS: WorkOrderSeed[] = [
     clientEmail: 'camila.sosa@yahoo.com',
     serviceTypeName: 'Reparación de PC',
     technicianEmails: ['laura.fernandez@techservice.local'],
+    statusLogDetail:
+      'Esperando repuesto (fuente ATX 650W), reprogramado para la próxima semana.',
   },
   {
     trackingCode: 'TS-NB0009',
@@ -219,7 +261,8 @@ const WORK_ORDERS: WorkOrderSeed[] = [
     status: WorkOrderStatus.DELIVERED,
     priority: Priority.HIGH,
     location: WorkOrderLocation.ON_SITE,
-    diagnosis: 'Se reemplazó router averiado, se configuró red mesh con 3 nodos. WiFi 6 en toda la oficina.',
+    diagnosis:
+      'Se reemplazó router averiado, se configuró red mesh con 3 nodos. WiFi 6 en toda la oficina.',
     commissionPercent: 5,
     sellerEmail: 'sofia.ramirez@techservice.local',
     warrantyUntil: '2027-06-01',
@@ -228,14 +271,18 @@ const WORK_ORDERS: WorkOrderSeed[] = [
     completedAt: '2026-05-28T18:00:00.000Z',
     clientEmail: 'isabella.lopez@hotmail.com',
     serviceTypeName: 'Instalación de red/WiFi',
-    technicianEmails: ['diego.martinez@techservice.local', 'carlos.garcia@techservice.local'],
+    technicianEmails: [
+      'diego.martinez@techservice.local',
+      'carlos.garcia@techservice.local',
+    ],
   },
   {
     trackingCode: 'TS-TV0011',
     status: WorkOrderStatus.IN_PROGRESS,
     priority: Priority.MEDIUM,
     location: WorkOrderLocation.WORKSHOP,
-    diagnosis: 'Panel LED con zonas oscuras. Se ordenó panel de reemplazo compatible.',
+    diagnosis:
+      'Panel LED con zonas oscuras. Se ordenó panel de reemplazo compatible.',
     commissionPercent: undefined,
     sellerEmail: undefined,
     warrantyUntil: undefined,
@@ -251,7 +298,8 @@ const WORK_ORDERS: WorkOrderSeed[] = [
     status: WorkOrderStatus.COMPLETED,
     priority: Priority.HIGH,
     location: WorkOrderLocation.ON_SITE,
-    diagnosis: 'Se instalaron 4 tomas nuevas en oficina, se agregó disyuntor diferencial y termica dedicada.',
+    diagnosis:
+      'Se instalaron 4 tomas nuevas en oficina, se agregó disyuntor diferencial y termica dedicada.',
     commissionPercent: 7,
     sellerEmail: 'martin.torres@techservice.local',
     warrantyUntil: '2026-12-10',
@@ -267,7 +315,8 @@ const WORK_ORDERS: WorkOrderSeed[] = [
     status: WorkOrderStatus.DELIVERED,
     priority: Priority.HIGH,
     location: WorkOrderLocation.ON_SITE,
-    diagnosis: 'Se instalaron 8 cámaras Hikvision 4MP con DVR de 8 canales. Monitoreo remoto configurado via app.',
+    diagnosis:
+      'Se instalaron 8 cámaras Hikvision 4MP con DVR de 8 canales. Monitoreo remoto configurado via app.',
     commissionPercent: 5,
     sellerEmail: 'sofia.ramirez@techservice.local',
     warrantyUntil: '2027-06-05',
@@ -276,7 +325,10 @@ const WORK_ORDERS: WorkOrderSeed[] = [
     completedAt: '2026-05-14T17:00:00.000Z',
     clientEmail: 'benjamin.moreno@gmail.com',
     serviceTypeName: 'Instalación de cámaras de seguridad',
-    technicianEmails: ['diego.martinez@techservice.local', 'pablo.sanchez@techservice.local'],
+    technicianEmails: [
+      'diego.martinez@techservice.local',
+      'pablo.sanchez@techservice.local',
+    ],
   },
   {
     trackingCode: 'TS-PC0014',
@@ -321,7 +373,9 @@ export async function seedWorkOrders(dataSource: DataSource) {
 
   const adminUser = await userRepo.findOne({ where: { role: 'admin' as any } });
   if (!adminUser) {
-    console.log('  No admin user found, status logs will skip changedByUserId validation');
+    console.log(
+      '  No admin user found, status logs will skip changedByUserId validation',
+    );
   }
 
   for (const wo of WORK_ORDERS) {
@@ -334,15 +388,27 @@ export async function seedWorkOrders(dataSource: DataSource) {
       continue;
     }
 
-    const client = await clientRepo.findOne({ where: { email: wo.clientEmail } });
+    const client = await clientRepo.findOne({
+      where: { email: wo.clientEmail },
+    });
     if (!client) {
-      console.log('  Client not found for work order:', wo.trackingCode, wo.clientEmail);
+      console.log(
+        '  Client not found for work order:',
+        wo.trackingCode,
+        wo.clientEmail,
+      );
       continue;
     }
 
-    const serviceType = await serviceTypeRepo.findOne({ where: { name: wo.serviceTypeName } });
+    const serviceType = await serviceTypeRepo.findOne({
+      where: { name: wo.serviceTypeName },
+    });
     if (!serviceType) {
-      console.log('  Service type not found for work order:', wo.trackingCode, wo.serviceTypeName);
+      console.log(
+        '  Service type not found for work order:',
+        wo.trackingCode,
+        wo.serviceTypeName,
+      );
       continue;
     }
 
@@ -356,7 +422,9 @@ export async function seedWorkOrders(dataSource: DataSource) {
 
     let sellerId: string | undefined = undefined;
     if (wo.sellerEmail) {
-      const seller = await userRepo.findOne({ where: { email: wo.sellerEmail } });
+      const seller = await userRepo.findOne({
+        where: { email: wo.sellerEmail },
+      });
       if (seller) {
         sellerId = seller.id;
       }
@@ -399,13 +467,17 @@ export async function seedWorkOrders(dataSource: DataSource) {
 
       const previousLog = i > 0 ? logs[i - 1] : null;
       const duration = previousLog
-        ? Math.floor((timestamp.getTime() - new Date(previousLog.timestamp).getTime()) / 1000)
+        ? Math.floor(
+            (timestamp.getTime() - new Date(previousLog.timestamp).getTime()) /
+              1000,
+          )
         : null;
 
-      const changedByUserId = saved.sellerId
-        || saved.technicians?.[0]?.id
-        || adminUser?.id
-        || '00000000-0000-0000-0000-000000000000';
+      const changedByUserId =
+        saved.sellerId ||
+        saved.technicians?.[0]?.id ||
+        adminUser?.id ||
+        '00000000-0000-0000-0000-000000000000';
 
       const log = logRepo.create({
         workOrderId: saved.id,
@@ -415,6 +487,7 @@ export async function seedWorkOrders(dataSource: DataSource) {
         changedByRole: 'system',
         timestamp,
         duration,
+        detail: i === steps.length - 1 ? (wo.statusLogDetail ?? null) : null,
       });
       logs.push(log);
     }
@@ -423,6 +496,12 @@ export async function seedWorkOrders(dataSource: DataSource) {
       await logRepo.save(logs);
     }
 
-    console.log('  Work order created:', wo.trackingCode, '-', wo.status, `(${logs.length} status logs)`);
+    console.log(
+      '  Work order created:',
+      wo.trackingCode,
+      '-',
+      wo.status,
+      `(${logs.length} status logs)`,
+    );
   }
 }
