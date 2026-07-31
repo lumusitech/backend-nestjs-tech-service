@@ -387,12 +387,14 @@ export class WorkOrdersService {
 
     const saved = await this.workOrderRepository.save(workOrder);
 
-    if (saved.status !== oldStatus) {
+    const newStatus = saved.status ?? workOrder.status;
+
+    if (newStatus !== oldStatus) {
       if (userId && userRole) {
         await this.logStatusTransition(
           saved.id,
           oldStatus,
-          saved.status,
+          newStatus,
           userId,
           userRole,
         );
@@ -402,7 +404,7 @@ export class WorkOrdersService {
       statusEvent.workOrderId = saved.id;
       statusEvent.trackingCode = saved.trackingCode;
       statusEvent.oldStatus = oldStatus;
-      statusEvent.newStatus = saved.status;
+      statusEvent.newStatus = newStatus;
       statusEvent.technicianIds = technicianIds;
       this.eventEmitter.emit('workorder.status_changed', statusEvent);
     }
