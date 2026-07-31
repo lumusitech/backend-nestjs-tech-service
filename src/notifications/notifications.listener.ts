@@ -27,6 +27,7 @@ import {
   WorkOrderNoteUpdatedEvent,
   WorkOrderNoteDeletedEvent,
   WorkOrderMaterialAddedEvent,
+  WorkOrderStatusDetailChangedEvent,
 } from './events/notification.events';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 
@@ -389,6 +390,32 @@ export class NotificationsListener {
       `Nota eliminada en ${event.trackingCode}`,
       `Una nota fue eliminada en la orden`,
     );
+  }
+
+  @OnEvent('workorder.status_detail_changed')
+  async handleWorkOrderStatusDetailChanged(
+    event: WorkOrderStatusDetailChangedEvent,
+  ): Promise<void> {
+    const adminIds = await this.getAdminIds();
+    const recipientIds = [...new Set([...adminIds, ...event.technicianIds])];
+
+    if (recipientIds.length === 0) return;
+
+    const dtos: CreateNotificationDto[] = recipientIds.map((userId) => ({
+      type: NotificationType.WORK_ORDER_STATUS_DETAIL_CHANGED,
+      title: `Detalle actualizado en ${event.trackingCode}`,
+      message: `${event.changedByName} actualizó el detalle de un cambio de estado en la orden ${event.trackingCode}`,
+      userId,
+      referenceId: event.workOrderId,
+      referenceType: 'work_order',
+      metadata: {
+        trackingCode: event.trackingCode,
+        changedByName: event.changedByName,
+        changedByRole: event.changedByRole,
+      },
+    }));
+
+    await this.notificationsService.createBulk(dtos);
   }
 
   private async getAdminIds(): Promise<string[]> {

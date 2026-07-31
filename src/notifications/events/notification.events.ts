@@ -147,3 +147,11 @@ export class WorkOrderNoteDeletedEvent {
   noteId!: string;
   technicianIds!: string[];
 }
+
+export class WorkOrderStatusDetailChangedEvent {
+  workOrderId!: string;
+  trackingCode!: string;
+  changedByName!: string;
+  changedByRole!: string;
+  technicianIds!: string[];
+}
