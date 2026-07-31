@@ -19,4 +19,5 @@ export enum NotificationType {
   WORK_ORDER_NOTE_UPDATED = 'work_order.note_updated',
   WORK_ORDER_NOTE_DELETED = 'work_order.note_deleted',
   WORK_ORDER_MATERIAL_ADDED = 'work_order.material_added',
+  WORK_ORDER_STATUS_DETAIL_CHANGED = 'work_order.status_detail_changed',
 }

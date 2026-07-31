@@ -35,6 +35,7 @@ import {
   WorkOrderNoteUpdatedEvent,
   WorkOrderNoteDeletedEvent,
   WorkOrderMaterialAddedEvent,
+  WorkOrderStatusDetailChangedEvent,
 } from '../notifications/events/notification.events';
 
 const ALLOWED_SORT_COLUMNS = [
@@ -735,6 +736,10 @@ export class WorkOrdersService {
   ): Promise<WorkOrderStatusLog> {
     const log = await this.statusLogRepository.findOne({
       where: { id: logId },
+      relations: {
+        workOrder: { technicians: true },
+        changedBy: true,
+      },
     });
 
     if (!log) {
@@ -742,7 +747,20 @@ export class WorkOrdersService {
     }
 
     log.detail = detail;
-    return this.statusLogRepository.save(log);
+    const saved = await this.statusLogRepository.save(log);
+
+    const workOrder = log.workOrder;
+    if (workOrder) {
+      const event = new WorkOrderStatusDetailChangedEvent();
+      event.workOrderId = workOrder.id;
+      event.trackingCode = workOrder.trackingCode;
+      event.changedByName = log.changedBy?.name ?? 'Usuario';
+      event.changedByRole = log.changedByRole;
+      event.technicianIds = workOrder.technicians?.map((t) => t.id) ?? [];
+      this.eventEmitter.emit('workorder.status_detail_changed', event);
+    }
+
+    return saved;
   }
 
   private async generateTrackingCode(): Promise<string> {
