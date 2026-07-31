@@ -289,7 +289,10 @@ export class WorkOrdersService {
 
     const { technicianIds, ...rest } = updateWorkOrderDto;
 
-    Object.assign(workOrder, rest);
+    const filteredRest = Object.fromEntries(
+      Object.entries(rest).filter(([_, v]) => v !== undefined),
+    );
+    Object.assign(workOrder, filteredRest);
 
     if (technicianIds !== undefined) {
       workOrder.technicians = await this.userRepository.findBy({
@@ -305,7 +308,13 @@ export class WorkOrdersService {
       }
     }
 
-    const saved = await this.workOrderRepository.save(workOrder);
+    let saved: WorkOrder;
+    try {
+      saved = await this.workOrderRepository.save(workOrder);
+    } catch (err) {
+      console.error('[WorkOrdersService] save error:', err);
+      throw err;
+    }
 
     const newStatus = saved.status ?? workOrder.status;
 
