@@ -233,6 +233,14 @@ export class WorkOrdersService {
         materials: {
           supplier: true,
         },
+        tasks: {
+          assignedTo: true,
+        },
+      },
+      order: {
+        tasks: {
+          createdAt: 'ASC',
+        },
       },
     });
 

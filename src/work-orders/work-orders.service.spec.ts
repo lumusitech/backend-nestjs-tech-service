@@ -8,6 +8,7 @@ import { WorkOrder } from './entities/work-order.entity';
 import { WorkOrderNote } from './entities/work-order-note.entity';
 import { WorkOrderMaterial } from './entities/work-order-material.entity';
 import { Task } from './entities/task.entity';
+import { WorkOrderStatusLog } from './entities/work-order-status-log.entity';
 import { User } from '../users/entities/user.entity';
 import { WorkOrderStatus } from '../common/enums/work-order-status.enum';
 import { Priority } from '../common/enums/priority.enum';
@@ -20,6 +21,7 @@ describe('WorkOrdersService', () => {
   let noteRepo: ReturnType<typeof createMockRepository>;
   let materialRepo: ReturnType<typeof createMockRepository>;
   let taskRepo: ReturnType<typeof createMockRepository>;
+  let statusLogRepo: ReturnType<typeof createMockRepository>;
   let userRepo: ReturnType<typeof createMockRepository>;
   let userRepoFindBy: jest.Mock;
   let eventEmitter: { emit: jest.Mock };
@@ -29,6 +31,7 @@ describe('WorkOrdersService', () => {
     noteRepo = createMockRepository();
     materialRepo = createMockRepository();
     taskRepo = createMockRepository();
+    statusLogRepo = createMockRepository();
     userRepoFindBy = jest.fn().mockResolvedValue([]);
     userRepo = createMockRepository({ findBy: userRepoFindBy });
     eventEmitter = { emit: jest.fn() };
@@ -44,6 +47,7 @@ describe('WorkOrdersService', () => {
         },
         { provide: getRepositoryToken(Task), useValue: taskRepo },
         { provide: getRepositoryToken(User), useValue: userRepo },
+        { provide: getRepositoryToken(WorkOrderStatusLog), useValue: statusLogRepo },
         { provide: EventEmitter2, useValue: eventEmitter },
       ],
     }).compile();
@@ -168,8 +172,13 @@ describe('WorkOrdersService', () => {
           client: true,
           serviceType: true,
           technicians: true,
+          seller: true,
           notes: true,
           materials: { supplier: true },
+          tasks: { assignedTo: true },
+        },
+        order: {
+          tasks: { createdAt: 'ASC' },
         },
       });
     });
@@ -280,7 +289,7 @@ describe('WorkOrdersService', () => {
       });
 
       await expect(
-        service.update('wo-1', { status: WorkOrderStatus.PENDING }),
+        service.update('wo-1', { status: WorkOrderStatus.COMPLETED }),
       ).rejects.toThrow(BadRequestException);
     });
 
@@ -509,7 +518,11 @@ describe('WorkOrdersService', () => {
       });
 
       it('should throw NotFoundException if note not found', async () => {
-        workOrderRepo.findOne.mockResolvedValue({ id: 'wo-1', trackingCode: 'TS-AAAAA', technicians: [] });
+        workOrderRepo.findOne.mockResolvedValue({
+          id: 'wo-1',
+          trackingCode: 'TS-AAAAA',
+          technicians: [],
+        });
         noteRepo.findOne.mockResolvedValue(null);
 
         await expect(
@@ -531,7 +544,7 @@ describe('WorkOrdersService', () => {
           content: 'To delete',
           workOrderId: 'wo-1',
         });
-        noteRepo.softRemove.mockResolvedValue({} as never);
+        noteRepo.softRemove.mockResolvedValue({});
 
         await service.deleteNote('wo-1', 'note-1');
 
@@ -546,12 +559,16 @@ describe('WorkOrdersService', () => {
       });
 
       it('should throw NotFoundException if note not found', async () => {
-        workOrderRepo.findOne.mockResolvedValue({ id: 'wo-1', trackingCode: 'TS-AAAAA', technicians: [] });
+        workOrderRepo.findOne.mockResolvedValue({
+          id: 'wo-1',
+          trackingCode: 'TS-AAAAA',
+          technicians: [],
+        });
         noteRepo.findOne.mockResolvedValue(null);
 
-        await expect(
-          service.deleteNote('wo-1', 'nonexistent'),
-        ).rejects.toThrow(NotFoundException);
+        await expect(service.deleteNote('wo-1', 'nonexistent')).rejects.toThrow(
+          NotFoundException,
+        );
       });
     });
   });
