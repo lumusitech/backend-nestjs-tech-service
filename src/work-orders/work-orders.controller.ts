@@ -20,6 +20,7 @@ import { FilterWorkOrderDto } from './dto/filter-work-order.dto';
 import { CreateWorkOrderNoteDto } from './dto/create-work-order-note.dto';
 import { UpdateWorkOrderNoteDto } from './dto/update-work-order-note.dto';
 import { CreateWorkOrderMaterialDto } from './dto/create-work-order-material.dto';
+import { UpdateWorkOrderMaterialDto } from './dto/update-work-order-material.dto';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { UpdateStatusLogDetailDto } from './dto/update-status-log-detail.dto';
@@ -228,6 +229,21 @@ export class WorkOrdersController {
   @ApiResponse({ status: 404, description: 'Work order not found' })
   findMaterials(@Param('id', ParseUUIDPipe) id: string) {
     return this.workOrdersService.findMaterials(id);
+  }
+
+  @Patch(':id/materials/:materialId')
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Update a material in a work order' })
+  @ApiParam({ name: 'id', description: 'Work order UUID' })
+  @ApiParam({ name: 'materialId', description: 'Material UUID' })
+  @ApiResponse({ status: 200, description: 'Material updated successfully' })
+  @ApiResponse({ status: 404, description: 'Work order or material not found' })
+  updateMaterial(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('materialId', ParseUUIDPipe) materialId: string,
+    @Body() updateMaterialDto: UpdateWorkOrderMaterialDto,
+  ) {
+    return this.workOrdersService.updateMaterial(id, materialId, updateMaterialDto);
   }
 
   @Delete(':id/materials/:materialId')

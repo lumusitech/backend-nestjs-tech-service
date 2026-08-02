@@ -587,13 +587,11 @@ describe('WorkOrdersService', () => {
           unitCost: 5000,
           workOrderId: 'wo-1',
         });
-        materialRepo.save.mockResolvedValue({
+        materialRepo.save.mockImplementation(async (m) => ({
+          ...m,
           id: 'mat-1',
-          description: 'LCD Screen',
-          quantity: 1,
-          unitCost: 5000,
-          workOrderId: 'wo-1',
-        });
+          calculateTotal: jest.fn(),
+        }));
 
         const result = await service.createMaterial('wo-1', {
           description: 'LCD Screen',
@@ -645,6 +643,44 @@ describe('WorkOrdersService', () => {
           relations: { supplier: true },
           order: { createdAt: 'DESC' },
         });
+      });
+    });
+
+    describe('updateMaterial', () => {
+      it('should update a material in a work order', async () => {
+        const workOrder = { id: 'wo-1' };
+        const material = {
+          id: 'mat-1',
+          workOrderId: 'wo-1',
+          description: 'Old LCD',
+          quantity: 1,
+          unitCost: 1000,
+          calculateTotal: jest.fn(),
+        };
+        workOrderRepo.findOne.mockResolvedValue(workOrder);
+        materialRepo.findOne.mockResolvedValue(material);
+        materialRepo.save.mockImplementation(async (m) => ({
+          ...m,
+          calculateTotal: jest.fn(),
+        }));
+
+        const result = await service.updateMaterial('wo-1', 'mat-1', {
+          description: 'New LCD',
+          quantity: 2,
+        });
+
+        expect(materialRepo.save).toHaveBeenCalled();
+        expect(result.description).toBe('New LCD');
+        expect(result.quantity).toBe(2);
+      });
+
+      it('should throw NotFoundException if material is not found', async () => {
+        workOrderRepo.findOne.mockResolvedValue({ id: 'wo-1' });
+        materialRepo.findOne.mockResolvedValue(null);
+
+        await expect(
+          service.updateMaterial('wo-1', 'nonexistent', { description: 'New LCD' }),
+        ).rejects.toThrow(NotFoundException);
       });
     });
 
