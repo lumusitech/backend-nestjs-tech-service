@@ -18,6 +18,7 @@ import { FilterWorkOrderDto } from './dto/filter-work-order.dto';
 import { CreateWorkOrderNoteDto } from './dto/create-work-order-note.dto';
 import { UpdateWorkOrderNoteDto } from './dto/update-work-order-note.dto';
 import { CreateWorkOrderMaterialDto } from './dto/create-work-order-material.dto';
+import { UpdateWorkOrderMaterialDto } from './dto/update-work-order-material.dto';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { WorkOrderStatus } from '../common/enums/work-order-status.enum';
@@ -562,6 +563,7 @@ export class WorkOrdersService {
     });
 
     const saved = await this.materialRepository.save(material);
+    saved.calculateTotal();
 
     const event = new WorkOrderMaterialAddedEvent();
     event.workOrderId = workOrderId;
@@ -582,6 +584,30 @@ export class WorkOrdersService {
       relations: { supplier: true },
       order: { createdAt: 'DESC' },
     });
+  }
+
+  async updateMaterial(
+    workOrderId: string,
+    materialId: string,
+    dto: UpdateWorkOrderMaterialDto,
+  ): Promise<WorkOrderMaterial> {
+    await this.findOne(workOrderId);
+
+    const material = await this.materialRepository.findOne({
+      where: { id: materialId, workOrderId },
+      relations: { supplier: true },
+    });
+
+    if (!material) {
+      throw new NotFoundException(
+        `Material #${materialId} not found in work order #${workOrderId}`,
+      );
+    }
+
+    Object.assign(material, dto);
+    const saved = await this.materialRepository.save(material);
+    saved.calculateTotal();
+    return saved;
   }
 
   async removeMaterial(workOrderId: string, materialId: string): Promise<void> {

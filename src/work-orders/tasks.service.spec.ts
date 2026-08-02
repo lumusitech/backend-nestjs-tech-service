@@ -6,6 +6,7 @@ import { WorkOrdersService } from './work-orders.service';
 import { WorkOrder } from './entities/work-order.entity';
 import { WorkOrderNote } from './entities/work-order-note.entity';
 import { WorkOrderMaterial } from './entities/work-order-material.entity';
+import { WorkOrderStatusLog } from './entities/work-order-status-log.entity';
 import { Task } from './entities/task.entity';
 import { User } from '../users/entities/user.entity';
 import { createMockRepository } from '../common/testing/mock-query-builder.helper';
@@ -61,6 +62,10 @@ describe('WorkOrdersService - Tasks', () => {
         {
           provide: getRepositoryToken(WorkOrderMaterial),
           useValue: materialRepository,
+        },
+        {
+          provide: getRepositoryToken(WorkOrderStatusLog),
+          useValue: createMockRepository(),
         },
         { provide: getRepositoryToken(Task), useValue: taskRepository },
         { provide: getRepositoryToken(User), useValue: userRepository },

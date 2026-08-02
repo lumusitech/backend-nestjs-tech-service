@@ -1,4 +1,4 @@
-import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn, AfterLoad } from 'typeorm';
 import { BaseEntity } from '../../common/entities/base.entity';
 import { WorkOrder } from './work-order.entity';
 import { Supplier } from '../../suppliers/entities/supplier.entity';
@@ -18,6 +18,9 @@ export class WorkOrderMaterial extends BaseEntity {
   @Column({ name: 'unit_cost', type: 'decimal', precision: 10, scale: 2 })
   unitCost!: number;
 
+  @ApiPropertyOptional({ example: 3001.0 })
+  totalCost?: number;
+
   @ManyToOne(() => WorkOrder, (workOrder) => workOrder.materials, {
     nullable: false,
   })
@@ -35,4 +38,12 @@ export class WorkOrderMaterial extends BaseEntity {
   @ApiPropertyOptional({ example: 'd4e5f6a7-b8c9-0123-defa-234567890123' })
   @Column({ name: 'supplier_id', nullable: true })
   supplierId!: string;
+
+  @AfterLoad()
+  calculateTotal() {
+    this.quantity = Number(this.quantity) || 0;
+    this.unitCost = Number(this.unitCost) || 0;
+    this.totalCost = Number((this.quantity * this.unitCost).toFixed(2));
+  }
 }
+
