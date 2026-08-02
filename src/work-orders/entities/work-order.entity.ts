@@ -55,7 +55,13 @@ export class WorkOrder extends BaseEntity {
   diagnosis!: string;
 
   @ApiProperty({ example: 5.0 })
-  @Column({ name: 'commission_percent', type: 'decimal', precision: 5, scale: 2, default: 5.0 })
+  @Column({
+    name: 'commission_percent',
+    type: 'decimal',
+    precision: 5,
+    scale: 2,
+    default: 5.0,
+  })
   commissionPercent!: number;
 
   @ManyToOne(() => User, { nullable: true })
