@@ -38,7 +38,11 @@ const TECHNICIANS = [
     password: 'tech123',
     experience: '4 years in software support and maintenance',
     trustRating: 4.7,
-    skills: ['Software Support', 'Software Installation', 'Preventive Maintenance'],
+    skills: [
+      'Software Support',
+      'Software Installation',
+      'Preventive Maintenance',
+    ],
     phone: '+5491199900011',
   },
   {
