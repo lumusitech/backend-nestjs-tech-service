@@ -110,15 +110,8 @@ export class InquiriesController {
   @ApiParam({ name: 'id', description: 'Inquiry UUID' })
   @ApiResponse({ status: 200, description: 'Inquiry converted to work order' })
   @ApiResponse({ status: 400, description: 'Invalid status or not approved' })
-  convert(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body() body: { clientId: string; serviceTypeId: string },
-  ) {
-    return this.inquiriesService.convertToWorkOrder(
-      id,
-      body.clientId,
-      body.serviceTypeId,
-    );
+  convert(@Param('id', ParseUUIDPipe) id: string) {
+    return this.inquiriesService.convertToWorkOrder(id);
   }
 
   @Delete(':id')

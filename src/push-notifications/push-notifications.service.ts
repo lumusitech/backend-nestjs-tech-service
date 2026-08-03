@@ -37,7 +37,10 @@ export class PushNotificationsService implements OnModuleInit {
     return this.vapidPublicKey ?? null;
   }
 
-  async subscribe(userId: string, dto: SubscribeDto): Promise<PushSubscription> {
+  async subscribe(
+    userId: string,
+    dto: SubscribeDto,
+  ): Promise<PushSubscription> {
     const existing = await this.subscriptionRepository.findOne({
       where: { endpoint: dto.endpoint, userId },
     });
@@ -94,19 +97,24 @@ export class PushNotificationsService implements OnModuleInit {
           },
           pushPayload,
         );
-      } catch (error: any) {
-        if (error.statusCode === 410) {
+      } catch (error) {
+        const pushError = error as { statusCode?: number; message?: string };
+        if (pushError.statusCode === 410) {
           this.logger.log(`Removing stale subscription: ${sub.id}`);
           await this.subscriptionRepository.remove(sub);
         } else {
-          this.logger.warn(`Push failed for subscription ${sub.id}: ${error.message}`);
+          this.logger.warn(
+            `Push failed for subscription ${sub.id}: ${pushError.message}`,
+          );
           failures.push(sub.id);
         }
       }
     }
 
     if (failures.length > 0) {
-      this.logger.warn(`Push delivery failed for ${failures.length} subscriptions`);
+      this.logger.warn(
+        `Push delivery failed for ${failures.length} subscriptions`,
+      );
     }
   }
 

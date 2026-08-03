@@ -33,7 +33,9 @@ export class UpdateBusinessSettingDto {
   phone?: string;
 
   @ApiPropertyOptional({ example: 'info@techservice.com' })
-  @ValidateIf((o) => o.email !== '' && o.email !== undefined)
+  @ValidateIf(
+    (o: UpdateBusinessSettingDto) => o.email !== '' && o.email !== undefined,
+  )
   @IsEmail()
   @IsOptional()
   email?: string;

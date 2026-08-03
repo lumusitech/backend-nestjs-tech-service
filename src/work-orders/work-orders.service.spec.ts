@@ -47,7 +47,10 @@ describe('WorkOrdersService', () => {
         },
         { provide: getRepositoryToken(Task), useValue: taskRepo },
         { provide: getRepositoryToken(User), useValue: userRepo },
-        { provide: getRepositoryToken(WorkOrderStatusLog), useValue: statusLogRepo },
+        {
+          provide: getRepositoryToken(WorkOrderStatusLog),
+          useValue: statusLogRepo,
+        },
         { provide: EventEmitter2, useValue: eventEmitter },
       ],
     }).compile();
@@ -587,7 +590,7 @@ describe('WorkOrdersService', () => {
           unitCost: 5000,
           workOrderId: 'wo-1',
         });
-        materialRepo.save.mockImplementation(async (m) => ({
+        materialRepo.save.mockImplementation((m: Record<string, unknown>) => ({
           ...m,
           id: 'mat-1',
           calculateTotal: jest.fn(),
@@ -659,7 +662,7 @@ describe('WorkOrdersService', () => {
         };
         workOrderRepo.findOne.mockResolvedValue(workOrder);
         materialRepo.findOne.mockResolvedValue(material);
-        materialRepo.save.mockImplementation(async (m) => ({
+        materialRepo.save.mockImplementation((m: Record<string, unknown>) => ({
           ...m,
           calculateTotal: jest.fn(),
         }));
@@ -679,7 +682,9 @@ describe('WorkOrdersService', () => {
         materialRepo.findOne.mockResolvedValue(null);
 
         await expect(
-          service.updateMaterial('wo-1', 'nonexistent', { description: 'New LCD' }),
+          service.updateMaterial('wo-1', 'nonexistent', {
+            description: 'New LCD',
+          }),
         ).rejects.toThrow(NotFoundException);
       });
     });

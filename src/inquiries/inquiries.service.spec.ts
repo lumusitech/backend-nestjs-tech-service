@@ -174,10 +174,9 @@ describe('InquiriesService', () => {
 
       await service.findAll({}, 'tech-1', UserRole.TECHNICIAN);
 
-      expect(qb.andWhere).toHaveBeenCalledWith(
-        'i.assigned_to_id = :userId',
-        { userId: 'tech-1' },
-      );
+      expect(qb.andWhere).toHaveBeenCalledWith('i.assigned_to_id = :userId', {
+        userId: 'tech-1',
+      });
     });
   });
 
@@ -332,11 +331,7 @@ describe('InquiriesService', () => {
       });
       inquiryRepo.save.mockImplementation((entity) => Promise.resolve(entity));
 
-      const result = await service.convertToWorkOrder(
-        'iq-1',
-        'client-1',
-        'st-1',
-      );
+      const result = await service.convertToWorkOrder('iq-1');
 
       expect(result.status).toBe(InquiryStatus.CONVERTED);
     });
@@ -347,9 +342,9 @@ describe('InquiriesService', () => {
         status: InquiryStatus.CONTACTED,
       });
 
-      await expect(
-        service.convertToWorkOrder('iq-1', 'client-1', 'st-1'),
-      ).rejects.toThrow(BadRequestException);
+      await expect(service.convertToWorkOrder('iq-1')).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('should reject if admin did not approve', async () => {
@@ -359,9 +354,9 @@ describe('InquiriesService', () => {
         adminDecision: InquiryDecision.REJECTED,
       });
 
-      await expect(
-        service.convertToWorkOrder('iq-1', 'client-1', 'st-1'),
-      ).rejects.toThrow(BadRequestException);
+      await expect(service.convertToWorkOrder('iq-1')).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 
