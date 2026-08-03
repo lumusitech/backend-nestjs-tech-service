@@ -3,7 +3,10 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { SuppliersService } from './suppliers.service';
 import { Supplier } from './entities/supplier.entity';
-import { createMockRepository, createMockQueryBuilder } from '../common/testing/mock-query-builder.helper';
+import {
+  createMockRepository,
+  createMockQueryBuilder,
+} from '../common/testing/mock-query-builder.helper';
 import { CreateSupplierDto } from './dto/create-supplier.dto';
 import { UpdateSupplierDto } from './dto/update-supplier.dto';
 
@@ -102,7 +105,10 @@ describe('SuppliersService', () => {
       const result = await service.findAll({});
 
       expect(repository.createQueryBuilder).toHaveBeenCalledWith('supplier');
-      expect(queryBuilder.orderBy).toHaveBeenCalledWith('supplier.createdAt', 'ASC');
+      expect(queryBuilder.orderBy).toHaveBeenCalledWith(
+        'supplier.createdAt',
+        'ASC',
+      );
       expect(queryBuilder.skip).toHaveBeenCalledWith(0);
       expect(queryBuilder.take).toHaveBeenCalledWith(10);
       expect(result.data).toEqual(suppliers);
@@ -125,7 +131,10 @@ describe('SuppliersService', () => {
         order: 'DESC',
       });
 
-      expect(queryBuilder.orderBy).toHaveBeenCalledWith('supplier.name', 'DESC');
+      expect(queryBuilder.orderBy).toHaveBeenCalledWith(
+        'supplier.name',
+        'DESC',
+      );
       expect(queryBuilder.skip).toHaveBeenCalledWith(10);
       expect(queryBuilder.take).toHaveBeenCalledWith(5);
       expect(result.data).toEqual(suppliers);

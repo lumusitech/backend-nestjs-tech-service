@@ -39,7 +39,10 @@ export class CreateUserDto {
   @IsString()
   phone?: string;
 
-  @ApiPropertyOptional({ example: 5.0, description: 'Commission percentage (sellers)' })
+  @ApiPropertyOptional({
+    example: 5.0,
+    description: 'Commission percentage (sellers)',
+  })
   @IsOptional()
   @IsNumber()
   @Min(0)
@@ -58,7 +61,10 @@ export class CreateUserDto {
   @Max(5)
   trustRating?: number;
 
-  @ApiPropertyOptional({ example: ['uuid1', 'uuid2'], description: 'Skill IDs (technicians)' })
+  @ApiPropertyOptional({
+    example: ['uuid1', 'uuid2'],
+    description: 'Skill IDs (technicians)',
+  })
   @IsOptional()
   @IsArray()
   @IsUUID('4', { each: true })

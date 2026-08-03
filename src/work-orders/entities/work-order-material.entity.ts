@@ -46,4 +46,3 @@ export class WorkOrderMaterial extends BaseEntity {
     this.totalCost = Number((this.quantity * this.unitCost).toFixed(2));
   }
 }
-

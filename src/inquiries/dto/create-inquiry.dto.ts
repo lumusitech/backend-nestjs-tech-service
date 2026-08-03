@@ -29,7 +29,9 @@ export class CreateInquiryDto {
   @IsOptional()
   clientAddress?: string;
 
-  @ApiProperty({ example: 'La notebook no prende, hace ruido raro el ventilador' })
+  @ApiProperty({
+    example: 'La notebook no prende, hace ruido raro el ventilador',
+  })
   @IsString()
   @IsNotEmpty()
   description!: string;

@@ -1,5 +1,11 @@
 import { Controller, Get, Param } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiOkResponse, ApiResponse, ApiParam } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiOkResponse,
+  ApiResponse,
+  ApiParam,
+} from '@nestjs/swagger';
 import { PortalService } from './portal.service';
 import { PortalResponseDto } from './dto/portal-response.dto';
 import { Public } from '../auth/decorators/public.decorator';
@@ -17,7 +23,10 @@ export class PortalController {
     description: 'Work order tracking code',
     example: 'TS-A1B2C3',
   })
-  @ApiOkResponse({ type: PortalResponseDto, description: 'Work order tracking details' })
+  @ApiOkResponse({
+    type: PortalResponseDto,
+    description: 'Work order tracking details',
+  })
   @ApiResponse({ status: 404, description: 'Tracking code not found' })
   track(@Param('trackingCode') trackingCode: string) {
     return this.portalService.trackByCode(trackingCode);

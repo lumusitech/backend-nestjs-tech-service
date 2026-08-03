@@ -23,7 +23,13 @@ import {
   PaymentStatusChangedEvent,
 } from '../notifications/events/notification.events';
 
-const ALLOWED_SORT_COLUMNS = ['createdAt', 'amount', 'method', 'status', 'paidAt'] as const;
+const ALLOWED_SORT_COLUMNS = [
+  'createdAt',
+  'amount',
+  'method',
+  'status',
+  'paidAt',
+] as const;
 
 @Injectable()
 export class PaymentsService {
@@ -133,7 +139,11 @@ export class PaymentsService {
       qb.andWhere(`p.${dateField} < :dateToEnd`, { dateToEnd });
     }
 
-    const safeSortBy = validateSortBy(sortBy, ALLOWED_SORT_COLUMNS, 'createdAt');
+    const safeSortBy = validateSortBy(
+      sortBy,
+      ALLOWED_SORT_COLUMNS,
+      'createdAt',
+    );
     qb.orderBy(`p.${safeSortBy}`, order)
       .skip((page - 1) * limit)
       .take(limit);
@@ -197,7 +207,11 @@ export class PaymentsService {
       qb.andWhere(`p.${dateField} < :dateToEnd`, { dateToEnd });
     }
 
-    const safeSortBy = validateSortBy(sortBy, ALLOWED_SORT_COLUMNS, 'createdAt');
+    const safeSortBy = validateSortBy(
+      sortBy,
+      ALLOWED_SORT_COLUMNS,
+      'createdAt',
+    );
     qb.orderBy(`p.${safeSortBy}`, order)
       .skip((page - 1) * limit)
       .take(limit);

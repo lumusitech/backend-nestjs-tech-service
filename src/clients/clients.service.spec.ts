@@ -138,7 +138,9 @@ describe('ClientsService', () => {
       const result = await service.findAll(filterDto);
 
       expect(mockQb.andWhere).toHaveBeenCalledWith(
-        expect.stringContaining('unaccent(client.name) ILIKE unaccent(:search)'),
+        expect.stringContaining(
+          'unaccent(client.name) ILIKE unaccent(:search)',
+        ),
         { search: '%Juan%' },
       );
       expect(result.data).toEqual(clients);

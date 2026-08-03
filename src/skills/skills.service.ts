@@ -49,7 +49,11 @@ export class SkillsService {
       dateTo,
     } = filterDto;
 
-    const safeSortBy = validateSortBy(sortBy, ALLOWED_SORT_COLUMNS, 'createdAt');
+    const safeSortBy = validateSortBy(
+      sortBy,
+      ALLOWED_SORT_COLUMNS,
+      'createdAt',
+    );
 
     const qb = this.skillRepository.createQueryBuilder('skill');
 
@@ -100,10 +104,7 @@ export class SkillsService {
   async update(id: string, updateSkillDto: UpdateSkillDto): Promise<Skill> {
     const skill = await this.findOne(id);
 
-    if (
-      updateSkillDto.name &&
-      updateSkillDto.name !== skill.name
-    ) {
+    if (updateSkillDto.name && updateSkillDto.name !== skill.name) {
       const existing = await this.skillRepository.findOne({
         where: { name: updateSkillDto.name },
       });

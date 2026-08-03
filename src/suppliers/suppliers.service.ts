@@ -50,7 +50,11 @@ export class SuppliersService {
       dateTo,
     } = filterDto;
 
-    const safeSortBy = validateSortBy(sortBy, ALLOWED_SORT_COLUMNS, 'createdAt');
+    const safeSortBy = validateSortBy(
+      sortBy,
+      ALLOWED_SORT_COLUMNS,
+      'createdAt',
+    );
 
     const qb = this.supplierRepository.createQueryBuilder('supplier');
 
