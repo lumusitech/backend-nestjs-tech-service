@@ -7,7 +7,7 @@ export class AddPostponedToWorkOrderStatus1780700000000 implements MigrationInte
     );
   }
 
-  public async down(queryRunner: QueryRunner): Promise<void> {
+  public async down(): Promise<void> {
     // PostgreSQL doesn't support removing enum values directly
     // Would need to recreate the type
   }

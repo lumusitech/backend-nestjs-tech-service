@@ -33,8 +33,12 @@ export class CreateWorkOrderStatusLogs1784800000001 implements MigrationInterfac
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`ALTER TABLE "work_order_status_logs" DROP CONSTRAINT "FK_work_order_status_logs_user"`);
-    await queryRunner.query(`ALTER TABLE "work_order_status_logs" DROP CONSTRAINT "FK_work_order_status_logs_work_order"`);
+    await queryRunner.query(
+      `ALTER TABLE "work_order_status_logs" DROP CONSTRAINT "FK_work_order_status_logs_user"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "work_order_status_logs" DROP CONSTRAINT "FK_work_order_status_logs_work_order"`,
+    );
     await queryRunner.query(`DROP TABLE "work_order_status_logs"`);
   }
 }
