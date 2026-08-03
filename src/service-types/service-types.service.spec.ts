@@ -3,7 +3,10 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { ServiceTypesService } from './service-types.service';
 import { ServiceType } from './entities/service-type.entity';
-import { createMockRepository, createMockQueryBuilder } from '../common/testing/mock-query-builder.helper';
+import {
+  createMockRepository,
+  createMockQueryBuilder,
+} from '../common/testing/mock-query-builder.helper';
 
 describe('ServiceTypesService', () => {
   let service: ServiceTypesService;
@@ -81,7 +84,10 @@ describe('ServiceTypesService', () => {
       const result = await service.findAll({});
 
       expect(repository.createQueryBuilder).toHaveBeenCalledWith('serviceType');
-      expect(queryBuilder.orderBy).toHaveBeenCalledWith('serviceType.createdAt', 'ASC');
+      expect(queryBuilder.orderBy).toHaveBeenCalledWith(
+        'serviceType.createdAt',
+        'ASC',
+      );
       expect(queryBuilder.skip).toHaveBeenCalledWith(0);
       expect(queryBuilder.take).toHaveBeenCalledWith(10);
       expect(result.data).toEqual(data);
@@ -101,7 +107,10 @@ describe('ServiceTypesService', () => {
         order: 'DESC',
       });
 
-      expect(queryBuilder.orderBy).toHaveBeenCalledWith('serviceType.name', 'DESC');
+      expect(queryBuilder.orderBy).toHaveBeenCalledWith(
+        'serviceType.name',
+        'DESC',
+      );
       expect(queryBuilder.skip).toHaveBeenCalledWith(5);
       expect(queryBuilder.take).toHaveBeenCalledWith(5);
     });

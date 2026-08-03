@@ -12,7 +12,11 @@ import { FilterServiceTypeDto } from './dto/filter-service-type.dto';
 import { PaginatedResponseDto } from '../common/dto/paginated-response.dto';
 import { validateSortBy } from '../common/utils/sort-by.util';
 
-const ALLOWED_SORT_COLUMNS = ['createdAt', 'name', 'estimatedDuration'] as const;
+const ALLOWED_SORT_COLUMNS = [
+  'createdAt',
+  'name',
+  'estimatedDuration',
+] as const;
 
 @Injectable()
 export class ServiceTypesService {
@@ -50,7 +54,11 @@ export class ServiceTypesService {
       dateTo,
     } = filterDto;
 
-    const safeSortBy = validateSortBy(sortBy, ALLOWED_SORT_COLUMNS, 'createdAt');
+    const safeSortBy = validateSortBy(
+      sortBy,
+      ALLOWED_SORT_COLUMNS,
+      'createdAt',
+    );
 
     const qb = this.serviceTypeRepository.createQueryBuilder('serviceType');
 

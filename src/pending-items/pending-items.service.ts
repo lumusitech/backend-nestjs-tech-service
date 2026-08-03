@@ -22,7 +22,14 @@ import {
   PendingItemOverdueEvent,
 } from '../notifications/events/notification.events';
 
-const ALLOWED_SORT_COLUMNS = ['createdAt', 'dueDate', 'priority', 'status', 'title', 'type'] as const;
+const ALLOWED_SORT_COLUMNS = [
+  'createdAt',
+  'dueDate',
+  'priority',
+  'status',
+  'title',
+  'type',
+] as const;
 
 @Injectable()
 export class PendingItemsService {

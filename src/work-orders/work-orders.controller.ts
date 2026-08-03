@@ -243,7 +243,11 @@ export class WorkOrdersController {
     @Param('materialId', ParseUUIDPipe) materialId: string,
     @Body() updateMaterialDto: UpdateWorkOrderMaterialDto,
   ) {
-    return this.workOrdersService.updateMaterial(id, materialId, updateMaterialDto);
+    return this.workOrdersService.updateMaterial(
+      id,
+      materialId,
+      updateMaterialDto,
+    );
   }
 
   @Delete(':id/materials/:materialId')

@@ -7,6 +7,7 @@ import { WorkOrderLocation } from '../../work-orders/enums/work-order-location.e
 import { Client } from '../../clients/entities/client.entity';
 import { ServiceType } from '../../service-types/entities/service-type.entity';
 import { User } from '../../users/entities/user.entity';
+import { UserRole } from '../../users/enums/user-role.enum';
 
 const STATUS_FLOW: Record<WorkOrderStatus, WorkOrderStatus[]> = {
   [WorkOrderStatus.PENDING]: [],
@@ -95,7 +96,7 @@ interface WorkOrderSeed {
   clientEmail: string;
   serviceTypeName: string;
   technicianEmails: string[];
-  statusLogDetail?: string;
+  statusLogDetails?: Partial<Record<WorkOrderStatus, string>>;
 }
 
 const WORK_ORDERS: WorkOrderSeed[] = [
@@ -115,6 +116,14 @@ const WORK_ORDERS: WorkOrderSeed[] = [
     clientEmail: 'juan.perez@gmail.com',
     serviceTypeName: 'Reparación de PC',
     technicianEmails: ['carlos.garcia@techservice.local'],
+    statusLogDetails: {
+      [WorkOrderStatus.ASSIGNED]: 'Orden asignada a Carlos García',
+      [WorkOrderStatus.IN_PROGRESS]: 'Reparación iniciada en taller',
+      [WorkOrderStatus.COMPLETED]:
+        'Reemplazo de disco completado y control de calidad OK',
+      [WorkOrderStatus.DELIVERED]:
+        'Equipo entregado al cliente con garantía de 6 meses',
+    },
   },
   {
     trackingCode: 'TS-NB0002',
@@ -132,6 +141,11 @@ const WORK_ORDERS: WorkOrderSeed[] = [
     clientEmail: 'ana.rodriguez@hotmail.com',
     serviceTypeName: 'Reparación de Notebook',
     technicianEmails: ['maria.lopez@techservice.local'],
+    statusLogDetails: {
+      [WorkOrderStatus.ASSIGNED]: 'Orden asignada a María López',
+      [WorkOrderStatus.IN_PROGRESS]:
+        'Diagnóstico iniciado; se detectó falla de display',
+    },
   },
   {
     trackingCode: 'TS-CAM003',
@@ -151,6 +165,10 @@ const WORK_ORDERS: WorkOrderSeed[] = [
       'diego.martinez@techservice.local',
       'pablo.sanchez@techservice.local',
     ],
+    statusLogDetails: {
+      [WorkOrderStatus.ASSIGNED]:
+        'Orden asignada a Diego Martínez y Pablo Sánchez',
+    },
   },
   {
     trackingCode: 'TS-TV0004',
@@ -168,6 +186,12 @@ const WORK_ORDERS: WorkOrderSeed[] = [
     clientEmail: 'luciana.martinez@yahoo.com',
     serviceTypeName: 'Reparación de TV',
     technicianEmails: ['carlos.garcia@techservice.local'],
+    statusLogDetails: {
+      [WorkOrderStatus.ASSIGNED]: 'Orden asignada a Carlos García',
+      [WorkOrderStatus.IN_PROGRESS]: 'Reparación iniciada en taller',
+      [WorkOrderStatus.COMPLETED]: 'Fuente reemplazada y TV verificado',
+      [WorkOrderStatus.DELIVERED]: 'TV entregado al cliente',
+    },
   },
   {
     trackingCode: 'TS-EL0005',
@@ -185,6 +209,11 @@ const WORK_ORDERS: WorkOrderSeed[] = [
     clientEmail: 'fernando.diaz@gmail.com',
     serviceTypeName: 'Servicio eléctrico',
     technicianEmails: ['pablo.sanchez@techservice.local'],
+    statusLogDetails: {
+      [WorkOrderStatus.ASSIGNED]: 'Orden asignada a Pablo Sánchez',
+      [WorkOrderStatus.IN_PROGRESS]:
+        'Trabajo iniciado en el local; se identificó cableado defectuoso',
+    },
   },
   {
     trackingCode: 'TS-WF0006',
@@ -202,6 +231,12 @@ const WORK_ORDERS: WorkOrderSeed[] = [
     clientEmail: 'valentina.torres@hotmail.com',
     serviceTypeName: 'Instalación de red/WiFi',
     technicianEmails: ['diego.martinez@techservice.local'],
+    statusLogDetails: {
+      [WorkOrderStatus.ASSIGNED]: 'Orden asignada a Diego Martínez',
+      [WorkOrderStatus.IN_PROGRESS]:
+        'Trabajo iniciado; instalación de Access Point',
+      [WorkOrderStatus.COMPLETED]: 'Red configurada y cobertura verificada',
+    },
   },
   {
     trackingCode: 'TS-MT0007',
@@ -218,8 +253,11 @@ const WORK_ORDERS: WorkOrderSeed[] = [
     clientEmail: 'martin.romero@gmail.com',
     serviceTypeName: 'Mantenimiento general',
     technicianEmails: [],
-    statusLogDetail:
-      'El cliente se tuvo que ir temprano, coordinar día para terminar.',
+    statusLogDetails: {
+      [WorkOrderStatus.ASSIGNED]: 'Orden asignada sin técnico confirmado',
+      [WorkOrderStatus.CANCELLED]:
+        'El cliente se tuvo que ir temprano, coordinar día para terminar.',
+    },
   },
   {
     trackingCode: 'TS-PC0008',
@@ -237,8 +275,12 @@ const WORK_ORDERS: WorkOrderSeed[] = [
     clientEmail: 'camila.sosa@yahoo.com',
     serviceTypeName: 'Reparación de PC',
     technicianEmails: ['laura.fernandez@techservice.local'],
-    statusLogDetail:
-      'Esperando repuesto (fuente ATX 650W), reprogramado para la próxima semana.',
+    statusLogDetails: {
+      [WorkOrderStatus.ASSIGNED]: 'Orden asignada a Laura Fernández',
+      [WorkOrderStatus.IN_PROGRESS]: 'Diagnóstico de fuente ATX iniciado',
+      [WorkOrderStatus.POSTPONED]:
+        'Esperando repuesto (fuente ATX 650W), reprogramado para la próxima semana.',
+    },
   },
   {
     trackingCode: 'TS-NB0009',
@@ -255,6 +297,9 @@ const WORK_ORDERS: WorkOrderSeed[] = [
     clientEmail: 'santiago.alvarez@gmail.com',
     serviceTypeName: 'Reparación de Notebook',
     technicianEmails: [],
+    statusLogDetails: {
+      [WorkOrderStatus.PENDING]: 'Orden creada; pendiente de asignación',
+    },
   },
   {
     trackingCode: 'TS-WF0010',
@@ -275,6 +320,15 @@ const WORK_ORDERS: WorkOrderSeed[] = [
       'diego.martinez@techservice.local',
       'carlos.garcia@techservice.local',
     ],
+    statusLogDetails: {
+      [WorkOrderStatus.ASSIGNED]:
+        'Orden asignada a Diego Martínez y Carlos García',
+      [WorkOrderStatus.IN_PROGRESS]:
+        'Trabajo iniciado; instalación de nodos mesh',
+      [WorkOrderStatus.COMPLETED]: 'Red mesh configurada y WiFi 6 optimizado',
+      [WorkOrderStatus.DELIVERED]:
+        'Instalación entregada y verificada con el cliente',
+    },
   },
   {
     trackingCode: 'TS-TV0011',
@@ -292,6 +346,11 @@ const WORK_ORDERS: WorkOrderSeed[] = [
     clientEmail: 'mateo.ruiz@gmail.com',
     serviceTypeName: 'Reparación de TV',
     technicianEmails: ['laura.fernandez@techservice.local'],
+    statusLogDetails: {
+      [WorkOrderStatus.ASSIGNED]: 'Orden asignada a Laura Fernández',
+      [WorkOrderStatus.IN_PROGRESS]:
+        'Diagnóstico iniciado; panel LED con zonas oscuras',
+    },
   },
   {
     trackingCode: 'TS-EL0012',
@@ -309,6 +368,12 @@ const WORK_ORDERS: WorkOrderSeed[] = [
     clientEmail: 'sofia.castro@yahoo.com',
     serviceTypeName: 'Servicio eléctrico',
     technicianEmails: ['pablo.sanchez@techservice.local'],
+    statusLogDetails: {
+      [WorkOrderStatus.ASSIGNED]: 'Orden asignada a Pablo Sánchez',
+      [WorkOrderStatus.IN_PROGRESS]: 'Trabajo iniciado; tendido de cables',
+      [WorkOrderStatus.COMPLETED]:
+        'Tomas y protecciones instaladas y verificadas',
+    },
   },
   {
     trackingCode: 'TS-CAM013',
@@ -329,6 +394,15 @@ const WORK_ORDERS: WorkOrderSeed[] = [
       'diego.martinez@techservice.local',
       'pablo.sanchez@techservice.local',
     ],
+    statusLogDetails: {
+      [WorkOrderStatus.ASSIGNED]:
+        'Orden asignada a Diego Martínez y Pablo Sánchez',
+      [WorkOrderStatus.IN_PROGRESS]:
+        'Instalación iniciada; cableado de 8 puntos',
+      [WorkOrderStatus.COMPLETED]: 'Cámaras montadas y DVR configurado',
+      [WorkOrderStatus.DELIVERED]:
+        'Sistema entregado con monitoreo remoto activo',
+    },
   },
   {
     trackingCode: 'TS-PC0014',
@@ -345,6 +419,9 @@ const WORK_ORDERS: WorkOrderSeed[] = [
     clientEmail: 'emma.herrera@hotmail.com',
     serviceTypeName: 'Mantenimiento general',
     technicianEmails: [],
+    statusLogDetails: {
+      [WorkOrderStatus.PENDING]: 'Orden creada; pendiente de asignación',
+    },
   },
   {
     trackingCode: 'TS-MT0015',
@@ -361,6 +438,35 @@ const WORK_ORDERS: WorkOrderSeed[] = [
     clientEmail: 'tomas.vargas@gmail.com',
     serviceTypeName: 'Mantenimiento general',
     technicianEmails: ['maria.lopez@techservice.local'],
+    statusLogDetails: {
+      [WorkOrderStatus.ASSIGNED]: 'Orden asignada a María López',
+    },
+  },
+  {
+    trackingCode: 'TS-CAM0016',
+    status: WorkOrderStatus.ON_THE_WAY,
+    priority: Priority.HIGH,
+    location: WorkOrderLocation.ON_SITE,
+    diagnosis:
+      'Instalación de 4 cámaras exteriores con visión nocturna. Cliente solicitó refuerzo de seguridad en el comercio.',
+    commissionPercent: 5,
+    sellerEmail: 'sofia.ramirez@techservice.local',
+    warrantyUntil: undefined,
+    scheduledDate: '2026-08-03',
+    startedAt: undefined,
+    completedAt: undefined,
+    clientEmail: 'joaquin.pereyra@yahoo.com',
+    serviceTypeName: 'Instalación de cámaras de seguridad',
+    technicianEmails: [
+      'diego.martinez@techservice.local',
+      'pablo.sanchez@techservice.local',
+    ],
+    statusLogDetails: {
+      [WorkOrderStatus.ASSIGNED]:
+        'Orden asignada a Diego Martínez y Pablo Sánchez',
+      [WorkOrderStatus.ON_THE_WAY]:
+        'Equipo técnico en camino al domicilio del cliente',
+    },
   },
 ];
 
@@ -371,7 +477,9 @@ export async function seedWorkOrders(dataSource: DataSource) {
   const serviceTypeRepo = dataSource.getRepository(ServiceType);
   const userRepo = dataSource.getRepository(User);
 
-  const adminUser = await userRepo.findOne({ where: { role: 'admin' as any } });
+  const adminUser = await userRepo.findOne({
+    where: { role: UserRole.ADMIN },
+  });
   if (!adminUser) {
     console.log(
       '  No admin user found, status logs will skip changedByUserId validation',
@@ -479,15 +587,23 @@ export async function seedWorkOrders(dataSource: DataSource) {
         adminUser?.id ||
         '00000000-0000-0000-0000-000000000000';
 
+      const changedByRole = saved.technicians?.some(
+        (t) => t.id === changedByUserId,
+      )
+        ? 'technician'
+        : changedByUserId === saved.sellerId
+          ? 'seller'
+          : 'admin';
+
       const log = logRepo.create({
         workOrderId: saved.id,
         fromStatus,
         toStatus,
         changedByUserId,
-        changedByRole: 'system',
+        changedByRole,
         timestamp,
         duration,
-        detail: i === steps.length - 1 ? (wo.statusLogDetail ?? null) : null,
+        detail: wo.statusLogDetails?.[toStatus] ?? null,
       });
       logs.push(log);
     }

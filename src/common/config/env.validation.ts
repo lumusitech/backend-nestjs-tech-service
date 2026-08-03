@@ -26,9 +26,9 @@ export const envValidationSchema = Joi.object({
   ADMIN_PASSWORD: Joi.string().optional(),
 
   // Optional — MercadoPago
-  MERCADOPAGO_ACCESS_TOKEN: Joi.string().optional(),
-  MERCADOPAGO_PUBLIC_KEY: Joi.string().optional(),
-  MERCADOPAGO_WEBHOOK_SECRET: Joi.string().optional(),
+  MERCADOPAGO_ACCESS_TOKEN: Joi.string().allow('').optional(),
+  MERCADOPAGO_PUBLIC_KEY: Joi.string().allow('').optional(),
+  MERCADOPAGO_WEBHOOK_SECRET: Joi.string().allow('').optional(),
 
   // Optional — business info
   BUSINESS_NAME: Joi.string().optional(),
@@ -41,9 +41,7 @@ export const envValidationSchema = Joi.object({
   ARCA_POINT_OF_SALE: Joi.number().optional(),
   ARCA_CERT_PATH: Joi.string().optional(),
   ARCA_KEY_PATH: Joi.string().optional(),
-  ARCA_ENVIRONMENT: Joi.string()
-    .valid('homologacion', 'produccion')
-    .optional(),
+  ARCA_ENVIRONMENT: Joi.string().valid('homologacion', 'produccion').optional(),
 
   // Optional — PGAdmin
   PGADMIN_EMAIL: Joi.string().optional(),

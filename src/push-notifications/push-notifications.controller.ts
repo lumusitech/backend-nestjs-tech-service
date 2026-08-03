@@ -46,10 +46,7 @@ export class PushNotificationsController {
   @Post('subscribe')
   @ApiOperation({ summary: 'Subscribe to push notifications' })
   @ApiResponse({ status: 201, description: 'Subscription created' })
-  async subscribe(
-    @CurrentUser() user: UserPayload,
-    @Body() dto: SubscribeDto,
-  ) {
+  async subscribe(@CurrentUser() user: UserPayload, @Body() dto: SubscribeDto) {
     const subscription = await this.pushNotificationsService.subscribe(
       user.id,
       dto,

@@ -603,7 +603,7 @@ export class NotificationsListener {
     try {
       await this.pushNotificationsService.sendToAll(userIds, { title, body });
     } catch (error) {
-      this.logger.warn(`Push notification failed: ${error}`);
+      this.logger.warn(`Push notification failed: ${String(error)}`);
     }
   }
 }

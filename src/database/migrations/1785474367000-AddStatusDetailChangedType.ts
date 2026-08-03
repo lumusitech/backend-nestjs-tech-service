@@ -9,7 +9,7 @@ export class AddStatusDetailChangedType1785474367000 implements MigrationInterfa
     );
   }
 
-  public async down(queryRunner: QueryRunner): Promise<void> {
+  public async down(): Promise<void> {
     // PostgreSQL doesn't support removing enum values directly
   }
 }

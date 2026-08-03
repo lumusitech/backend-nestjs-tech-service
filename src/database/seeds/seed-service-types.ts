@@ -1,7 +1,12 @@
 import { DataSource } from 'typeorm';
 import { ServiceType } from '../../service-types/entities/service-type.entity';
 
-const SERVICE_TYPES: { name: string; description: string; estimatedDuration: number; requiresDelivery: boolean }[] = [
+const SERVICE_TYPES: {
+  name: string;
+  description: string;
+  estimatedDuration: number;
+  requiresDelivery: boolean;
+}[] = [
   {
     name: 'Reparación de PC',
     description: 'Diagnóstico y reparación de computadoras de escritorio',

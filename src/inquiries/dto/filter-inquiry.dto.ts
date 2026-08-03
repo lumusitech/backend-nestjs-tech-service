@@ -1,11 +1,19 @@
-import { IsOptional, IsEnum, IsUUID, IsDateString, IsString } from 'class-validator';
+import {
+  IsOptional,
+  IsEnum,
+  IsUUID,
+  IsDateString,
+  IsString,
+} from 'class-validator';
 import { PaginationDto } from '../../common/dto/pagination.dto';
 import { InquiryStatus } from '../enums/inquiry-status.enum';
 import { InquirySource } from '../enums/inquiry-source.enum';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class FilterInquiryDto extends PaginationDto {
-  @ApiPropertyOptional({ description: 'Search by client name, phone, email or description' })
+  @ApiPropertyOptional({
+    description: 'Search by client name, phone, email or description',
+  })
   @IsOptional()
   @IsString()
   search?: string;

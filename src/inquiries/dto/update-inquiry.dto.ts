@@ -1,10 +1,5 @@
 import { PartialType } from '@nestjs/mapped-types';
-import {
-  IsEnum,
-  IsOptional,
-  IsString,
-  IsNumber,
-} from 'class-validator';
+import { IsEnum, IsOptional, IsString, IsNumber } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { CreateInquiryDto } from './create-inquiry.dto';
 import { InquiryStatus } from '../enums/inquiry-status.enum';

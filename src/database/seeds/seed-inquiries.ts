@@ -68,10 +68,12 @@ const INQUIRIES: InquirySeed[] = [
       'Relevamiento realizado. El local tiene 80m2 approx. Se necesitan 4 cámaras bullet para exterior y 1 DVR de 8 canales. Cableado UTP Cat6 por techo.',
     estimatedCost: 180000,
     estimatedDuration: 8,
-    materialsNeeded: '4x Cámaras Hikvision DS-2CD2047, 1x DVR 8 canales, 100m cable UTP Cat6, conectores RJ45, cañería',
+    materialsNeeded:
+      '4x Cámaras Hikvision DS-2CD2047, 1x DVR 8 canales, 100m cable UTP Cat6, conectores RJ45, cañería',
     recommendation: InquiryRecommendation.REPAIR,
     adminDecision: InquiryDecision.APPROVED,
-    adminNotes: 'Cliente aprobado. Presupuesto enviado por WhatsApp. Coordinar instalación para la próxima semana.',
+    adminNotes:
+      'Cliente aprobado. Presupuesto enviado por WhatsApp. Coordinar instalación para la próxima semana.',
     contactedAt: '2026-06-19T14:00:00.000Z',
     reviewedAt: '2026-06-20T09:15:00.000Z',
   },
@@ -113,7 +115,8 @@ const INQUIRIES: InquirySeed[] = [
       'Llamé a la cliente. Problema parece ser en el breaker general. Possible cortocircuito en el circuito de la cocina. La cliente dice que empezó después de instalar un microondas nuevo.',
     estimatedCost: 35000,
     estimatedDuration: 4,
-    materialsNeeded: 'Breaker bipolar 20A, cable 2.5mm, cinta aisladora, termocontraíble',
+    materialsNeeded:
+      'Breaker bipolar 20A, cable 2.5mm, cinta aisladora, termocontraíble',
     recommendation: InquiryRecommendation.REPAIR,
     adminDecision: InquiryDecision.PENDING,
     adminNotes: null,
@@ -136,7 +139,8 @@ const INQUIRIES: InquirySeed[] = [
       'Visita técnica realizada. Galpón de 200m2 con zona de oficinas (50m2) y depósito (150m2). Se necesitan 2 Access Points Ubiquiti U6 y cableado UTP Cat6.',
     estimatedCost: 95000,
     estimatedDuration: 6,
-    materialsNeeded: '2x Access Point Ubiquiti U6 Lite, 200m cable UTP Cat6, conectores RJ45, 2x caja de distribute',
+    materialsNeeded:
+      '2x Access Point Ubiquiti U6 Lite, 200m cable UTP Cat6, conectores RJ45, 2x caja de distribute',
     recommendation: InquiryRecommendation.REPAIR,
     adminDecision: InquiryDecision.APPROVED,
     adminNotes: 'Presupuesto aprobado. Coordinar instalación para el sábado.',
@@ -226,7 +230,8 @@ const INQUIRIES: InquirySeed[] = [
       'Llamé al cliente. El servidor se reinicia cada 2-3 horas. Posible problema de temperatura o fuente de alimentación. El cliente tiene backup reciente. Solicité acceso remoto para diagnóstico inicial.',
     estimatedCost: 60000,
     estimatedDuration: 5,
-    materialsNeeded: 'Fuente de alimentación redundante, pasta térmica, aire comprimido',
+    materialsNeeded:
+      'Fuente de alimentación redundante, pasta térmica, aire comprimido',
     recommendation: InquiryRecommendation.REPAIR,
     adminDecision: InquiryDecision.PENDING,
     adminNotes: null,
@@ -252,7 +257,8 @@ const INQUIRIES: InquirySeed[] = [
     materialsNeeded: null,
     recommendation: InquiryRecommendation.NO_ACTION,
     adminDecision: InquiryDecision.REJECTED,
-    adminNotes: 'Servicio fuera de nuestro alcance. Derivamos a refrigeración profesional.',
+    adminNotes:
+      'Servicio fuera de nuestro alcance. Derivamos a refrigeración profesional.',
     contactedAt: '2026-06-19T15:30:00.000Z',
     reviewedAt: '2026-06-20T09:00:00.000Z',
   },
@@ -323,8 +329,12 @@ export async function seedInquiries(dataSource: DataSource): Promise<void> {
     inquiry.recommendation = seed.recommendation ?? undefined!;
     inquiry.adminDecision = seed.adminDecision;
     inquiry.adminNotes = seed.adminNotes ?? undefined!;
-    inquiry.contactedAt = seed.contactedAt ? new Date(seed.contactedAt) : undefined!;
-    inquiry.reviewedAt = seed.reviewedAt ? new Date(seed.reviewedAt) : undefined!;
+    inquiry.contactedAt = seed.contactedAt
+      ? new Date(seed.contactedAt)
+      : undefined!;
+    inquiry.reviewedAt = seed.reviewedAt
+      ? new Date(seed.reviewedAt)
+      : undefined!;
 
     await repo.save(inquiry);
   }

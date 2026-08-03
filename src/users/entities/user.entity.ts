@@ -30,7 +30,13 @@ export class User extends BaseEntity {
   phone?: string;
 
   @ApiPropertyOptional({ example: 5.0 })
-  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true, default: 5.0 })
+  @Column({
+    type: 'decimal',
+    precision: 5,
+    scale: 2,
+    nullable: true,
+    default: 5.0,
+  })
   commission?: number;
 
   @ApiPropertyOptional({ example: '5 años en soporte técnico' })

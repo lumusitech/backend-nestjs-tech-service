@@ -300,7 +300,7 @@ export class WorkOrdersService {
     const { technicianIds, statusDetail, ...rest } = updateWorkOrderDto;
 
     const filteredRest = Object.fromEntries(
-      Object.entries(rest).filter(([_, v]) => v !== undefined),
+      Object.entries(rest).filter(([, v]) => v !== undefined),
     );
     Object.assign(workOrder, filteredRest);
 

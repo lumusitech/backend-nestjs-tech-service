@@ -69,7 +69,8 @@ const EXPENSES: ExpenseSeed[] = [
     notes: 'Sueldos de 5 técnicos + aportes y contribuciones',
   },
   {
-    description: 'Compra de insumos: cinta aisladora, termocontraíble, precintos',
+    description:
+      'Compra de insumos: cinta aisladora, termocontraíble, precintos',
     amount: 12000,
     date: '2026-05-28',
     category: ExpenseCategory.SUPPLIES,

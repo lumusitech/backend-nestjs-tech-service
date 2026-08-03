@@ -12,6 +12,7 @@ import { UpdateInquiryDto } from './dto/update-inquiry.dto';
 import { FilterInquiryDto } from './dto/filter-inquiry.dto';
 import { ContactInquiryDto } from './dto/contact-inquiry.dto';
 import { InquiryStatus } from './enums/inquiry-status.enum';
+import { InquiryDecision } from './enums/inquiry-decision.enum';
 import { PaginatedResponseDto } from '../common/dto/paginated-response.dto';
 import { validateSortBy } from '../common/utils/sort-by.util';
 import { User } from '../users/entities/user.entity';
@@ -23,7 +24,13 @@ import {
   InquiryReviewedEvent,
 } from '../notifications/events/notification.events';
 
-const ALLOWED_SORT_COLUMNS = ['createdAt', 'clientName', 'status', 'priority', 'source'] as const;
+const ALLOWED_SORT_COLUMNS = [
+  'createdAt',
+  'clientName',
+  'status',
+  'priority',
+  'source',
+] as const;
 
 @Injectable()
 export class InquiriesService {
@@ -124,7 +131,11 @@ export class InquiriesService {
       qb.andWhere('i.created_at <= :dateTo', { dateTo });
     }
 
-    const safeSortBy = validateSortBy(sortBy, ALLOWED_SORT_COLUMNS, 'createdAt');
+    const safeSortBy = validateSortBy(
+      sortBy,
+      ALLOWED_SORT_COLUMNS,
+      'createdAt',
+    );
     qb.orderBy(`i.${safeSortBy}`, order)
       .skip((page - 1) * limit)
       .take(limit);
@@ -155,10 +166,7 @@ export class InquiriesService {
     return this.inquiryRepository.save(inquiry);
   }
 
-  async contact(
-    id: string,
-    contactDto: ContactInquiryDto,
-  ): Promise<Inquiry> {
+  async contact(id: string, contactDto: ContactInquiryDto): Promise<Inquiry> {
     const inquiry = await this.findOne(id);
 
     if (inquiry.status !== InquiryStatus.NEW) {
@@ -168,10 +176,14 @@ export class InquiriesService {
     }
 
     inquiry.technicianNotes = contactDto.technicianNotes;
-    if (contactDto.estimatedCost !== undefined) inquiry.estimatedCost = contactDto.estimatedCost;
-    if (contactDto.estimatedDuration !== undefined) inquiry.estimatedDuration = contactDto.estimatedDuration;
-    if (contactDto.materialsNeeded !== undefined) inquiry.materialsNeeded = contactDto.materialsNeeded;
-    if (contactDto.recommendation !== undefined) inquiry.recommendation = contactDto.recommendation;
+    if (contactDto.estimatedCost !== undefined)
+      inquiry.estimatedCost = contactDto.estimatedCost;
+    if (contactDto.estimatedDuration !== undefined)
+      inquiry.estimatedDuration = contactDto.estimatedDuration;
+    if (contactDto.materialsNeeded !== undefined)
+      inquiry.materialsNeeded = contactDto.materialsNeeded;
+    if (contactDto.recommendation !== undefined)
+      inquiry.recommendation = contactDto.recommendation;
     inquiry.status = InquiryStatus.CONTACTED;
     inquiry.contactedAt = new Date();
 
@@ -199,8 +211,10 @@ export class InquiriesService {
       );
     }
 
-    if (updateDto.adminDecision !== undefined) inquiry.adminDecision = updateDto.adminDecision;
-    if (updateDto.adminNotes !== undefined) inquiry.adminNotes = updateDto.adminNotes;
+    if (updateDto.adminDecision !== undefined)
+      inquiry.adminDecision = updateDto.adminDecision;
+    if (updateDto.adminNotes !== undefined)
+      inquiry.adminNotes = updateDto.adminNotes;
     inquiry.status = InquiryStatus.REVIEWED;
     inquiry.reviewedAt = new Date();
 
@@ -216,11 +230,7 @@ export class InquiriesService {
     return saved;
   }
 
-  async convertToWorkOrder(
-    id: string,
-    clientId: string,
-    serviceTypeId: string,
-  ): Promise<Inquiry> {
+  async convertToWorkOrder(id: string): Promise<Inquiry> {
     const inquiry = await this.findOne(id);
 
     if (inquiry.status !== InquiryStatus.REVIEWED) {
@@ -229,7 +239,7 @@ export class InquiriesService {
       );
     }
 
-    if (inquiry.adminDecision !== 'approved') {
+    if (inquiry.adminDecision !== InquiryDecision.APPROVED) {
       throw new BadRequestException(
         'Cannot convert an inquiry that was not approved by admin.',
       );

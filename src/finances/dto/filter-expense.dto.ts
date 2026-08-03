@@ -1,4 +1,10 @@
-import { IsOptional, IsEnum, IsDateString, IsBoolean, IsString } from 'class-validator';
+import {
+  IsOptional,
+  IsEnum,
+  IsDateString,
+  IsBoolean,
+  IsString,
+} from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { PaginationDto } from '../../common/dto/pagination.dto';
 import { ExpenseCategory } from '../enums/expense-category.enum';

@@ -9,7 +9,7 @@ export class AddTechnicianUnassignedNotificationType1783400000000 implements Mig
     );
   }
 
-  public async down(queryRunner: QueryRunner): Promise<void> {
+  public async down(): Promise<void> {
     // PostgreSQL doesn't support removing enum values directly
   }
 }

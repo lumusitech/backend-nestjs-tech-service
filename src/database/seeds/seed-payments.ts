@@ -24,7 +24,8 @@ const PAYMENTS: PaymentSeed[] = [
     status: PaymentStatus.APPROVED,
     provider: 'Efectivo',
     providerPaymentId: undefined,
-    description: 'Pago completo por reparación de PC - reemplazo SSD + reinstalación Windows',
+    description:
+      'Pago completo por reparación de PC - reemplazo SSD + reinstalación Windows',
     trackingCode: 'TS-PC0001',
     paidAt: '2026-05-12T17:00:00.000Z',
     installmentNumber: 1,
@@ -48,7 +49,8 @@ const PAYMENTS: PaymentSeed[] = [
     status: PaymentStatus.APPROVED,
     provider: 'MercadoPago',
     providerPaymentId: 'MP-20260520-002',
-    description: 'Pago por instalación de red WiFi - AP Ubiquiti + configuración',
+    description:
+      'Pago por instalación de red WiFi - AP Ubiquiti + configuración',
     trackingCode: 'TS-WF0006',
     paidAt: '2026-05-20T18:00:00.000Z',
     installmentNumber: 1,
@@ -72,7 +74,8 @@ const PAYMENTS: PaymentSeed[] = [
     status: PaymentStatus.APPROVED,
     provider: 'Transferencia bancaria',
     providerPaymentId: 'TRF-20260522-004',
-    description: 'Pago por servicio eléctrico - instalación de tomas y protecciones',
+    description:
+      'Pago por servicio eléctrico - instalación de tomas y protecciones',
     trackingCode: 'TS-EL0012',
     paidAt: '2026-05-22T17:00:00.000Z',
     installmentNumber: 1,
@@ -84,7 +87,8 @@ const PAYMENTS: PaymentSeed[] = [
     status: PaymentStatus.APPROVED,
     provider: 'MercadoPago',
     providerPaymentId: 'MP-20260514-005',
-    description: 'Pago por instalación de sistema de cámaras de seguridad completo - 8 cámaras Hikvision',
+    description:
+      'Pago por instalación de sistema de cámaras de seguridad completo - 8 cámaras Hikvision',
     trackingCode: 'TS-CAM013',
     paidAt: '2026-05-14T18:00:00.000Z',
     installmentNumber: 1,
@@ -132,7 +136,8 @@ const PAYMENTS: PaymentSeed[] = [
     status: PaymentStatus.CANCELLED,
     provider: 'Efectivo',
     providerPaymentId: undefined,
-    description: 'Seña cancelada - cliente decidió no realizar el servicio eléctrico',
+    description:
+      'Seña cancelada - cliente decidió no realizar el servicio eléctrico',
     trackingCode: 'TS-EL0005',
     paidAt: undefined,
     installmentNumber: 1,
@@ -144,7 +149,8 @@ const PAYMENTS: PaymentSeed[] = [
     status: PaymentStatus.REFUNDED,
     provider: 'Transferencia bancaria',
     providerPaymentId: 'TRF-20260601-006',
-    description: 'Reembolso - cliente canceló reparación de notebook por demora en repuesto',
+    description:
+      'Reembolso - cliente canceló reparación de notebook por demora en repuesto',
     trackingCode: 'TS-NB0002',
     paidAt: '2026-06-01T10:00:00.000Z',
     installmentNumber: 1,
@@ -159,6 +165,18 @@ const PAYMENTS: PaymentSeed[] = [
     description: 'Pago rechazado - tarjeta sin fondos suficientes',
     trackingCode: 'TS-PC0008',
     paidAt: undefined,
+    installmentNumber: 1,
+    totalInstallments: 1,
+  },
+  {
+    amount: 300000,
+    method: PaymentMethod.TRANSFER,
+    status: PaymentStatus.APPROVED,
+    provider: 'Transferencia bancaria',
+    providerPaymentId: 'TRF-20260803-007',
+    description: 'Seña 30% - instalación de cámaras de seguridad',
+    trackingCode: 'TS-CAM0016',
+    paidAt: '2026-08-03T11:00:00.000Z',
     installmentNumber: 1,
     totalInstallments: 1,
   },
@@ -205,6 +223,13 @@ export async function seedPayments(dataSource: DataSource) {
     });
 
     await paymentRepo.save(payment);
-    console.log('  Payment created:', pay.amount, 'ARS -', pay.trackingCode, '-', pay.status);
+    console.log(
+      '  Payment created:',
+      pay.amount,
+      'ARS -',
+      pay.trackingCode,
+      '-',
+      pay.status,
+    );
   }
 }

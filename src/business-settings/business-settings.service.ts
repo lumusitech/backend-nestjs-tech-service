@@ -29,7 +29,7 @@ export class BusinessSettingsService {
       }
 
       return setting;
-    } catch (error) {
+    } catch {
       this.logger.warn('business_settings table not found, returning defaults');
       return this.repository.create(this.defaults);
     }
@@ -49,8 +49,10 @@ export class BusinessSettingsService {
       }
 
       return this.repository.save(setting);
-    } catch (error) {
-      this.logger.warn('business_settings table not found, returning provided values');
+    } catch {
+      this.logger.warn(
+        'business_settings table not found, returning provided values',
+      );
       return this.repository.create({ ...this.defaults, ...dto });
     }
   }

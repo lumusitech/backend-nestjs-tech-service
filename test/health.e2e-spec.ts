@@ -19,9 +19,7 @@ describe('Health (e2e)', () => {
 
   describe('GET /health', () => {
     it('should return 200 when database is healthy', async () => {
-      const res = await request(app.getHttpServer())
-        .get('/health')
-        .expect(200);
+      const res = await request(app.getHttpServer()).get('/health').expect(200);
 
       const body = res.body as {
         data: { status: string; details: { database: { status: string } } };

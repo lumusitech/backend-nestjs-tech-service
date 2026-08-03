@@ -1,8 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class AddNoteAndMaterialNotificationTypes1783200000000
-  implements MigrationInterface
-{
+export class AddNoteAndMaterialNotificationTypes1783200000000 implements MigrationInterface {
   name = 'AddNoteAndMaterialNotificationTypes1783200000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -14,7 +12,7 @@ export class AddNoteAndMaterialNotificationTypes1783200000000
     );
   }
 
-  public async down(queryRunner: QueryRunner): Promise<void> {
+  public async down(): Promise<void> {
     // PostgreSQL doesn't support removing enum values directly
   }
 }
