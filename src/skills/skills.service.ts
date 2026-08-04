@@ -11,6 +11,7 @@ import { UpdateSkillDto } from './dto/update-skill.dto';
 import { FilterSkillDto } from './dto/filter-skill.dto';
 import { PaginatedResponseDto } from '../common/dto/paginated-response.dto';
 import { validateSortBy } from '../common/utils/sort-by.util';
+import { addDaysToDateString } from '../common/utils/date-filter.util';
 
 const ALLOWED_SORT_COLUMNS = ['createdAt', 'name', 'category'] as const;
 
@@ -77,7 +78,9 @@ export class SkillsService {
     }
 
     if (dateTo) {
-      qb.andWhere('skill.created_at <= :dateTo', { dateTo });
+      qb.andWhere('skill.created_at < :dateToEnd', {
+        dateToEnd: addDaysToDateString(dateTo, 1),
+      });
     }
 
     qb.orderBy(`skill.${safeSortBy}`, order);

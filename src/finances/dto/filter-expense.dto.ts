@@ -7,6 +7,8 @@ import {
 } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { PaginationDto } from '../../common/dto/pagination.dto';
+import { IsDateRangeValid } from '../../common/utils/date-range.validator';
+import { ToBoolean } from '../../common/utils/boolean-filter.util';
 import { ExpenseCategory } from '../enums/expense-category.enum';
 
 export class FilterExpenseDto extends PaginationDto {
@@ -31,10 +33,12 @@ export class FilterExpenseDto extends PaginationDto {
   @ApiPropertyOptional({ example: '2026-12-31' })
   @IsDateString()
   @IsOptional()
+  @IsDateRangeValid()
   dateTo?: string;
 
   @ApiPropertyOptional({ example: false })
   @IsBoolean()
   @IsOptional()
+  @ToBoolean()
   isRecurring?: boolean;
 }

@@ -1,6 +1,7 @@
 import { IsOptional, IsEnum, IsBoolean, IsString } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { PaginationDto } from '../../common/dto/pagination.dto';
+import { ToBoolean } from '../../common/utils/boolean-filter.util';
 import { NotificationType } from '../enums/notification-type.enum';
 
 export class FilterNotificationDto extends PaginationDto {
@@ -20,5 +21,6 @@ export class FilterNotificationDto extends PaginationDto {
   @ApiPropertyOptional({ example: false })
   @IsBoolean()
   @IsOptional()
+  @ToBoolean()
   isRead?: boolean;
 }

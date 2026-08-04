@@ -11,6 +11,7 @@ import { UpdateClientDto } from './dto/update-client.dto';
 import { FilterClientDto } from './dto/filter-client.dto';
 import { PaginatedResponseDto } from '../common/dto/paginated-response.dto';
 import { validateSortBy } from '../common/utils/sort-by.util';
+import { addDaysToDateString } from '../common/utils/date-filter.util';
 
 const ALLOWED_SORT_COLUMNS = [
   'createdAt',
@@ -83,7 +84,9 @@ export class ClientsService {
     }
 
     if (dateTo) {
-      qb.andWhere('client.created_at <= :dateTo', { dateTo });
+      qb.andWhere('client.created_at < :dateToEnd', {
+        dateToEnd: addDaysToDateString(dateTo, 1),
+      });
     }
 
     qb.orderBy(`client.${safeSortBy}`, order)

@@ -163,8 +163,8 @@ describe('FinancesService', () => {
 
       await service.findAll(filterDto);
 
-      expect(mockQb.andWhere).toHaveBeenCalledWith('e.date <= :dateTo', {
-        dateTo: '2026-12-31',
+      expect(mockQb.andWhere).toHaveBeenCalledWith('e.date < :dateToEnd', {
+        dateToEnd: '2027-01-01',
       });
     });
 

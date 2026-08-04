@@ -1,5 +1,6 @@
 import { IsOptional, IsString, IsIn, IsDateString } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { IsDateRangeValid } from '../../common/utils/date-range.validator';
 
 export class PeriodFilterDto {
   @ApiPropertyOptional({
@@ -18,6 +19,7 @@ export class PeriodFilterDto {
   @ApiPropertyOptional({ example: '2026-06-30' })
   @IsDateString()
   @IsOptional()
+  @IsDateRangeValid()
   dateTo?: string;
 
   @ApiPropertyOptional({ example: 'Reparación' })

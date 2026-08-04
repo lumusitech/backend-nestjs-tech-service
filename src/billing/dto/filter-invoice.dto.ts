@@ -1,6 +1,7 @@
-import { IsOptional, IsEnum, IsDateString, IsString } from 'class-validator';
+import { IsOptional, IsEnum, IsDateString, IsString, IsIn } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { PaginationDto } from '../../common/dto/pagination.dto';
+import { IsDateRangeValid } from '../../common/utils/date-range.validator';
 import { InvoiceStatus } from '../enums/invoice-status.enum';
 import { InvoiceType } from '../enums/invoice-type.enum';
 
@@ -23,10 +24,16 @@ export class FilterInvoiceDto extends PaginationDto {
   @ApiPropertyOptional({ example: '2026-12-31' })
   @IsDateString()
   @IsOptional()
+  @IsDateRangeValid()
   dateTo?: string;
 
   @ApiPropertyOptional({ example: 'Juan Perez' })
   @IsString()
   @IsOptional()
   clientName?: string;
+
+  @ApiPropertyOptional({ enum: ['createdAt', 'issuedAt'], example: 'createdAt' })
+  @IsOptional()
+  @IsIn(['createdAt', 'issuedAt'])
+  dateField?: 'createdAt' | 'issuedAt' = 'createdAt';
 }

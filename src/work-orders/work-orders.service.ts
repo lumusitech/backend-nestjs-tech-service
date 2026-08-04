@@ -24,6 +24,7 @@ import { UpdateTaskDto } from './dto/update-task.dto';
 import { WorkOrderStatus } from '../common/enums/work-order-status.enum';
 import { PaginatedResponseDto } from '../common/dto/paginated-response.dto';
 import { validateSortBy } from '../common/utils/sort-by.util';
+import { addDaysToDateString } from '../common/utils/date-filter.util';
 import { User } from '../users/entities/user.entity';
 import {
   WorkOrderCreatedEvent,
@@ -155,7 +156,10 @@ export class WorkOrdersService {
       dateFrom,
       dateTo,
       sellerId,
+      dateField = 'scheduledDate',
     } = filterDto;
+
+    const dateColumn = dateField === 'createdAt' ? 'wo.created_at' : 'wo.scheduled_date';
 
     const qb = this.workOrderRepository
       .createQueryBuilder('wo')
@@ -201,11 +205,13 @@ export class WorkOrdersService {
     }
 
     if (dateFrom) {
-      qb.andWhere('wo.scheduled_date >= :dateFrom', { dateFrom });
+      qb.andWhere(`${dateColumn} >= :dateFrom`, { dateFrom });
     }
 
     if (dateTo) {
-      qb.andWhere('wo.scheduled_date <= :dateTo', { dateTo });
+      qb.andWhere(`${dateColumn} < :dateToEnd`, {
+        dateToEnd: addDaysToDateString(dateTo, 1),
+      });
     }
 
     const safeSortBy = validateSortBy(

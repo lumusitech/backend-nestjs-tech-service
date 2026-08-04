@@ -7,6 +7,7 @@ import { UpdateExpenseDto } from './dto/update-expense.dto';
 import { FilterExpenseDto } from './dto/filter-expense.dto';
 import { PaginatedResponseDto } from '../common/dto/paginated-response.dto';
 import { validateSortBy } from '../common/utils/sort-by.util';
+import { addDaysToDateString } from '../common/utils/date-filter.util';
 
 const ALLOWED_SORT_COLUMNS = [
   'createdAt',
@@ -62,7 +63,9 @@ export class FinancesService {
     }
 
     if (dateTo) {
-      qb.andWhere('e.date <= :dateTo', { dateTo });
+      qb.andWhere('e.date < :dateToEnd', {
+        dateToEnd: addDaysToDateString(dateTo, 1),
+      });
     }
 
     if (isRecurring !== undefined) {

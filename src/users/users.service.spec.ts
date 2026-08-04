@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from './users.service';
 import { User } from './entities/user.entity';
+import { Skill } from '../skills/entities/skill.entity';
 import { UserRole } from './enums/user-role.enum';
 import { createMockRepository } from '../common/testing/mock-query-builder.helper';
 
@@ -13,6 +14,7 @@ jest.mock('bcrypt');
 describe('UsersService', () => {
   let service: UsersService;
   let repository: jest.Mocked<Repository<User>>;
+  let skillRepository: jest.Mocked<Repository<Skill>>;
 
   const mockUser: User = {
     id: 'uuid-1',
@@ -34,11 +36,16 @@ describe('UsersService', () => {
           provide: getRepositoryToken(User),
           useValue: createMockRepository<User>(),
         },
+        {
+          provide: getRepositoryToken(Skill),
+          useValue: createMockRepository<Skill>(),
+        },
       ],
     }).compile();
 
     service = module.get<UsersService>(UsersService);
     repository = module.get(getRepositoryToken(User));
+    skillRepository = module.get(getRepositoryToken(Skill));
   });
 
   it('should be defined', () => {
@@ -80,6 +87,25 @@ describe('UsersService', () => {
         ConflictException,
       );
       expect(repository.save).not.toHaveBeenCalled();
+    });
+
+    it('should attach skills when skillIds provided', async () => {
+      const skill = { id: 'skill-1', name: 'Redes' } as Skill;
+      repository.findOne.mockResolvedValue(null);
+      (bcrypt.hash as jest.Mock).mockResolvedValue('hashedPassword123');
+      repository.create.mockReturnValue({
+        ...mockUser,
+        skills: [],
+      });
+      skillRepository.findBy.mockResolvedValue([skill]);
+      repository.save.mockResolvedValue(mockUser);
+
+      await service.create({ ...createUserDto, skillIds: ['skill-1'] });
+
+      expect(skillRepository.findBy).toHaveBeenCalled();
+      expect(repository.save).toHaveBeenCalledWith(
+        expect.objectContaining({ skills: [skill] }),
+      );
     });
   });
 
@@ -124,6 +150,7 @@ describe('UsersService', () => {
         skip: 0,
         take: 10,
         order: { createdAt: 'ASC' },
+        relations: { skills: true },
       });
       expect(result.data).toEqual(users);
       expect(result.total).toBe(1);
@@ -144,6 +171,7 @@ describe('UsersService', () => {
         skip: 5,
         take: 5,
         order: { name: 'DESC' },
+        relations: { skills: true },
       });
     });
   });
@@ -156,6 +184,7 @@ describe('UsersService', () => {
 
       expect(repository.findOne).toHaveBeenCalledWith({
         where: { id: 'uuid-1' },
+        relations: { skills: true },
       });
       expect(result).toEqual(mockUser);
     });

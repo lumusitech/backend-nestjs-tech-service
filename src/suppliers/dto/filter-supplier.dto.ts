@@ -1,7 +1,8 @@
 import { IsOptional, IsString, IsBoolean, IsDateString } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
 import { PaginationDto } from '../../common/dto/pagination.dto';
+import { IsDateRangeValid } from '../../common/utils/date-range.validator';
+import { ToBoolean } from '../../common/utils/boolean-filter.util';
 
 export class FilterSupplierDto extends PaginationDto {
   @ApiPropertyOptional({
@@ -17,13 +18,7 @@ export class FilterSupplierDto extends PaginationDto {
     description: 'Filter by active status',
   })
   @IsOptional()
-  @Transform(({ value }) =>
-    value === 'false' || value === false
-      ? false
-      : value === 'true' || value === true
-        ? true
-        : undefined,
-  )
+  @ToBoolean()
   @IsBoolean()
   isActive?: boolean;
 
@@ -41,5 +36,6 @@ export class FilterSupplierDto extends PaginationDto {
   })
   @IsDateString()
   @IsOptional()
+  @IsDateRangeValid()
   dateTo?: string;
 }
