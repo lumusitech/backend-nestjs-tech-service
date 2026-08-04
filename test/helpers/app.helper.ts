@@ -18,7 +18,6 @@ export async function createTestApp(): Promise<INestApplication> {
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
-      transformOptions: { enableImplicitConversion: true },
     }),
   );
 
