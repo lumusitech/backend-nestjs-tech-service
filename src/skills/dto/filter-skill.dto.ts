@@ -1,6 +1,6 @@
 import { IsOptional, IsString, IsBoolean, IsDateString } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Transform } from 'class-transformer';
 import { PaginationDto } from '../../common/dto/pagination.dto';
 
 export class FilterSkillDto extends PaginationDto {
@@ -22,7 +22,13 @@ export class FilterSkillDto extends PaginationDto {
     description: 'Filter by active status',
   })
   @IsOptional()
-  @Type(() => Boolean)
+  @Transform(({ value }) =>
+    value === 'false' || value === false
+      ? false
+      : value === 'true' || value === true
+        ? true
+        : undefined,
+  )
   @IsBoolean()
   isActive?: boolean;
 
