@@ -42,6 +42,17 @@ const TABLES = [
 async function reset() {
   await dataSource.initialize();
 
+  console.log('📦 Running pending migrations...');
+  const migrations = await dataSource.runMigrations({ transaction: 'each' });
+  if (migrations.length > 0) {
+    for (const m of migrations) {
+      console.log(`  ✓ ${m.name}`);
+    }
+  } else {
+    console.log('  No pending migrations.');
+  }
+
+  console.log('');
   console.log('🗑️  Truncating all tables...');
 
   for (const table of TABLES) {
