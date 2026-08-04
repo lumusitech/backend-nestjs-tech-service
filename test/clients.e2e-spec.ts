@@ -1,5 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
+import { DataSource } from 'typeorm';
+import { Client } from '../src/clients/entities/client.entity';
 import { createTestApp } from './helpers/app.helper';
 import { seedTestData, SeedData, cleanupDatabase } from './helpers/seed.helper';
 import {
@@ -148,6 +150,120 @@ describe('Clients (e2e)', () => {
         .get('/clients')
         .set(authHeader(technicianToken))
         .expect(403);
+    });
+
+    describe('date range filters', () => {
+      let dataSource: DataSource;
+
+      beforeAll(() => {
+        dataSource = app.get(DataSource);
+      });
+
+      async function createDatedClient(name: string, createdAt: string) {
+        const repo = dataSource.getRepository(Client);
+        return repo.save(
+          repo.create({
+            name,
+            email: `${name.replace(/\s+/g, '.').toLowerCase()}@test.com`,
+            phone: '+54 11 3333-3333',
+            address: 'Date Filter Address',
+            createdAt,
+          }),
+        );
+      }
+
+      it('should include records from the selected dateTo day (midnight boundary)', async () => {
+        await createDatedClient('Midnight Boundary Client', '2026-01-15T10:30:00.000Z');
+
+        const res = await request(app.getHttpServer())
+          .get('/clients?dateFrom=2026-01-15&dateTo=2026-01-15')
+          .set(authHeader(adminToken))
+          .expect(200);
+
+        const names = (res.body.data.data as { name: string }[]).map(
+          (c) => c.name,
+        );
+        expect(names).toContain('Midnight Boundary Client');
+      });
+
+      it('should exclude records before dateFrom', async () => {
+        const res = await request(app.getHttpServer())
+          .get('/clients?dateFrom=2026-02-01')
+          .set(authHeader(adminToken))
+          .expect(200);
+
+        const names = (res.body.data.data as { name: string }[]).map(
+          (c) => c.name,
+        );
+        expect(names).not.toContain('Midnight Boundary Client');
+      });
+
+      it('should exclude records after dateTo', async () => {
+        const res = await request(app.getHttpServer())
+          .get('/clients?dateTo=2026-01-14')
+          .set(authHeader(adminToken))
+          .expect(200);
+
+        const names = (res.body.data.data as { name: string }[]).map(
+          (c) => c.name,
+        );
+        expect(names).not.toContain('Midnight Boundary Client');
+      });
+
+      it('should return 400 when dateFrom is after dateTo', async () => {
+        await request(app.getHttpServer())
+          .get('/clients?dateFrom=2026-12-31&dateTo=2026-01-01')
+          .set(authHeader(adminToken))
+          .expect(400);
+      });
+    });
+
+    describe('isActive filter', () => {
+      let dataSource: DataSource;
+
+      beforeAll(() => {
+        dataSource = app.get(DataSource);
+      });
+
+      async function createInactiveClient() {
+        const repo = dataSource.getRepository(Client);
+        return repo.save(
+          repo.create({
+            name: 'Inactive Filter Client',
+            email: 'inactive.filter@test.com',
+            phone: '+54 11 4444-4444',
+            address: 'Inactive Address',
+            isActive: false,
+          }),
+        );
+      }
+
+      it('should return only active clients when isActive=true', async () => {
+        await createInactiveClient();
+
+        const res = await request(app.getHttpServer())
+          .get('/clients?isActive=true&limit=50')
+          .set(authHeader(adminToken))
+          .expect(200);
+
+        const clients = res.body.data.data as { isActive: boolean }[];
+        expect(clients.length).toBeGreaterThan(0);
+        expect(clients.every((c) => c.isActive === true)).toBe(true);
+      });
+
+      it('should return only inactive clients when isActive=false', async () => {
+        const res = await request(app.getHttpServer())
+          .get('/clients?isActive=false&limit=50')
+          .set(authHeader(adminToken))
+          .expect(200);
+
+        const clients = res.body.data.data as { isActive: boolean; name: string }[];
+        expect(clients.length).toBeGreaterThan(0);
+        expect(clients.every((c) => c.isActive === false)).toBe(true);
+        expect(clients.some((c) => c.name === 'Inactive Filter Client')).toBe(
+          true,
+        );
+      });
     });
   });
 
