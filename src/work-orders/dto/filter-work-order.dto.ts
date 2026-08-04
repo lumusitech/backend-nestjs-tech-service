@@ -4,6 +4,7 @@ import {
   IsUUID,
   IsDateString,
   IsString,
+  IsIn,
 } from 'class-validator';
 import { PaginationDto } from '../../common/dto/pagination.dto';
 import { IsDateRangeValid } from '../../common/utils/date-range.validator';
@@ -63,4 +64,9 @@ export class FilterWorkOrderDto extends PaginationDto {
   @IsOptional()
   @IsDateRangeValid()
   dateTo?: string;
+
+  @ApiPropertyOptional({ enum: ['scheduledDate', 'createdAt'], example: 'scheduledDate' })
+  @IsOptional()
+  @IsIn(['scheduledDate', 'createdAt'])
+  dateField?: 'scheduledDate' | 'createdAt' = 'scheduledDate';
 }

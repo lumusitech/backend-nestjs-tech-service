@@ -156,7 +156,10 @@ export class WorkOrdersService {
       dateFrom,
       dateTo,
       sellerId,
+      dateField = 'scheduledDate',
     } = filterDto;
+
+    const dateColumn = dateField === 'createdAt' ? 'wo.created_at' : 'wo.scheduled_date';
 
     const qb = this.workOrderRepository
       .createQueryBuilder('wo')
@@ -202,11 +205,11 @@ export class WorkOrdersService {
     }
 
     if (dateFrom) {
-      qb.andWhere('wo.scheduled_date >= :dateFrom', { dateFrom });
+      qb.andWhere(`${dateColumn} >= :dateFrom`, { dateFrom });
     }
 
     if (dateTo) {
-      qb.andWhere('wo.scheduled_date < :dateToEnd', {
+      qb.andWhere(`${dateColumn} < :dateToEnd`, {
         dateToEnd: addDaysToDateString(dateTo, 1),
       });
     }

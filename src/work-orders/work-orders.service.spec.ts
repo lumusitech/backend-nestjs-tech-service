@@ -13,7 +13,7 @@ import { User } from '../users/entities/user.entity';
 import { WorkOrderStatus } from '../common/enums/work-order-status.enum';
 import { Priority } from '../common/enums/priority.enum';
 import { NoteType } from './enums/note-type.enum';
-import { createMockRepository } from '../common/testing/mock-query-builder.helper';
+import { createMockRepository, createMockQueryBuilder } from '../common/testing/mock-query-builder.helper';
 
 describe('WorkOrdersService', () => {
   let service: WorkOrdersService;
@@ -154,6 +154,47 @@ describe('WorkOrdersService', () => {
       const result = await service.create(dto);
 
       expect(result).toBeDefined();
+    });
+  });
+
+  describe('findAll', () => {
+    it('should filter by scheduled_date by default', async () => {
+      const mockQb = createMockQueryBuilder([], 0);
+      workOrderRepo.createQueryBuilder.mockReturnValue(mockQb);
+
+      await service.findAll({ dateFrom: '2026-01-01', dateTo: '2026-12-31' });
+
+      expect(mockQb.andWhere).toHaveBeenCalledWith(
+        'wo.scheduled_date >= :dateFrom',
+        { dateFrom: '2026-01-01' },
+      );
+      expect(mockQb.andWhere).toHaveBeenCalledWith(
+        'wo.scheduled_date < :dateToEnd',
+        { dateToEnd: '2027-01-01' },
+      );
+    });
+
+    it('should filter by created_at when dateField is createdAt', async () => {
+      const mockQb = createMockQueryBuilder([], 0);
+      workOrderRepo.createQueryBuilder.mockReturnValue(mockQb);
+
+      await service.findAll({ dateField: 'createdAt', dateFrom: '2026-01-01' });
+
+      expect(mockQb.andWhere).toHaveBeenCalledWith(
+        'wo.created_at >= :dateFrom',
+        { dateFrom: '2026-01-01' },
+      );
+    });
+
+    it('should return paginated results', async () => {
+      const mockOrder = {} as WorkOrder;
+      const mockQb = createMockQueryBuilder([mockOrder], 1);
+      workOrderRepo.createQueryBuilder.mockReturnValue(mockQb);
+
+      const result = await service.findAll({ page: 1, limit: 10 });
+
+      expect(result.data).toEqual([mockOrder]);
+      expect(result.total).toBe(1);
     });
   });
 

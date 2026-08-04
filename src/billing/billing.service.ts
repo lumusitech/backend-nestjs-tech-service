@@ -75,7 +75,10 @@ export class BillingService {
       dateFrom,
       dateTo,
       clientName,
+      dateField = 'createdAt',
     } = filterDto;
+
+    const dateColumn = dateField === 'issuedAt' ? 'i.issued_at' : 'i.created_at';
 
     const qb = this.invoiceRepository
       .createQueryBuilder('i')
@@ -92,11 +95,11 @@ export class BillingService {
     }
 
     if (dateFrom) {
-      qb.andWhere('i.created_at >= :dateFrom', { dateFrom });
+      qb.andWhere(`${dateColumn} >= :dateFrom`, { dateFrom });
     }
 
     if (dateTo) {
-      qb.andWhere('i.created_at < :dateToEnd', {
+      qb.andWhere(`${dateColumn} < :dateToEnd`, {
         dateToEnd: addDaysToDateString(dateTo, 1),
       });
     }
