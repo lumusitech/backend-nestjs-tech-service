@@ -24,6 +24,7 @@ import { UpdateTaskDto } from './dto/update-task.dto';
 import { WorkOrderStatus } from '../common/enums/work-order-status.enum';
 import { PaginatedResponseDto } from '../common/dto/paginated-response.dto';
 import { validateSortBy } from '../common/utils/sort-by.util';
+import { addDaysToDateString } from '../common/utils/date-filter.util';
 import { User } from '../users/entities/user.entity';
 import {
   WorkOrderCreatedEvent,
@@ -205,7 +206,9 @@ export class WorkOrdersService {
     }
 
     if (dateTo) {
-      qb.andWhere('wo.scheduled_date <= :dateTo', { dateTo });
+      qb.andWhere('wo.scheduled_date < :dateToEnd', {
+        dateToEnd: addDaysToDateString(dateTo, 1),
+      });
     }
 
     const safeSortBy = validateSortBy(

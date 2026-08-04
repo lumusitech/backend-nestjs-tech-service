@@ -11,6 +11,7 @@ import { UpdateServiceTypeDto } from './dto/update-service-type.dto';
 import { FilterServiceTypeDto } from './dto/filter-service-type.dto';
 import { PaginatedResponseDto } from '../common/dto/paginated-response.dto';
 import { validateSortBy } from '../common/utils/sort-by.util';
+import { addDaysToDateString } from '../common/utils/date-filter.util';
 
 const ALLOWED_SORT_COLUMNS = [
   'createdAt',
@@ -78,7 +79,9 @@ export class ServiceTypesService {
     }
 
     if (dateTo) {
-      qb.andWhere('serviceType.created_at <= :dateTo', { dateTo });
+      qb.andWhere('serviceType.created_at < :dateToEnd', {
+        dateToEnd: addDaysToDateString(dateTo, 1),
+      });
     }
 
     qb.orderBy(`serviceType.${safeSortBy}`, order);

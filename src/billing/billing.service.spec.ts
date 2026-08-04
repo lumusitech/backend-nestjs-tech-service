@@ -286,9 +286,12 @@ describe('BillingService', () => {
 
       await service.findAll({ dateTo: '2026-12-31' });
 
-      expect(mockQb.andWhere).toHaveBeenCalledWith('i.created_at <= :dateTo', {
-        dateTo: '2026-12-31',
-      });
+      expect(mockQb.andWhere).toHaveBeenCalledWith(
+        'i.created_at < :dateToEnd',
+        {
+          dateToEnd: '2027-01-01',
+        },
+      );
     });
 
     it('should apply clientName filter with unaccent', async () => {

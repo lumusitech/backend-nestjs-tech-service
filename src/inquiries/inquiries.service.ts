@@ -14,6 +14,7 @@ import { ContactInquiryDto } from './dto/contact-inquiry.dto';
 import { InquiryStatus } from './enums/inquiry-status.enum';
 import { InquiryDecision } from './enums/inquiry-decision.enum';
 import { PaginatedResponseDto } from '../common/dto/paginated-response.dto';
+import { addDaysToDateString } from '../common/utils/date-filter.util';
 import { validateSortBy } from '../common/utils/sort-by.util';
 import { User } from '../users/entities/user.entity';
 import { UserRole } from '../users/enums/user-role.enum';
@@ -128,7 +129,9 @@ export class InquiriesService {
       qb.andWhere('i.created_at >= :dateFrom', { dateFrom });
     }
     if (dateTo) {
-      qb.andWhere('i.created_at <= :dateTo', { dateTo });
+      qb.andWhere('i.created_at < :dateToEnd', {
+        dateToEnd: addDaysToDateString(dateTo, 1),
+      });
     }
 
     const safeSortBy = validateSortBy(

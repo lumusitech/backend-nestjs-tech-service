@@ -44,6 +44,7 @@ export function createMockRepository<T = unknown>(
     findOne: jest.fn().mockResolvedValue(null),
     findOneBy: jest.fn().mockResolvedValue(null),
     findOneOrFail: jest.fn().mockResolvedValue(null),
+    findBy: jest.fn().mockResolvedValue([]),
     findAndCount: jest.fn().mockResolvedValue([[], 0]),
     create: jest.fn().mockImplementation((dto: unknown) => dto as T),
     save: jest

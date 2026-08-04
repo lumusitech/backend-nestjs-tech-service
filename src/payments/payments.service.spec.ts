@@ -417,10 +417,9 @@ describe('PaymentsService', () => {
 
       await service.findAll(workOrderId, filterDto);
 
-      expect(mockQb.andWhere).toHaveBeenCalledWith(
-        'p.created_at >= :dateFrom',
-        { dateFrom: '2026-01-01' },
-      );
+      expect(mockQb.andWhere).toHaveBeenCalledWith('p.createdAt >= :dateFrom', {
+        dateFrom: '2026-01-01',
+      });
     });
 
     it('should apply dateTo filter', async () => {
@@ -433,8 +432,8 @@ describe('PaymentsService', () => {
 
       await service.findAll(workOrderId, filterDto);
 
-      expect(mockQb.andWhere).toHaveBeenCalledWith('p.created_at <= :dateTo', {
-        dateTo: '2026-12-31',
+      expect(mockQb.andWhere).toHaveBeenCalledWith('p.createdAt < :dateToEnd', {
+        dateToEnd: '2027-01-01',
       });
     });
 

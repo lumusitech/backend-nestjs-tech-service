@@ -18,6 +18,7 @@ import { CashProvider } from './providers/cash.provider';
 import { TransferProvider } from './providers/transfer.provider';
 import { PaginatedResponseDto } from '../common/dto/paginated-response.dto';
 import { validateSortBy } from '../common/utils/sort-by.util';
+import { addDaysToDateString } from '../common/utils/date-filter.util';
 import {
   PaymentCreatedEvent,
   PaymentStatusChangedEvent,
@@ -133,10 +134,9 @@ export class PaymentsService {
     }
 
     if (dateTo) {
-      const nextDay = new Date(dateTo);
-      nextDay.setDate(nextDay.getDate() + 1);
-      const dateToEnd = nextDay.toISOString().split('T')[0];
-      qb.andWhere(`p.${dateField} < :dateToEnd`, { dateToEnd });
+      qb.andWhere(`p.${dateField} < :dateToEnd`, {
+        dateToEnd: addDaysToDateString(dateTo, 1),
+      });
     }
 
     const safeSortBy = validateSortBy(
@@ -201,10 +201,9 @@ export class PaymentsService {
     }
 
     if (dateTo) {
-      const nextDay = new Date(dateTo);
-      nextDay.setDate(nextDay.getDate() + 1);
-      const dateToEnd = nextDay.toISOString().split('T')[0];
-      qb.andWhere(`p.${dateField} < :dateToEnd`, { dateToEnd });
+      qb.andWhere(`p.${dateField} < :dateToEnd`, {
+        dateToEnd: addDaysToDateString(dateTo, 1),
+      });
     }
 
     const safeSortBy = validateSortBy(

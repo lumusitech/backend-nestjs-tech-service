@@ -15,6 +15,7 @@ import { IvaCondition } from './enums/iva-condition.enum';
 import { ArcaProvider } from './providers/arca.provider';
 import { PaginatedResponseDto } from '../common/dto/paginated-response.dto';
 import { validateSortBy } from '../common/utils/sort-by.util';
+import { addDaysToDateString } from '../common/utils/date-filter.util';
 
 const ALLOWED_SORT_COLUMNS = [
   'createdAt',
@@ -95,7 +96,9 @@ export class BillingService {
     }
 
     if (dateTo) {
-      qb.andWhere('i.created_at <= :dateTo', { dateTo });
+      qb.andWhere('i.created_at < :dateToEnd', {
+        dateToEnd: addDaysToDateString(dateTo, 1),
+      });
     }
 
     if (clientName) {

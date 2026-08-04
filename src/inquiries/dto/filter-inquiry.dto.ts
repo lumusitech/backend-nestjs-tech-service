@@ -6,6 +6,7 @@ import {
   IsString,
 } from 'class-validator';
 import { PaginationDto } from '../../common/dto/pagination.dto';
+import { IsDateRangeValid } from '../../common/utils/date-range.validator';
 import { InquiryStatus } from '../enums/inquiry-status.enum';
 import { InquirySource } from '../enums/inquiry-source.enum';
 import { ApiPropertyOptional } from '@nestjs/swagger';
@@ -45,5 +46,6 @@ export class FilterInquiryDto extends PaginationDto {
   @ApiPropertyOptional({ example: '2026-06-30' })
   @IsDateString()
   @IsOptional()
+  @IsDateRangeValid()
   dateTo?: string;
 }

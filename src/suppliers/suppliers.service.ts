@@ -11,6 +11,7 @@ import { UpdateSupplierDto } from './dto/update-supplier.dto';
 import { FilterSupplierDto } from './dto/filter-supplier.dto';
 import { PaginatedResponseDto } from '../common/dto/paginated-response.dto';
 import { validateSortBy } from '../common/utils/sort-by.util';
+import { addDaysToDateString } from '../common/utils/date-filter.util';
 
 const ALLOWED_SORT_COLUMNS = ['createdAt', 'name', 'contact', 'email'] as const;
 
@@ -79,7 +80,9 @@ export class SuppliersService {
     }
 
     if (dateTo) {
-      qb.andWhere('supplier.created_at <= :dateTo', { dateTo });
+      qb.andWhere('supplier.created_at < :dateToEnd', {
+        dateToEnd: addDaysToDateString(dateTo, 1),
+      });
     }
 
     qb.orderBy(`supplier.${safeSortBy}`, order);

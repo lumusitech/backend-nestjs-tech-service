@@ -7,6 +7,7 @@ import {
 } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { PaginationDto } from '../../common/dto/pagination.dto';
+import { IsDateRangeValid } from '../../common/utils/date-range.validator';
 import { PaymentStatus } from '../enums/payment-status.enum';
 import { PaymentMethod } from '../enums/payment-method.enum';
 
@@ -45,6 +46,7 @@ export class FilterPaymentDto extends PaginationDto {
   @ApiPropertyOptional({ example: '2026-12-31' })
   @IsDateString()
   @IsOptional()
+  @IsDateRangeValid()
   dateTo?: string;
 
   @ApiPropertyOptional({
