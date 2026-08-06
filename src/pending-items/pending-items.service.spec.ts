@@ -256,4 +256,42 @@ describe('PendingItemsService', () => {
       );
     });
   });
+
+  describe('completeForReference', () => {
+    it('should complete pending and in-progress items for a reference', async () => {
+      const items = [
+        { ...mockPendingItem, status: PendingItemStatus.PENDING },
+        {
+          ...mockPendingItem,
+          id: 'pi-2',
+          status: PendingItemStatus.IN_PROGRESS,
+        },
+        { ...mockPendingItem, id: 'pi-3', status: PendingItemStatus.COMPLETED },
+      ];
+      pendingItemRepo.find.mockResolvedValue(items);
+      pendingItemRepo.save.mockImplementation((entities) =>
+        Promise.resolve(entities),
+      );
+
+      const count = await service.completeForReference('inquiry', 'iq-1');
+
+      expect(count).toBe(3);
+      expect(pendingItemRepo.save).toHaveBeenCalledWith(
+        expect.arrayContaining([
+          expect.objectContaining({ status: PendingItemStatus.COMPLETED }),
+        ]),
+      );
+      expect(items[0].status).toBe(PendingItemStatus.COMPLETED);
+      expect(items[0].completedAt).toBeInstanceOf(Date);
+    });
+
+    it('should not save when there are no matching items', async () => {
+      pendingItemRepo.find.mockResolvedValue([]);
+
+      const count = await service.completeForReference('inquiry', 'iq-1');
+
+      expect(count).toBe(0);
+      expect(pendingItemRepo.save).not.toHaveBeenCalled();
+    });
+  });
 });

@@ -4,7 +4,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, LessThanOrEqual } from 'typeorm';
+import { Repository, LessThanOrEqual, In } from 'typeorm';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PendingItem } from './entities/pending-item.entity';
@@ -205,6 +205,30 @@ export class PendingItemsService {
   async remove(id: string): Promise<void> {
     const item = await this.findOne(id);
     await this.pendingItemRepository.softRemove(item);
+  }
+
+  async completeForReference(
+    referenceType: string,
+    referenceId: string,
+  ): Promise<number> {
+    const items = await this.pendingItemRepository.find({
+      where: {
+        referenceType,
+        referenceId,
+        status: In([PendingItemStatus.PENDING, PendingItemStatus.IN_PROGRESS]),
+      },
+    });
+
+    for (const item of items) {
+      item.status = PendingItemStatus.COMPLETED;
+      item.completedAt = new Date();
+    }
+
+    if (items.length > 0) {
+      await this.pendingItemRepository.save(items);
+    }
+
+    return items.length;
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_8AM)
