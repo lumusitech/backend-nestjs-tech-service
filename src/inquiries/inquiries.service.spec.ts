@@ -5,6 +5,8 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InquiriesService } from './inquiries.service';
 import { Inquiry } from './entities/inquiry.entity';
 import { User } from '../users/entities/user.entity';
+import { WorkOrdersService } from '../work-orders/work-orders.service';
+import { PendingItemsService } from '../pending-items/pending-items.service';
 import { InquirySource } from './enums/inquiry-source.enum';
 import { InquiryStatus } from './enums/inquiry-status.enum';
 import { InquiryRecommendation } from './enums/inquiry-recommendation.enum';
@@ -17,6 +19,8 @@ describe('InquiriesService', () => {
   let inquiryRepo: ReturnType<typeof createMockRepository>;
   let userRepo: ReturnType<typeof createMockRepository>;
   let eventEmitter: { emit: jest.Mock };
+  let workOrdersService: { create: jest.Mock };
+  let pendingItemsService: { completeForReference: jest.Mock };
 
   const mockInquiry: Inquiry = Object.assign(new Inquiry(), {
     id: 'iq-1',
@@ -48,6 +52,8 @@ describe('InquiriesService', () => {
     inquiryRepo = createMockRepository();
     userRepo = createMockRepository();
     eventEmitter = { emit: jest.fn() };
+    workOrdersService = { create: jest.fn() };
+    pendingItemsService = { completeForReference: jest.fn() };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -58,6 +64,8 @@ describe('InquiriesService', () => {
         },
         { provide: getRepositoryToken(User), useValue: userRepo },
         { provide: EventEmitter2, useValue: eventEmitter },
+        { provide: WorkOrdersService, useValue: workOrdersService },
+        { provide: PendingItemsService, useValue: pendingItemsService },
       ],
     }).compile();
 
@@ -323,28 +331,80 @@ describe('InquiriesService', () => {
   });
 
   describe('convertToWorkOrder', () => {
-    it('should convert approved reviewed inquiry', async () => {
-      inquiryRepo.findOne.mockResolvedValue({
+    const dto = {
+      clientId: 'client-1',
+      serviceTypeId: 'service-1',
+    };
+
+    it('should create a work order, link it and close pending items', async () => {
+      inquiryRepo.findOne.mockResolvedValueOnce({
         ...mockInquiry,
         status: InquiryStatus.REVIEWED,
         adminDecision: InquiryDecision.APPROVED,
       });
+      inquiryRepo.findOne.mockResolvedValueOnce({
+        ...mockInquiry,
+        status: InquiryStatus.CONVERTED,
+        workOrderId: 'wo-1',
+      });
+      workOrdersService.create.mockResolvedValue({ id: 'wo-1' });
       inquiryRepo.save.mockImplementation((entity) => Promise.resolve(entity));
+      pendingItemsService.completeForReference.mockResolvedValue(0);
 
-      const result = await service.convertToWorkOrder('iq-1');
+      const result = await service.convertToWorkOrder('iq-1', dto);
 
       expect(result.status).toBe(InquiryStatus.CONVERTED);
+      expect(result.workOrderId).toBe('wo-1');
+      expect(workOrdersService.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          clientId: 'client-1',
+          serviceTypeId: 'service-1',
+        }),
+      );
+      expect(pendingItemsService.completeForReference).toHaveBeenCalledWith(
+        'inquiry',
+        'iq-1',
+      );
     });
 
-    it('should reject if inquiry is not REVIEWED', async () => {
+    it('should fall back to inquiry data for the work order', async () => {
+      inquiryRepo.findOne.mockResolvedValueOnce({
+        ...mockInquiry,
+        status: InquiryStatus.REVIEWED,
+        adminDecision: InquiryDecision.APPROVED,
+        priority: 'high',
+        clientAddress: 'Av. Corrientes 1234',
+      });
+      inquiryRepo.findOne.mockResolvedValueOnce({
+        ...mockInquiry,
+        status: InquiryStatus.CONVERTED,
+        workOrderId: 'wo-1',
+      });
+      workOrdersService.create.mockResolvedValue({ id: 'wo-1' });
+      inquiryRepo.save.mockImplementation((entity) => Promise.resolve(entity));
+
+      await service.convertToWorkOrder('iq-1', dto);
+
+      expect(workOrdersService.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          priority: 'high',
+          diagnosis: 'La notebook no prende',
+          workAddress: 'Av. Corrientes 1234',
+        }),
+      );
+    });
+
+    it('should not create a work order if inquiry is not REVIEWED', async () => {
       inquiryRepo.findOne.mockResolvedValue({
         ...mockInquiry,
         status: InquiryStatus.CONTACTED,
       });
 
-      await expect(service.convertToWorkOrder('iq-1')).rejects.toThrow(
+      await expect(service.convertToWorkOrder('iq-1', dto)).rejects.toThrow(
         BadRequestException,
       );
+
+      expect(workOrdersService.create).not.toHaveBeenCalled();
     });
 
     it('should reject if admin did not approve', async () => {
@@ -354,9 +414,11 @@ describe('InquiriesService', () => {
         adminDecision: InquiryDecision.REJECTED,
       });
 
-      await expect(service.convertToWorkOrder('iq-1')).rejects.toThrow(
+      await expect(service.convertToWorkOrder('iq-1', dto)).rejects.toThrow(
         BadRequestException,
       );
+
+      expect(workOrdersService.create).not.toHaveBeenCalled();
     });
   });
 

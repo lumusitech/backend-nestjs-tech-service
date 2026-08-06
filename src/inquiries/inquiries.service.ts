@@ -11,6 +11,7 @@ import { CreateInquiryDto } from './dto/create-inquiry.dto';
 import { UpdateInquiryDto } from './dto/update-inquiry.dto';
 import { FilterInquiryDto } from './dto/filter-inquiry.dto';
 import { ContactInquiryDto } from './dto/contact-inquiry.dto';
+import { ConvertInquiryDto } from './dto/convert-inquiry.dto';
 import { InquiryStatus } from './enums/inquiry-status.enum';
 import { InquiryDecision } from './enums/inquiry-decision.enum';
 import { PaginatedResponseDto } from '../common/dto/paginated-response.dto';
@@ -18,6 +19,9 @@ import { addDaysToDateString } from '../common/utils/date-filter.util';
 import { validateSortBy } from '../common/utils/sort-by.util';
 import { User } from '../users/entities/user.entity';
 import { UserRole } from '../users/enums/user-role.enum';
+import { Priority } from '../common/enums/priority.enum';
+import { WorkOrdersService } from '../work-orders/work-orders.service';
+import { PendingItemsService } from '../pending-items/pending-items.service';
 import {
   InquiryCreatedEvent,
   InquiryAssignedEvent,
@@ -41,6 +45,8 @@ export class InquiriesService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     private readonly eventEmitter: EventEmitter2,
+    private readonly workOrdersService: WorkOrdersService,
+    private readonly pendingItemsService: PendingItemsService,
   ) {}
 
   async create(
@@ -233,7 +239,10 @@ export class InquiriesService {
     return saved;
   }
 
-  async convertToWorkOrder(id: string): Promise<Inquiry> {
+  async convertToWorkOrder(
+    id: string,
+    convertDto: ConvertInquiryDto,
+  ): Promise<Inquiry> {
     const inquiry = await this.findOne(id);
 
     if (inquiry.status !== InquiryStatus.REVIEWED) {
@@ -248,12 +257,26 @@ export class InquiriesService {
       );
     }
 
+    const workOrder = await this.workOrdersService.create({
+      clientId: convertDto.clientId,
+      serviceTypeId: convertDto.serviceTypeId,
+      priority: convertDto.priority ?? (inquiry.priority as Priority),
+      location: convertDto.location,
+      diagnosis: convertDto.diagnosis ?? inquiry.description,
+      workAddress: convertDto.workAddress ?? inquiry.clientAddress,
+      scheduledDate: convertDto.scheduledDate,
+      warrantyUntil: convertDto.warrantyUntil,
+      technicianIds: convertDto.technicianIds,
+    });
+
     inquiry.status = InquiryStatus.CONVERTED;
-    inquiry.workOrderId = null!;
+    inquiry.workOrderId = workOrder.id;
 
-    const saved = await this.inquiryRepository.save(inquiry);
+    await this.inquiryRepository.save(inquiry);
 
-    return saved;
+    await this.pendingItemsService.completeForReference('inquiry', inquiry.id);
+
+    return this.findOne(id);
   }
 
   async setWorkOrder(id: string, workOrderId: string): Promise<Inquiry> {
