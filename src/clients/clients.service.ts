@@ -9,6 +9,12 @@ import { Client } from './entities/client.entity';
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
 import { FilterClientDto } from './dto/filter-client.dto';
+import {
+  BulkDeleteClientsDto,
+  BulkClientDeleteResult,
+  BulkClientStatusResult,
+  BulkUpdateClientStatusDto,
+} from './dto/bulk-client.dto';
 import { PaginatedResponseDto } from '../common/dto/paginated-response.dto';
 import { validateSortBy } from '../common/utils/sort-by.util';
 import { addDaysToDateString } from '../common/utils/date-filter.util';
@@ -128,6 +134,55 @@ export class ClientsService {
   async remove(id: string): Promise<void> {
     const client = await this.findOne(id);
     await this.clientRepository.softRemove(client);
+  }
+
+  async bulkUpdateStatus(
+    dto: BulkUpdateClientStatusDto,
+  ): Promise<BulkClientStatusResult> {
+    const succeeded: { id: string; isActive: boolean }[] = [];
+    const failed: { id: string; reason: string }[] = [];
+
+    for (const id of dto.ids) {
+      try {
+        const client = await this.findOne(id);
+        client.isActive = dto.isActive;
+        await this.clientRepository.save(client);
+        succeeded.push({ id, isActive: client.isActive });
+      } catch (err) {
+        failed.push({
+          id,
+          reason:
+            err instanceof NotFoundException
+              ? err.message
+              : 'Internal server error',
+        });
+      }
+    }
+
+    return { succeeded, failed };
+  }
+
+  async bulkDelete(dto: BulkDeleteClientsDto): Promise<BulkClientDeleteResult> {
+    const succeeded: { id: string }[] = [];
+    const failed: { id: string; reason: string }[] = [];
+
+    for (const id of dto.ids) {
+      try {
+        const client = await this.findOne(id);
+        await this.clientRepository.softRemove(client);
+        succeeded.push({ id });
+      } catch (err) {
+        failed.push({
+          id,
+          reason:
+            err instanceof NotFoundException
+              ? err.message
+              : 'Internal server error',
+        });
+      }
+    }
+
+    return { succeeded, failed };
   }
 
   async hardRemove(id: string): Promise<void> {

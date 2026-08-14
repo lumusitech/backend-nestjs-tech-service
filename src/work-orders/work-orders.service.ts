@@ -22,6 +22,12 @@ import { UpdateWorkOrderMaterialDto } from './dto/update-work-order-material.dto
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { WorkOrderStatus } from '../common/enums/work-order-status.enum';
+import {
+  BulkUpdateWorkOrderStatusDto,
+  BulkStatusResult,
+  BulkStatusResultItem,
+  BulkStatusFailedItem,
+} from './dto/bulk-update-work-order-status.dto';
 import { PaginatedResponseDto } from '../common/dto/paginated-response.dto';
 import { validateSortBy } from '../common/utils/sort-by.util';
 import { addDaysToDateString } from '../common/utils/date-filter.util';
@@ -159,7 +165,8 @@ export class WorkOrdersService {
       dateField = 'scheduledDate',
     } = filterDto;
 
-    const dateColumn = dateField === 'createdAt' ? 'wo.created_at' : 'wo.scheduled_date';
+    const dateColumn =
+      dateField === 'createdAt' ? 'wo.created_at' : 'wo.scheduled_date';
 
     const qb = this.workOrderRepository
       .createQueryBuilder('wo')
@@ -383,6 +390,69 @@ export class WorkOrdersService {
   async remove(id: string): Promise<void> {
     const workOrder = await this.findOne(id);
     await this.workOrderRepository.softRemove(workOrder);
+  }
+
+  async bulkUpdateStatus(
+    dto: BulkUpdateWorkOrderStatusDto,
+    userId: string,
+    userRole: string,
+  ): Promise<BulkStatusResult> {
+    const succeeded: BulkStatusResultItem[] = [];
+    const failed: BulkStatusFailedItem[] = [];
+
+    for (const id of dto.ids) {
+      try {
+        const workOrder = await this.findOne(id);
+        const oldStatus = workOrder.status;
+
+        if (oldStatus === dto.status) {
+          succeeded.push({ id, status: oldStatus });
+          continue;
+        }
+
+        this.validateTransition(oldStatus, dto.status);
+
+        if (dto.status === WorkOrderStatus.IN_PROGRESS) {
+          workOrder.startedAt = new Date();
+        }
+
+        if (dto.status === WorkOrderStatus.COMPLETED) {
+          workOrder.completedAt = new Date();
+        }
+
+        workOrder.status = dto.status;
+        const saved = await this.workOrderRepository.save(workOrder);
+
+        await this.logStatusTransition(
+          saved.id,
+          oldStatus,
+          saved.status,
+          userId,
+          userRole,
+        );
+
+        const event = new WorkOrderStatusChangedEvent();
+        event.workOrderId = saved.id;
+        event.trackingCode = saved.trackingCode;
+        event.oldStatus = oldStatus;
+        event.newStatus = saved.status;
+        event.technicianIds = workOrder.technicians?.map((t) => t.id) ?? [];
+        this.eventEmitter.emit('workorder.status_changed', event);
+
+        succeeded.push({ id, status: saved.status });
+      } catch (err) {
+        failed.push({
+          id,
+          reason:
+            err instanceof BadRequestException ||
+            err instanceof NotFoundException
+              ? err.message
+              : 'Internal server error',
+        });
+      }
+    }
+
+    return { succeeded, failed };
   }
 
   async hardRemove(id: string): Promise<void> {

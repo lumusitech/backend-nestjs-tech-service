@@ -78,7 +78,8 @@ export class BillingService {
       dateField = 'createdAt',
     } = filterDto;
 
-    const dateColumn = dateField === 'issuedAt' ? 'i.issued_at' : 'i.created_at';
+    const dateColumn =
+      dateField === 'issuedAt' ? 'i.issued_at' : 'i.created_at';
 
     const qb = this.invoiceRepository
       .createQueryBuilder('i')

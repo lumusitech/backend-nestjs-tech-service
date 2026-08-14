@@ -7,6 +7,10 @@ import { createMockRepository } from '../common/testing/mock-query-builder.helpe
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
 import { FilterClientDto } from './dto/filter-client.dto';
+import {
+  BulkDeleteClientsDto,
+  BulkUpdateClientStatusDto,
+} from './dto/bulk-client.dto';
 
 describe('ClientsService', () => {
   let service: ClientsService;
@@ -247,6 +251,85 @@ describe('ClientsService', () => {
         NotFoundException,
       );
       expect(repository.softRemove).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('bulkUpdateStatus', () => {
+    const dto: BulkUpdateClientStatusDto = {
+      ids: ['uuid-1', 'uuid-2'],
+      isActive: false,
+    };
+
+    it('should update isActive for all clients', async () => {
+      repository.findOne.mockResolvedValueOnce({
+        id: 'uuid-1',
+        name: 'John',
+        isActive: true,
+      });
+      repository.findOne.mockResolvedValueOnce({
+        id: 'uuid-2',
+        name: 'Jane',
+        isActive: true,
+      });
+
+      const result = await service.bulkUpdateStatus(dto);
+
+      expect(repository.save).toHaveBeenCalledTimes(2);
+      expect(result.succeeded).toHaveLength(2);
+      expect(result.succeeded[0]).toEqual({
+        id: 'uuid-1',
+        isActive: false,
+      });
+      expect(result.failed).toHaveLength(0);
+    });
+
+    it('should report failed clients without aborting the batch', async () => {
+      repository.findOne.mockResolvedValueOnce(null);
+      repository.findOne.mockResolvedValueOnce({
+        id: 'uuid-2',
+        name: 'Jane',
+        isActive: true,
+      });
+
+      const result = await service.bulkUpdateStatus(dto);
+
+      expect(repository.save).toHaveBeenCalledTimes(1);
+      expect(result.succeeded).toHaveLength(1);
+      expect(result.failed).toHaveLength(1);
+      expect(result.failed[0]).toEqual({
+        id: 'uuid-1',
+        reason: expect.any(String),
+      });
+    });
+  });
+
+  describe('bulkDelete', () => {
+    const dto: BulkDeleteClientsDto = { ids: ['uuid-1', 'uuid-2'] };
+
+    it('should soft delete all clients', async () => {
+      repository.findOne.mockResolvedValueOnce({ id: 'uuid-1' });
+      repository.findOne.mockResolvedValueOnce({ id: 'uuid-2' });
+
+      const result = await service.bulkDelete(dto);
+
+      expect(repository.softRemove).toHaveBeenCalledTimes(2);
+      expect(result.succeeded).toHaveLength(2);
+      expect(result.failed).toHaveLength(0);
+    });
+
+    it('should report failed clients without aborting the batch', async () => {
+      repository.findOne.mockResolvedValueOnce(null);
+      repository.findOne.mockResolvedValueOnce({ id: 'uuid-2' });
+
+      const result = await service.bulkDelete(dto);
+
+      expect(repository.softRemove).toHaveBeenCalledTimes(1);
+      expect(result.succeeded).toHaveLength(1);
+      expect(result.failed).toHaveLength(1);
+      expect(result.failed[0]).toEqual({
+        id: 'uuid-1',
+        reason: expect.any(String),
+      });
     });
   });
 

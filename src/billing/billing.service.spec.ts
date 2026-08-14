@@ -298,16 +298,18 @@ describe('BillingService', () => {
       const mockQb = createMockQueryBuilder([mockInvoice], 1);
       mockRepo.createQueryBuilder.mockReturnValue(mockQb);
 
-      await service.findAll({ dateField: 'issuedAt', dateFrom: '2026-01-01', dateTo: '2026-12-31' });
+      await service.findAll({
+        dateField: 'issuedAt',
+        dateFrom: '2026-01-01',
+        dateTo: '2026-12-31',
+      });
 
-      expect(mockQb.andWhere).toHaveBeenCalledWith(
-        'i.issued_at >= :dateFrom',
-        { dateFrom: '2026-01-01' },
-      );
-      expect(mockQb.andWhere).toHaveBeenCalledWith(
-        'i.issued_at < :dateToEnd',
-        { dateToEnd: '2027-01-01' },
-      );
+      expect(mockQb.andWhere).toHaveBeenCalledWith('i.issued_at >= :dateFrom', {
+        dateFrom: '2026-01-01',
+      });
+      expect(mockQb.andWhere).toHaveBeenCalledWith('i.issued_at < :dateToEnd', {
+        dateToEnd: '2027-01-01',
+      });
     });
 
     it('should apply clientName filter with unaccent', async () => {
