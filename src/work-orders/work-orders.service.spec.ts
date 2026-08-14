@@ -13,7 +13,10 @@ import { User } from '../users/entities/user.entity';
 import { WorkOrderStatus } from '../common/enums/work-order-status.enum';
 import { Priority } from '../common/enums/priority.enum';
 import { NoteType } from './enums/note-type.enum';
-import { createMockRepository, createMockQueryBuilder } from '../common/testing/mock-query-builder.helper';
+import {
+  createMockRepository,
+  createMockQueryBuilder,
+} from '../common/testing/mock-query-builder.helper';
 
 describe('WorkOrdersService', () => {
   let service: WorkOrdersService;
@@ -405,6 +408,143 @@ describe('WorkOrdersService', () => {
       await expect(service.remove('nonexistent')).rejects.toThrow(
         NotFoundException,
       );
+    });
+  });
+
+  describe('bulkUpdateStatus', () => {
+    const dto = {
+      ids: ['wo-1', 'wo-2'],
+      status: WorkOrderStatus.IN_PROGRESS,
+    };
+
+    it('should update status for all work orders and emit events', async () => {
+      workOrderRepo.findOne
+        .mockResolvedValueOnce({
+          id: 'wo-1',
+          trackingCode: 'TS-ABCDE',
+          status: WorkOrderStatus.ASSIGNED,
+          technicians: [{ id: 'tech-1' }],
+        })
+        .mockResolvedValueOnce({
+          id: 'wo-2',
+          trackingCode: 'TS-FGHIJ',
+          status: WorkOrderStatus.ON_THE_WAY,
+          technicians: [{ id: 'tech-2' }],
+        });
+      workOrderRepo.save.mockImplementation((entity) =>
+        Promise.resolve(entity),
+      );
+      statusLogRepo.save.mockResolvedValue({});
+
+      const result = await service.bulkUpdateStatus(dto, 'user-1', 'admin');
+
+      expect(result.succeeded).toHaveLength(2);
+      expect(result.failed).toHaveLength(0);
+      expect(eventEmitter.emit).toHaveBeenCalledTimes(2);
+      expect(eventEmitter.emit).toHaveBeenCalledWith(
+        'workorder.status_changed',
+        expect.objectContaining({
+          workOrderId: 'wo-1',
+          oldStatus: WorkOrderStatus.ASSIGNED,
+          newStatus: WorkOrderStatus.IN_PROGRESS,
+        }),
+      );
+    });
+
+    it('should set startedAt when transitioning to IN_PROGRESS', async () => {
+      workOrderRepo.findOne.mockResolvedValue({
+        id: 'wo-1',
+        trackingCode: 'TS-ABCDE',
+        status: WorkOrderStatus.ASSIGNED,
+        technicians: [],
+      });
+      workOrderRepo.save.mockImplementation((entity) =>
+        Promise.resolve(entity),
+      );
+
+      const result = await service.bulkUpdateStatus(
+        { ids: ['wo-1'], status: WorkOrderStatus.IN_PROGRESS },
+        'user-1',
+        'admin',
+      );
+
+      expect(result.succeeded).toHaveLength(1);
+      expect(workOrderRepo.save).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: 'wo-1',
+          status: WorkOrderStatus.IN_PROGRESS,
+          startedAt: expect.any(Date),
+        }),
+      );
+    });
+
+    it('should skip no-op updates for orders already in target status', async () => {
+      workOrderRepo.findOne.mockResolvedValue({
+        id: 'wo-1',
+        trackingCode: 'TS-ABCDE',
+        status: WorkOrderStatus.IN_PROGRESS,
+        technicians: [],
+      });
+
+      const result = await service.bulkUpdateStatus(
+        { ids: ['wo-1'], status: WorkOrderStatus.IN_PROGRESS },
+        'user-1',
+        'admin',
+      );
+
+      expect(result.succeeded).toHaveLength(1);
+      expect(workOrderRepo.save).not.toHaveBeenCalled();
+      expect(eventEmitter.emit).not.toHaveBeenCalled();
+    });
+
+    it('should report invalid transitions in failed without aborting the batch', async () => {
+      workOrderRepo.findOne
+        .mockResolvedValueOnce({
+          id: 'wo-1',
+          trackingCode: 'TS-ABCDE',
+          status: WorkOrderStatus.DELIVERED,
+          technicians: [],
+        })
+        .mockResolvedValueOnce({
+          id: 'wo-2',
+          trackingCode: 'TS-FGHIJ',
+          status: WorkOrderStatus.ASSIGNED,
+          technicians: [],
+        });
+      workOrderRepo.save.mockImplementation((entity) =>
+        Promise.resolve(entity),
+      );
+
+      const result = await service.bulkUpdateStatus(dto, 'user-1', 'admin');
+
+      expect(result.succeeded).toHaveLength(1);
+      expect(result.succeeded[0].id).toBe('wo-2');
+      expect(result.failed).toHaveLength(1);
+      expect(result.failed[0]).toEqual({
+        id: 'wo-1',
+        reason: expect.stringContaining('Invalid status transition'),
+      });
+    });
+
+    it('should report not found orders in failed', async () => {
+      workOrderRepo.findOne.mockResolvedValueOnce(null).mockResolvedValueOnce({
+        id: 'wo-2',
+        trackingCode: 'TS-FGHIJ',
+        status: WorkOrderStatus.ASSIGNED,
+        technicians: [],
+      });
+      workOrderRepo.save.mockImplementation((entity) =>
+        Promise.resolve(entity),
+      );
+
+      const result = await service.bulkUpdateStatus(dto, 'user-1', 'admin');
+
+      expect(result.succeeded).toHaveLength(1);
+      expect(result.failed).toHaveLength(1);
+      expect(result.failed[0]).toEqual({
+        id: 'wo-1',
+        reason: expect.stringContaining('not found'),
+      });
     });
   });
 

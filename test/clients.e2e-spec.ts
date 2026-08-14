@@ -173,7 +173,10 @@ describe('Clients (e2e)', () => {
       }
 
       it('should include records from the selected dateTo day (midnight boundary)', async () => {
-        await createDatedClient('Midnight Boundary Client', '2026-01-15T10:30:00.000Z');
+        await createDatedClient(
+          'Midnight Boundary Client',
+          '2026-01-15T10:30:00.000Z',
+        );
 
         const res = await request(app.getHttpServer())
           .get('/clients?dateFrom=2026-01-15&dateTo=2026-01-15')
@@ -257,7 +260,10 @@ describe('Clients (e2e)', () => {
           .set(authHeader(adminToken))
           .expect(200);
 
-        const clients = res.body.data.data as { isActive: boolean; name: string }[];
+        const clients = res.body.data.data as {
+          isActive: boolean;
+          name: string;
+        }[];
         expect(clients.length).toBeGreaterThan(0);
         expect(clients.every((c) => c.isActive === false)).toBe(true);
         expect(clients.some((c) => c.name === 'Inactive Filter Client')).toBe(

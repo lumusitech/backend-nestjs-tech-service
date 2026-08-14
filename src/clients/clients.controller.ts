@@ -20,6 +20,10 @@ import { ClientsService } from './clients.service';
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
 import { FilterClientDto } from './dto/filter-client.dto';
+import {
+  BulkDeleteClientsDto,
+  BulkUpdateClientStatusDto,
+} from './dto/bulk-client.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { UserRole } from '../users/enums/user-role.enum';
@@ -46,6 +50,20 @@ export class ClientsController {
   @ApiResponse({ status: 200, description: 'List of clients' })
   findAll(@Query() filterDto: FilterClientDto) {
     return this.clientsService.findAll(filterDto);
+  }
+
+  @Patch('bulk-status')
+  @ApiOperation({ summary: 'Bulk activate or deactivate clients' })
+  @ApiResponse({ status: 200, description: 'Clients updated successfully' })
+  bulkUpdateStatus(@Body() dto: BulkUpdateClientStatusDto) {
+    return this.clientsService.bulkUpdateStatus(dto);
+  }
+
+  @Post('bulk-delete')
+  @ApiOperation({ summary: 'Bulk soft delete clients' })
+  @ApiResponse({ status: 200, description: 'Clients soft deleted' })
+  bulkDelete(@Body() dto: BulkDeleteClientsDto) {
+    return this.clientsService.bulkDelete(dto);
   }
 
   @Get(':id')

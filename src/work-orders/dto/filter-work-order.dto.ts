@@ -65,7 +65,10 @@ export class FilterWorkOrderDto extends PaginationDto {
   @IsDateRangeValid()
   dateTo?: string;
 
-  @ApiPropertyOptional({ enum: ['scheduledDate', 'createdAt'], example: 'scheduledDate' })
+  @ApiPropertyOptional({
+    enum: ['scheduledDate', 'createdAt'],
+    example: 'scheduledDate',
+  })
   @IsOptional()
   @IsIn(['scheduledDate', 'createdAt'])
   dateField?: 'scheduledDate' | 'createdAt' = 'scheduledDate';

@@ -24,6 +24,7 @@ import { UpdateWorkOrderMaterialDto } from './dto/update-work-order-material.dto
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { UpdateStatusLogDetailDto } from './dto/update-status-log-detail.dto';
+import { BulkUpdateWorkOrderStatusDto } from './dto/bulk-update-work-order-status.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -64,6 +65,21 @@ export class WorkOrdersController {
     }
 
     return this.workOrdersService.findAll(filterDto);
+  }
+
+  @Patch('bulk-status')
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Bulk update the status of multiple work orders' })
+  @ApiResponse({
+    status: 200,
+    description: 'Per-order result with succeeded and failed work orders',
+  })
+  bulkUpdateStatus(
+    @Body() dto: BulkUpdateWorkOrderStatusDto,
+    @Req() req: Request,
+  ) {
+    const user = req.user as { id: string; role: UserRole };
+    return this.workOrdersService.bulkUpdateStatus(dto, user.id, user.role);
   }
 
   @Get(':id')

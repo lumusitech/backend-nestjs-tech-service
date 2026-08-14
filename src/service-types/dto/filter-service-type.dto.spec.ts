@@ -35,25 +35,35 @@ describe('FilterServiceTypeDto', () => {
 
   describe('date range validation', () => {
     it('should accept valid dateFrom and dateTo', async () => {
-      const dto = plainToInstance(FilterServiceTypeDto, { dateFrom: '2026-01-01', dateTo: '2026-12-31' });
+      const dto = plainToInstance(FilterServiceTypeDto, {
+        dateFrom: '2026-01-01',
+        dateTo: '2026-12-31',
+      });
       const errors = await validate(dto);
       expect(errors).toHaveLength(0);
     });
 
     it('should reject dateFrom after dateTo', async () => {
-      const dto = plainToInstance(FilterServiceTypeDto, { dateFrom: '2026-12-31', dateTo: '2026-01-01' });
+      const dto = plainToInstance(FilterServiceTypeDto, {
+        dateFrom: '2026-12-31',
+        dateTo: '2026-01-01',
+      });
       const errors = await validate(dto);
       expect(errors).toHaveLength(1);
     });
 
     it('should accept dateFrom without dateTo', async () => {
-      const dto = plainToInstance(FilterServiceTypeDto, { dateFrom: '2026-01-01' });
+      const dto = plainToInstance(FilterServiceTypeDto, {
+        dateFrom: '2026-01-01',
+      });
       const errors = await validate(dto);
       expect(errors).toHaveLength(0);
     });
 
     it('should accept dateTo without dateFrom', async () => {
-      const dto = plainToInstance(FilterServiceTypeDto, { dateTo: '2026-12-31' });
+      const dto = plainToInstance(FilterServiceTypeDto, {
+        dateTo: '2026-12-31',
+      });
       const errors = await validate(dto);
       expect(errors).toHaveLength(0);
     });
