@@ -4,6 +4,7 @@ import {
   Patch,
   Param,
   Query,
+  Body,
   UseGuards,
   ParseUUIDPipe,
 } from '@nestjs/common';
@@ -16,6 +17,7 @@ import {
 } from '@nestjs/swagger';
 import { NotificationsService } from './notifications.service';
 import { FilterNotificationDto } from './dto/filter-notification.dto';
+import { BulkReadNotificationsDto } from './dto/bulk-notification.dto';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
 
@@ -48,6 +50,17 @@ export class NotificationsController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   getUnreadCount(@CurrentUser() user: UserPayload) {
     return this.notificationsService.getUnreadCount(user.id);
+  }
+
+  @Patch('bulk-read')
+  @ApiOperation({ summary: 'Mark multiple notifications as read' })
+  @ApiResponse({ status: 200, description: 'Notifications marked as read' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  bulkMarkAsRead(
+    @Body() dto: BulkReadNotificationsDto,
+    @CurrentUser() user: UserPayload,
+  ) {
+    return this.notificationsService.bulkMarkAsRead(dto, user.id);
   }
 
   @Patch(':id/read')

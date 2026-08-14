@@ -10,6 +10,12 @@ import { Repository } from 'typeorm';
 import { Invoice } from './entities/invoice.entity';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
 import { FilterInvoiceDto } from './dto/filter-invoice.dto';
+import {
+  BulkIssueInvoicesDto,
+  BulkInvoiceIssueResult,
+  BulkCancelInvoicesDto,
+  BulkInvoiceCancelResult,
+} from './dto/bulk-invoice.dto';
 import { InvoiceStatus } from './enums/invoice-status.enum';
 import { IvaCondition } from './enums/iva-condition.enum';
 import { ArcaProvider } from './providers/arca.provider';
@@ -199,6 +205,54 @@ export class BillingService {
     this.logger.log(`Invoice cancelled: ${saved.invoiceNumber}`);
 
     return saved;
+  }
+
+  async bulkIssue(dto: BulkIssueInvoicesDto): Promise<BulkInvoiceIssueResult> {
+    const succeeded: { id: string; status: 'issued' }[] = [];
+    const failed: { id: string; reason: string }[] = [];
+
+    for (const id of dto.ids) {
+      try {
+        await this.issue(id);
+        succeeded.push({ id, status: 'issued' });
+      } catch (err) {
+        failed.push({
+          id,
+          reason:
+            err instanceof NotFoundException ||
+            err instanceof BadRequestException
+              ? err.message
+              : 'Internal server error',
+        });
+      }
+    }
+
+    return { succeeded, failed };
+  }
+
+  async bulkCancel(
+    dto: BulkCancelInvoicesDto,
+  ): Promise<BulkInvoiceCancelResult> {
+    const succeeded: { id: string; status: 'cancelled' }[] = [];
+    const failed: { id: string; reason: string }[] = [];
+
+    for (const id of dto.ids) {
+      try {
+        await this.cancel(id);
+        succeeded.push({ id, status: 'cancelled' });
+      } catch (err) {
+        failed.push({
+          id,
+          reason:
+            err instanceof NotFoundException ||
+            err instanceof BadRequestException
+              ? err.message
+              : 'Internal server error',
+        });
+      }
+    }
+
+    return { succeeded, failed };
   }
 
   private async generateInvoiceNumber(

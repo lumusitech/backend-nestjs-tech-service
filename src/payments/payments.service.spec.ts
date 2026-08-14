@@ -13,6 +13,10 @@ import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
 import { FilterPaymentDto } from './dto/filter-payment.dto';
 import {
+  BulkDeletePaymentsDto,
+  BulkUpdatePaymentStatusDto,
+} from './dto/bulk-payment.dto';
+import {
   createMockRepository,
   createMockQueryBuilder,
 } from '../common/testing/mock-query-builder.helper';
@@ -828,6 +832,93 @@ describe('PaymentsService', () => {
       await service.handleMercadoPagoWebhook({ type: 'payment' });
 
       expect(mockEventEmitter.emit).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('bulkUpdateStatus', () => {
+    const dto: BulkUpdatePaymentStatusDto = {
+      ids: ['pay-uuid-1', 'pay-uuid-2'],
+      status: PaymentStatus.APPROVED,
+    };
+
+    it('should update status for all payments', async () => {
+      const updateSpy = jest
+        .spyOn(service, 'update')
+        .mockResolvedValueOnce({
+          ...createMockPendingPayment(),
+          status: PaymentStatus.APPROVED,
+        })
+        .mockResolvedValueOnce({
+          ...createMockPendingPayment(),
+          id: 'pay-uuid-2',
+          status: PaymentStatus.APPROVED,
+        });
+
+      const result = await service.bulkUpdateStatus(dto);
+
+      expect(updateSpy).toHaveBeenCalledTimes(2);
+      expect(result.succeeded).toHaveLength(2);
+      expect(result.succeeded[0]).toEqual({
+        id: 'pay-uuid-1',
+        status: PaymentStatus.APPROVED,
+      });
+      expect(result.failed).toHaveLength(0);
+    });
+
+    it('should report failed payments without aborting the batch', async () => {
+      jest
+        .spyOn(service, 'update')
+        .mockRejectedValueOnce(new NotFoundException('Payment not found'))
+        .mockResolvedValueOnce({
+          ...createMockPendingPayment(),
+          id: 'pay-uuid-2',
+          status: PaymentStatus.APPROVED,
+        });
+
+      const result = await service.bulkUpdateStatus(dto);
+
+      expect(result.succeeded).toHaveLength(1);
+      expect(result.failed).toHaveLength(1);
+      expect(result.failed[0]).toEqual({
+        id: 'pay-uuid-1',
+        reason: expect.any(String),
+      });
+    });
+  });
+
+  describe('bulkDelete', () => {
+    const dto: BulkDeletePaymentsDto = { ids: ['pay-uuid-1', 'pay-uuid-2'] };
+
+    it('should soft delete all payments', async () => {
+      mockRepo.findOne.mockResolvedValueOnce(createMockPayment());
+      mockRepo.findOne.mockResolvedValueOnce({
+        ...createMockPayment(),
+        id: 'pay-uuid-2',
+      });
+
+      const result = await service.bulkDelete(dto);
+
+      expect(mockRepo.softRemove).toHaveBeenCalledTimes(2);
+      expect(result.succeeded).toHaveLength(2);
+      expect(result.failed).toHaveLength(0);
+    });
+
+    it('should report failed payments without aborting the batch', async () => {
+      mockRepo.findOne.mockResolvedValueOnce(null);
+      mockRepo.findOne.mockResolvedValueOnce({
+        ...createMockPayment(),
+        id: 'pay-uuid-2',
+      });
+
+      const result = await service.bulkDelete(dto);
+
+      expect(mockRepo.softRemove).toHaveBeenCalledTimes(1);
+      expect(result.succeeded).toHaveLength(1);
+      expect(result.failed).toHaveLength(1);
+      expect(result.failed[0]).toEqual({
+        id: 'pay-uuid-1',
+        reason: expect.any(String),
+      });
     });
   });
 });

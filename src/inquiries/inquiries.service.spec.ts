@@ -13,6 +13,7 @@ import { InquiryRecommendation } from './enums/inquiry-recommendation.enum';
 import { InquiryDecision } from './enums/inquiry-decision.enum';
 import { UserRole } from '../users/enums/user-role.enum';
 import { createMockRepository } from '../common/testing/mock-query-builder.helper';
+import { BulkDeleteInquiriesDto } from './dto/bulk-inquiry.dto';
 
 describe('InquiriesService', () => {
   let service: InquiriesService;
@@ -437,6 +438,36 @@ describe('InquiriesService', () => {
       await expect(service.remove('nonexistent')).rejects.toThrow(
         NotFoundException,
       );
+    });
+  });
+
+  describe('bulkDelete', () => {
+    const dto: BulkDeleteInquiriesDto = { ids: ['iq-1', 'iq-2'] };
+
+    it('should soft delete all inquiries', async () => {
+      inquiryRepo.findOne.mockResolvedValueOnce(mockInquiry);
+      inquiryRepo.findOne.mockResolvedValueOnce({ ...mockInquiry, id: 'iq-2' });
+
+      const result = await service.bulkDelete(dto);
+
+      expect(inquiryRepo.softRemove).toHaveBeenCalledTimes(2);
+      expect(result.succeeded).toHaveLength(2);
+      expect(result.failed).toHaveLength(0);
+    });
+
+    it('should report failed inquiries without aborting the batch', async () => {
+      inquiryRepo.findOne.mockResolvedValueOnce(null);
+      inquiryRepo.findOne.mockResolvedValueOnce({ ...mockInquiry, id: 'iq-2' });
+
+      const result = await service.bulkDelete(dto);
+
+      expect(inquiryRepo.softRemove).toHaveBeenCalledTimes(1);
+      expect(result.succeeded).toHaveLength(1);
+      expect(result.failed).toHaveLength(1);
+      expect(result.failed[0]).toEqual({
+        id: 'iq-1',
+        reason: expect.any(String),
+      });
     });
   });
 });

@@ -9,6 +9,7 @@ import {
   createMockQueryBuilder,
 } from '../common/testing/mock-query-builder.helper';
 import { NotificationType } from './enums/notification-type.enum';
+import { BulkReadNotificationsDto } from './dto/bulk-notification.dto';
 
 describe('NotificationsService', () => {
   let service: NotificationsService;
@@ -197,6 +198,48 @@ describe('NotificationsService', () => {
         where: { userId: 'u-1', isRead: false },
       });
       expect(result).toBe(3);
+    });
+  });
+
+  describe('bulkMarkAsRead', () => {
+    const dto: BulkReadNotificationsDto = { ids: ['n-1', 'n-2'] };
+
+    it('should mark all notifications as read for the user', async () => {
+      repo.findOne.mockResolvedValueOnce({
+        ...mockNotification,
+        isRead: false,
+      });
+      repo.findOne.mockResolvedValueOnce({
+        ...mockNotification,
+        id: 'n-2',
+        isRead: false,
+      });
+      repo.save.mockImplementation((n: Notification) => Promise.resolve(n));
+
+      const result = await service.bulkMarkAsRead(dto, 'u-1');
+
+      expect(repo.save).toHaveBeenCalledTimes(2);
+      expect(result.succeeded).toEqual(['n-1', 'n-2']);
+      expect(result.failed).toHaveLength(0);
+    });
+
+    it('should report failed notifications without aborting the batch', async () => {
+      repo.findOne.mockResolvedValueOnce(null);
+      repo.findOne.mockResolvedValueOnce({
+        ...mockNotification,
+        id: 'n-2',
+        isRead: false,
+      });
+      repo.save.mockImplementation((n: Notification) => Promise.resolve(n));
+
+      const result = await service.bulkMarkAsRead(dto, 'u-1');
+
+      expect(result.succeeded).toEqual(['n-2']);
+      expect(result.failed).toHaveLength(1);
+      expect(result.failed[0]).toEqual({
+        id: 'n-1',
+        reason: 'Notification not found',
+      });
     });
   });
 });

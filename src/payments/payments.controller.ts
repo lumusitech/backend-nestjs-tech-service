@@ -25,6 +25,10 @@ import { PaymentsService } from './payments.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
 import { FilterPaymentDto } from './dto/filter-payment.dto';
+import {
+  BulkDeletePaymentsDto,
+  BulkUpdatePaymentStatusDto,
+} from './dto/bulk-payment.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { UserRole } from '../users/enums/user-role.enum';
@@ -102,6 +106,20 @@ export class PaymentsApiController {
   @ApiResponse({ status: 200, description: 'Payments retrieved successfully' })
   findAllGlobal(@Query() filterDto: FilterPaymentDto) {
     return this.paymentsService.findAllGlobal(filterDto);
+  }
+
+  @Patch('bulk-status')
+  @ApiOperation({ summary: 'Bulk update payment statuses' })
+  @ApiResponse({ status: 200, description: 'Payments updated successfully' })
+  bulkUpdateStatus(@Body() dto: BulkUpdatePaymentStatusDto) {
+    return this.paymentsService.bulkUpdateStatus(dto);
+  }
+
+  @Post('bulk-delete')
+  @ApiOperation({ summary: 'Bulk soft delete payments' })
+  @ApiResponse({ status: 200, description: 'Payments soft deleted' })
+  bulkDelete(@Body() dto: BulkDeletePaymentsDto) {
+    return this.paymentsService.bulkDelete(dto);
   }
 
   @Patch(':id')

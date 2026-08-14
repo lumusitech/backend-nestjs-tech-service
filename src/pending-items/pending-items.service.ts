@@ -11,6 +11,12 @@ import { PendingItem } from './entities/pending-item.entity';
 import { CreatePendingItemDto } from './dto/create-pending-item.dto';
 import { UpdatePendingItemDto } from './dto/update-pending-item.dto';
 import { FilterPendingItemDto } from './dto/filter-pending-item.dto';
+import {
+  BulkUpdatePendingItemStatusDto,
+  BulkPendingItemStatusResult,
+  BulkDeletePendingItemsDto,
+  BulkPendingItemDeleteResult,
+} from './dto/bulk-pending-item.dto';
 import { PendingItemStatus } from './enums/pending-item-status.enum';
 import { PaginatedResponseDto } from '../common/dto/paginated-response.dto';
 import { validateSortBy } from '../common/utils/sort-by.util';
@@ -205,6 +211,57 @@ export class PendingItemsService {
   async remove(id: string): Promise<void> {
     const item = await this.findOne(id);
     await this.pendingItemRepository.softRemove(item);
+  }
+
+  async bulkUpdateStatus(
+    dto: BulkUpdatePendingItemStatusDto,
+  ): Promise<BulkPendingItemStatusResult> {
+    const succeeded: { id: string; status: PendingItemStatus }[] = [];
+    const failed: { id: string; reason: string }[] = [];
+
+    for (const id of dto.ids) {
+      try {
+        const saved = await this.update(id, { status: dto.status });
+        succeeded.push({ id, status: saved.status });
+      } catch (err) {
+        failed.push({
+          id,
+          reason:
+            err instanceof NotFoundException
+              ? err.message
+              : err instanceof BadRequestException
+                ? err.message
+                : 'Internal server error',
+        });
+      }
+    }
+
+    return { succeeded, failed };
+  }
+
+  async bulkDelete(
+    dto: BulkDeletePendingItemsDto,
+  ): Promise<BulkPendingItemDeleteResult> {
+    const succeeded: { id: string }[] = [];
+    const failed: { id: string; reason: string }[] = [];
+
+    for (const id of dto.ids) {
+      try {
+        const item = await this.findOne(id);
+        await this.pendingItemRepository.softRemove(item);
+        succeeded.push({ id });
+      } catch (err) {
+        failed.push({
+          id,
+          reason:
+            err instanceof NotFoundException
+              ? err.message
+              : 'Internal server error',
+        });
+      }
+    }
+
+    return { succeeded, failed };
   }
 
   async completeForReference(

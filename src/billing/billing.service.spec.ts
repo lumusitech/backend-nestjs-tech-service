@@ -11,6 +11,10 @@ import { InvoiceConcept } from './enums/invoice-concept.enum';
 import { IvaCondition } from './enums/iva-condition.enum';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
 import {
+  BulkCancelInvoicesDto,
+  BulkIssueInvoicesDto,
+} from './dto/bulk-invoice.dto';
+import {
   createMockRepository,
   createMockQueryBuilder,
 } from '../common/testing/mock-query-builder.helper';
@@ -630,6 +634,86 @@ describe('BillingService', () => {
       });
       expect(qb.andWhere).toHaveBeenCalledWith('i.point_of_sale = :pos', {
         pos: 5,
+      });
+    });
+  });
+
+  describe('bulkIssue', () => {
+    const dto: BulkIssueInvoicesDto = { ids: ['inv-uuid-1', 'inv-uuid-2'] };
+
+    it('should issue all draft invoices', async () => {
+      const issueSpy = jest
+        .spyOn(service, 'issue')
+        .mockResolvedValueOnce({ ...mockIssuedInvoice })
+        .mockResolvedValueOnce({
+          ...mockIssuedInvoice,
+          id: 'inv-uuid-2',
+        });
+
+      const result = await service.bulkIssue(dto);
+
+      expect(issueSpy).toHaveBeenCalledTimes(2);
+      expect(result.succeeded).toHaveLength(2);
+      expect(result.succeeded[0]).toEqual({
+        id: 'inv-uuid-1',
+        status: 'issued',
+      });
+      expect(result.failed).toHaveLength(0);
+    });
+
+    it('should report failed invoices without aborting the batch', async () => {
+      jest
+        .spyOn(service, 'issue')
+        .mockRejectedValueOnce(new BadRequestException('Cannot issue invoice'))
+        .mockResolvedValueOnce({ ...mockIssuedInvoice, id: 'inv-uuid-2' });
+
+      const result = await service.bulkIssue(dto);
+
+      expect(result.succeeded).toHaveLength(1);
+      expect(result.failed).toHaveLength(1);
+      expect(result.failed[0]).toEqual({
+        id: 'inv-uuid-1',
+        reason: expect.any(String),
+      });
+    });
+  });
+
+  describe('bulkCancel', () => {
+    const dto: BulkCancelInvoicesDto = { ids: ['inv-uuid-1', 'inv-uuid-2'] };
+
+    it('should cancel all issued invoices', async () => {
+      const cancelSpy = jest
+        .spyOn(service, 'cancel')
+        .mockResolvedValueOnce({ ...mockCancelledInvoice })
+        .mockResolvedValueOnce({
+          ...mockCancelledInvoice,
+          id: 'inv-uuid-2',
+        });
+
+      const result = await service.bulkCancel(dto);
+
+      expect(cancelSpy).toHaveBeenCalledTimes(2);
+      expect(result.succeeded).toHaveLength(2);
+      expect(result.succeeded[0]).toEqual({
+        id: 'inv-uuid-1',
+        status: 'cancelled',
+      });
+      expect(result.failed).toHaveLength(0);
+    });
+
+    it('should report failed invoices without aborting the batch', async () => {
+      jest
+        .spyOn(service, 'cancel')
+        .mockRejectedValueOnce(new BadRequestException('Cannot cancel invoice'))
+        .mockResolvedValueOnce({ ...mockCancelledInvoice, id: 'inv-uuid-2' });
+
+      const result = await service.bulkCancel(dto);
+
+      expect(result.succeeded).toHaveLength(1);
+      expect(result.failed).toHaveLength(1);
+      expect(result.failed[0]).toEqual({
+        id: 'inv-uuid-1',
+        reason: expect.any(String),
       });
     });
   });

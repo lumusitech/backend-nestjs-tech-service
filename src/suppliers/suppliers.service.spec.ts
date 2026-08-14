@@ -9,6 +9,10 @@ import {
 } from '../common/testing/mock-query-builder.helper';
 import { CreateSupplierDto } from './dto/create-supplier.dto';
 import { UpdateSupplierDto } from './dto/update-supplier.dto';
+import {
+  BulkDeleteSuppliersDto,
+  BulkUpdateSupplierStatusDto,
+} from './dto/bulk-supplier.dto';
 
 describe('SuppliersService', () => {
   let service: SuppliersService;
@@ -300,6 +304,82 @@ describe('SuppliersService', () => {
         NotFoundException,
       );
       expect(repository.remove).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('bulkUpdateStatus', () => {
+    const dto: BulkUpdateSupplierStatusDto = {
+      ids: ['uuid-1', 'uuid-2'],
+      isActive: false,
+    };
+
+    it('should update isActive for all suppliers', async () => {
+      repository.findOne.mockResolvedValueOnce({
+        id: 'uuid-1',
+        name: 'Acme',
+        isActive: true,
+      });
+      repository.findOne.mockResolvedValueOnce({
+        id: 'uuid-2',
+        name: 'Beta',
+        isActive: true,
+      });
+
+      const result = await service.bulkUpdateStatus(dto);
+
+      expect(repository.save).toHaveBeenCalledTimes(2);
+      expect(result.succeeded).toHaveLength(2);
+      expect(result.succeeded[0]).toEqual({ id: 'uuid-1', isActive: false });
+      expect(result.failed).toHaveLength(0);
+    });
+
+    it('should report failed suppliers without aborting the batch', async () => {
+      repository.findOne.mockResolvedValueOnce(null);
+      repository.findOne.mockResolvedValueOnce({
+        id: 'uuid-2',
+        name: 'Beta',
+        isActive: true,
+      });
+
+      const result = await service.bulkUpdateStatus(dto);
+
+      expect(repository.save).toHaveBeenCalledTimes(1);
+      expect(result.succeeded).toHaveLength(1);
+      expect(result.failed).toHaveLength(1);
+      expect(result.failed[0]).toEqual({
+        id: 'uuid-1',
+        reason: expect.any(String),
+      });
+    });
+  });
+
+  describe('bulkDelete', () => {
+    const dto: BulkDeleteSuppliersDto = { ids: ['uuid-1', 'uuid-2'] };
+
+    it('should soft delete all suppliers', async () => {
+      repository.findOne.mockResolvedValueOnce({ id: 'uuid-1' });
+      repository.findOne.mockResolvedValueOnce({ id: 'uuid-2' });
+
+      const result = await service.bulkDelete(dto);
+
+      expect(repository.softRemove).toHaveBeenCalledTimes(2);
+      expect(result.succeeded).toHaveLength(2);
+      expect(result.failed).toHaveLength(0);
+    });
+
+    it('should report failed suppliers without aborting the batch', async () => {
+      repository.findOne.mockResolvedValueOnce(null);
+      repository.findOne.mockResolvedValueOnce({ id: 'uuid-2' });
+
+      const result = await service.bulkDelete(dto);
+
+      expect(repository.softRemove).toHaveBeenCalledTimes(1);
+      expect(result.succeeded).toHaveLength(1);
+      expect(result.failed).toHaveLength(1);
+      expect(result.failed[0]).toEqual({
+        id: 'uuid-1',
+        reason: expect.any(String),
+      });
     });
   });
 });

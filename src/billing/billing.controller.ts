@@ -22,6 +22,10 @@ import { BillingService } from './billing.service';
 import { InvoicePdfService } from './pdf/invoice-pdf.service';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
 import { FilterInvoiceDto } from './dto/filter-invoice.dto';
+import {
+  BulkCancelInvoicesDto,
+  BulkIssueInvoicesDto,
+} from './dto/bulk-invoice.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { UserRole } from '../users/enums/user-role.enum';
@@ -49,6 +53,22 @@ export class BillingController {
   @ApiResponse({ status: 200, description: 'Invoices retrieved successfully' })
   findAll(@Query() filter: FilterInvoiceDto) {
     return this.billingService.findAll(filter);
+  }
+
+  @Post('invoices/bulk-issue')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Bulk issue invoices (generate CAE via ARCA)' })
+  @ApiResponse({ status: 200, description: 'Invoices issued successfully' })
+  bulkIssue(@Body() dto: BulkIssueInvoicesDto) {
+    return this.billingService.bulkIssue(dto);
+  }
+
+  @Post('invoices/bulk-cancel')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Bulk cancel invoices' })
+  @ApiResponse({ status: 200, description: 'Invoices cancelled successfully' })
+  bulkCancel(@Body() dto: BulkCancelInvoicesDto) {
+    return this.billingService.bulkCancel(dto);
   }
 
   @Get('invoices/:id')

@@ -18,6 +18,7 @@ import { UpdateInquiryDto } from './dto/update-inquiry.dto';
 import { FilterInquiryDto } from './dto/filter-inquiry.dto';
 import { ContactInquiryDto } from './dto/contact-inquiry.dto';
 import { ConvertInquiryDto } from './dto/convert-inquiry.dto';
+import { BulkDeleteInquiriesDto } from './dto/bulk-inquiry.dto';
 import { InquiryDecision } from './enums/inquiry-decision.enum';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -126,5 +127,13 @@ export class InquiriesController {
   @ApiResponse({ status: 404, description: 'Inquiry not found' })
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.inquiriesService.remove(id);
+  }
+
+  @Post('bulk-delete')
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Bulk soft delete inquiries' })
+  @ApiResponse({ status: 200, description: 'Inquiries soft deleted' })
+  bulkDelete(@Body() dto: BulkDeleteInquiriesDto) {
+    return this.inquiriesService.bulkDelete(dto);
   }
 }

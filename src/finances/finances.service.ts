@@ -5,6 +5,10 @@ import { Expense } from './entities/expense.entity';
 import { CreateExpenseDto } from './dto/create-expense.dto';
 import { UpdateExpenseDto } from './dto/update-expense.dto';
 import { FilterExpenseDto } from './dto/filter-expense.dto';
+import {
+  BulkDeleteExpensesDto,
+  BulkExpenseDeleteResult,
+} from './dto/bulk-expense.dto';
 import { PaginatedResponseDto } from '../common/dto/paginated-response.dto';
 import { validateSortBy } from '../common/utils/sort-by.util';
 import { addDaysToDateString } from '../common/utils/date-filter.util';
@@ -109,6 +113,31 @@ export class FinancesService {
   async remove(id: string): Promise<void> {
     const expense = await this.findOne(id);
     await this.expenseRepository.softRemove(expense);
+  }
+
+  async bulkDelete(
+    dto: BulkDeleteExpensesDto,
+  ): Promise<BulkExpenseDeleteResult> {
+    const succeeded: { id: string }[] = [];
+    const failed: { id: string; reason: string }[] = [];
+
+    for (const id of dto.ids) {
+      try {
+        const expense = await this.findOne(id);
+        await this.expenseRepository.softRemove(expense);
+        succeeded.push({ id });
+      } catch (err) {
+        failed.push({
+          id,
+          reason:
+            err instanceof NotFoundException
+              ? err.message
+              : 'Internal server error',
+        });
+      }
+    }
+
+    return { succeeded, failed };
   }
 
   async hardRemove(id: string): Promise<void> {

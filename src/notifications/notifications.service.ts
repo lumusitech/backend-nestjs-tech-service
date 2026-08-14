@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Notification } from './entities/notification.entity';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 import { FilterNotificationDto } from './dto/filter-notification.dto';
+import { BulkReadNotificationsDto } from './dto/bulk-notification.dto';
 import { NotificationsGateway } from './gateways/notifications.gateway';
 import { PaginatedResponseDto } from '../common/dto/paginated-response.dto';
 import { validateSortBy } from '../common/utils/sort-by.util';
@@ -134,6 +135,38 @@ export class NotificationsService {
       .where('user_id = :userId', { userId })
       .andWhere('is_read = :isRead', { isRead: false })
       .execute();
+  }
+
+  async bulkMarkAsRead(
+    dto: BulkReadNotificationsDto,
+    userId: string,
+  ): Promise<{
+    succeeded: string[];
+    failed: { id: string; reason: string }[];
+  }> {
+    const succeeded: string[] = [];
+    const failed: { id: string; reason: string }[] = [];
+
+    for (const id of dto.ids) {
+      const notification = await this.notificationRepository.findOne({
+        where: { id, userId },
+      });
+
+      if (!notification) {
+        failed.push({ id, reason: 'Notification not found' });
+        continue;
+      }
+
+      if (!notification.isRead) {
+        notification.isRead = true;
+        notification.readAt = new Date();
+        await this.notificationRepository.save(notification);
+      }
+
+      succeeded.push(id);
+    }
+
+    return { succeeded, failed };
   }
 
   async getUnreadCount(userId: string): Promise<number> {

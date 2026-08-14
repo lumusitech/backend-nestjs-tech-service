@@ -21,6 +21,7 @@ import { FinancesService } from './finances.service';
 import { CreateExpenseDto } from './dto/create-expense.dto';
 import { UpdateExpenseDto } from './dto/update-expense.dto';
 import { FilterExpenseDto } from './dto/filter-expense.dto';
+import { BulkDeleteExpensesDto } from './dto/bulk-expense.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { UserRole } from '../users/enums/user-role.enum';
@@ -54,6 +55,13 @@ export class FinancesController {
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
   findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.financesService.findOne(id);
+  }
+
+  @Post('bulk-delete')
+  @ApiOperation({ summary: 'Bulk soft delete expenses' })
+  @ApiResponse({ status: 200, description: 'Expenses soft deleted' })
+  bulkDelete(@Body() dto: BulkDeleteExpensesDto) {
+    return this.financesService.bulkDelete(dto);
   }
 
   @Patch(':id')
