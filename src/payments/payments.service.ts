@@ -11,6 +11,12 @@ import { Payment } from './entities/payment.entity';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
 import { FilterPaymentDto } from './dto/filter-payment.dto';
+import {
+  BulkUpdatePaymentStatusDto,
+  BulkPaymentStatusResult,
+  BulkDeletePaymentsDto,
+  BulkPaymentDeleteResult,
+} from './dto/bulk-payment.dto';
 import { PaymentStatus } from './enums/payment-status.enum';
 import { PaymentProvider } from './providers/payment-provider.interface';
 import { MercadoPagoProvider } from './providers/mercadopago.provider';
@@ -327,6 +333,57 @@ export class PaymentsService {
     const payment = await this.findOne(id);
     await this.paymentRepository.softRemove(payment);
     this.logger.log(`Payment soft deleted: ${id}`);
+  }
+
+  async bulkUpdateStatus(
+    dto: BulkUpdatePaymentStatusDto,
+  ): Promise<BulkPaymentStatusResult> {
+    const succeeded: { id: string; status: PaymentStatus }[] = [];
+    const failed: { id: string; reason: string }[] = [];
+
+    for (const id of dto.ids) {
+      try {
+        const saved = await this.update(id, { status: dto.status });
+        succeeded.push({ id, status: saved.status });
+      } catch (err) {
+        failed.push({
+          id,
+          reason:
+            err instanceof NotFoundException
+              ? err.message
+              : err instanceof BadRequestException
+                ? err.message
+                : 'Internal server error',
+        });
+      }
+    }
+
+    return { succeeded, failed };
+  }
+
+  async bulkDelete(
+    dto: BulkDeletePaymentsDto,
+  ): Promise<BulkPaymentDeleteResult> {
+    const succeeded: { id: string }[] = [];
+    const failed: { id: string; reason: string }[] = [];
+
+    for (const id of dto.ids) {
+      try {
+        const payment = await this.findOne(id);
+        await this.paymentRepository.softRemove(payment);
+        succeeded.push({ id });
+      } catch (err) {
+        failed.push({
+          id,
+          reason:
+            err instanceof NotFoundException
+              ? err.message
+              : 'Internal server error',
+        });
+      }
+    }
+
+    return { succeeded, failed };
   }
 
   async hardRemove(id: string): Promise<void> {

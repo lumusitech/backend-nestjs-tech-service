@@ -16,6 +16,10 @@ import { PendingItemsService } from './pending-items.service';
 import { CreatePendingItemDto } from './dto/create-pending-item.dto';
 import { UpdatePendingItemDto } from './dto/update-pending-item.dto';
 import { FilterPendingItemDto } from './dto/filter-pending-item.dto';
+import {
+  BulkDeletePendingItemsDto,
+  BulkUpdatePendingItemStatusDto,
+} from './dto/bulk-pending-item.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { UserRole } from '../users/enums/user-role.enum';
@@ -66,6 +70,25 @@ export class PendingItemsController {
   @ApiResponse({ status: 404, description: 'Pending item not found' })
   findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.pendingItemsService.findOne(id);
+  }
+
+  @Patch('bulk-status')
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Bulk update pending item statuses' })
+  @ApiResponse({
+    status: 200,
+    description: 'Pending items updated successfully',
+  })
+  bulkUpdateStatus(@Body() dto: BulkUpdatePendingItemStatusDto) {
+    return this.pendingItemsService.bulkUpdateStatus(dto);
+  }
+
+  @Post('bulk-delete')
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Bulk soft delete pending items' })
+  @ApiResponse({ status: 200, description: 'Pending items soft deleted' })
+  bulkDelete(@Body() dto: BulkDeletePendingItemsDto) {
+    return this.pendingItemsService.bulkDelete(dto);
   }
 
   @Patch(':id')

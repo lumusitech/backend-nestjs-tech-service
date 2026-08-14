@@ -10,6 +10,10 @@ import { PendingItemPriority } from './enums/pending-item-priority.enum';
 import { PendingItemStatus } from './enums/pending-item-status.enum';
 import { UserRole } from '../users/enums/user-role.enum';
 import { createMockRepository } from '../common/testing/mock-query-builder.helper';
+import {
+  BulkDeletePendingItemsDto,
+  BulkUpdatePendingItemStatusDto,
+} from './dto/bulk-pending-item.dto';
 
 describe('PendingItemsService', () => {
   let service: PendingItemsService;
@@ -292,6 +296,95 @@ describe('PendingItemsService', () => {
 
       expect(count).toBe(0);
       expect(pendingItemRepo.save).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('bulkUpdateStatus', () => {
+    const dto: BulkUpdatePendingItemStatusDto = {
+      ids: ['pi-1', 'pi-2'],
+      status: PendingItemStatus.COMPLETED,
+    };
+
+    it('should update status for all items', async () => {
+      const updateSpy = jest
+        .spyOn(service, 'update')
+        .mockResolvedValueOnce({
+          ...mockPendingItem,
+          status: PendingItemStatus.COMPLETED,
+        })
+        .mockResolvedValueOnce({
+          ...mockPendingItem,
+          id: 'pi-2',
+          status: PendingItemStatus.COMPLETED,
+        });
+
+      const result = await service.bulkUpdateStatus(dto);
+
+      expect(updateSpy).toHaveBeenCalledTimes(2);
+      expect(result.succeeded).toHaveLength(2);
+      expect(result.succeeded[0]).toEqual({
+        id: 'pi-1',
+        status: PendingItemStatus.COMPLETED,
+      });
+      expect(result.failed).toHaveLength(0);
+    });
+
+    it('should report failed items without aborting the batch', async () => {
+      jest
+        .spyOn(service, 'update')
+        .mockRejectedValueOnce(
+          new NotFoundException('Pending item #pi-1 not found'),
+        )
+        .mockResolvedValueOnce({
+          ...mockPendingItem,
+          id: 'pi-2',
+          status: PendingItemStatus.COMPLETED,
+        });
+
+      const result = await service.bulkUpdateStatus(dto);
+
+      expect(result.succeeded).toHaveLength(1);
+      expect(result.failed).toHaveLength(1);
+      expect(result.failed[0]).toEqual({
+        id: 'pi-1',
+        reason: expect.any(String),
+      });
+    });
+  });
+
+  describe('bulkDelete', () => {
+    const dto: BulkDeletePendingItemsDto = { ids: ['pi-1', 'pi-2'] };
+
+    it('should soft delete all items', async () => {
+      pendingItemRepo.findOne.mockResolvedValueOnce(mockPendingItem);
+      pendingItemRepo.findOne.mockResolvedValueOnce({
+        ...mockPendingItem,
+        id: 'pi-2',
+      });
+
+      const result = await service.bulkDelete(dto);
+
+      expect(pendingItemRepo.softRemove).toHaveBeenCalledTimes(2);
+      expect(result.succeeded).toHaveLength(2);
+      expect(result.failed).toHaveLength(0);
+    });
+
+    it('should report failed items without aborting the batch', async () => {
+      pendingItemRepo.findOne.mockResolvedValueOnce(null);
+      pendingItemRepo.findOne.mockResolvedValueOnce({
+        ...mockPendingItem,
+        id: 'pi-2',
+      });
+
+      const result = await service.bulkDelete(dto);
+
+      expect(pendingItemRepo.softRemove).toHaveBeenCalledTimes(1);
+      expect(result.succeeded).toHaveLength(1);
+      expect(result.failed).toHaveLength(1);
+      expect(result.failed[0]).toEqual({
+        id: 'pi-1',
+        reason: expect.any(String),
+      });
     });
   });
 });

@@ -9,6 +9,12 @@ import { Supplier } from './entities/supplier.entity';
 import { CreateSupplierDto } from './dto/create-supplier.dto';
 import { UpdateSupplierDto } from './dto/update-supplier.dto';
 import { FilterSupplierDto } from './dto/filter-supplier.dto';
+import {
+  BulkUpdateSupplierStatusDto,
+  BulkSupplierStatusResult,
+  BulkDeleteSuppliersDto,
+  BulkSupplierDeleteResult,
+} from './dto/bulk-supplier.dto';
 import { PaginatedResponseDto } from '../common/dto/paginated-response.dto';
 import { validateSortBy } from '../common/utils/sort-by.util';
 import { addDaysToDateString } from '../common/utils/date-filter.util';
@@ -127,6 +133,57 @@ export class SuppliersService {
   async remove(id: string): Promise<void> {
     const supplier = await this.findOne(id);
     await this.supplierRepository.softRemove(supplier);
+  }
+
+  async bulkUpdateStatus(
+    dto: BulkUpdateSupplierStatusDto,
+  ): Promise<BulkSupplierStatusResult> {
+    const succeeded: { id: string; isActive: boolean }[] = [];
+    const failed: { id: string; reason: string }[] = [];
+
+    for (const id of dto.ids) {
+      try {
+        const supplier = await this.findOne(id);
+        supplier.isActive = dto.isActive;
+        await this.supplierRepository.save(supplier);
+        succeeded.push({ id, isActive: supplier.isActive });
+      } catch (err) {
+        failed.push({
+          id,
+          reason:
+            err instanceof NotFoundException
+              ? err.message
+              : 'Internal server error',
+        });
+      }
+    }
+
+    return { succeeded, failed };
+  }
+
+  async bulkDelete(
+    dto: BulkDeleteSuppliersDto,
+  ): Promise<BulkSupplierDeleteResult> {
+    const succeeded: { id: string }[] = [];
+    const failed: { id: string; reason: string }[] = [];
+
+    for (const id of dto.ids) {
+      try {
+        const supplier = await this.findOne(id);
+        await this.supplierRepository.softRemove(supplier);
+        succeeded.push({ id });
+      } catch (err) {
+        failed.push({
+          id,
+          reason:
+            err instanceof NotFoundException
+              ? err.message
+              : 'Internal server error',
+        });
+      }
+    }
+
+    return { succeeded, failed };
   }
 
   async hardRemove(id: string): Promise<void> {

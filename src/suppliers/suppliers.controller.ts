@@ -20,6 +20,10 @@ import { SuppliersService } from './suppliers.service';
 import { CreateSupplierDto } from './dto/create-supplier.dto';
 import { UpdateSupplierDto } from './dto/update-supplier.dto';
 import { FilterSupplierDto } from './dto/filter-supplier.dto';
+import {
+  BulkDeleteSuppliersDto,
+  BulkUpdateSupplierStatusDto,
+} from './dto/bulk-supplier.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { UserRole } from '../users/enums/user-role.enum';
@@ -46,6 +50,20 @@ export class SuppliersController {
   @ApiResponse({ status: 200, description: 'List of suppliers' })
   findAll(@Query() filterDto: FilterSupplierDto) {
     return this.suppliersService.findAll(filterDto);
+  }
+
+  @Patch('bulk-status')
+  @ApiOperation({ summary: 'Bulk activate or deactivate suppliers' })
+  @ApiResponse({ status: 200, description: 'Suppliers updated successfully' })
+  bulkUpdateStatus(@Body() dto: BulkUpdateSupplierStatusDto) {
+    return this.suppliersService.bulkUpdateStatus(dto);
+  }
+
+  @Post('bulk-delete')
+  @ApiOperation({ summary: 'Bulk soft delete suppliers' })
+  @ApiResponse({ status: 200, description: 'Suppliers soft deleted' })
+  bulkDelete(@Body() dto: BulkDeleteSuppliersDto) {
+    return this.suppliersService.bulkDelete(dto);
   }
 
   @Get(':id')

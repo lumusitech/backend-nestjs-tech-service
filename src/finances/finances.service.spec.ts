@@ -7,6 +7,7 @@ import { ExpenseCategory } from './enums/expense-category.enum';
 import { CreateExpenseDto } from './dto/create-expense.dto';
 import { UpdateExpenseDto } from './dto/update-expense.dto';
 import { FilterExpenseDto } from './dto/filter-expense.dto';
+import { BulkDeleteExpensesDto } from './dto/bulk-expense.dto';
 import {
   createMockRepository,
   createMockQueryBuilder,
@@ -349,6 +350,36 @@ describe('FinancesService', () => {
       await expect(service.hardRemove('non-existent')).rejects.toThrow(
         NotFoundException,
       );
+    });
+  });
+
+  describe('bulkDelete', () => {
+    const dto: BulkDeleteExpensesDto = { ids: ['uuid-1', 'uuid-2'] };
+
+    it('should soft delete all expenses', async () => {
+      mockRepo.findOne.mockResolvedValueOnce(mockExpense);
+      mockRepo.findOne.mockResolvedValueOnce(mockExpense2);
+
+      const result = await service.bulkDelete(dto);
+
+      expect(mockRepo.softRemove).toHaveBeenCalledTimes(2);
+      expect(result.succeeded).toHaveLength(2);
+      expect(result.failed).toHaveLength(0);
+    });
+
+    it('should report failed expenses without aborting the batch', async () => {
+      mockRepo.findOne.mockResolvedValueOnce(null);
+      mockRepo.findOne.mockResolvedValueOnce(mockExpense2);
+
+      const result = await service.bulkDelete(dto);
+
+      expect(mockRepo.softRemove).toHaveBeenCalledTimes(1);
+      expect(result.succeeded).toHaveLength(1);
+      expect(result.failed).toHaveLength(1);
+      expect(result.failed[0]).toEqual({
+        id: 'uuid-1',
+        reason: expect.any(String),
+      });
     });
   });
 });

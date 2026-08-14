@@ -12,6 +12,10 @@ import { UpdateInquiryDto } from './dto/update-inquiry.dto';
 import { FilterInquiryDto } from './dto/filter-inquiry.dto';
 import { ContactInquiryDto } from './dto/contact-inquiry.dto';
 import { ConvertInquiryDto } from './dto/convert-inquiry.dto';
+import {
+  BulkDeleteInquiriesDto,
+  BulkInquiryDeleteResult,
+} from './dto/bulk-inquiry.dto';
 import { InquiryStatus } from './enums/inquiry-status.enum';
 import { InquiryDecision } from './enums/inquiry-decision.enum';
 import { PaginatedResponseDto } from '../common/dto/paginated-response.dto';
@@ -288,5 +292,30 @@ export class InquiriesService {
   async remove(id: string): Promise<void> {
     const inquiry = await this.findOne(id);
     await this.inquiryRepository.softRemove(inquiry);
+  }
+
+  async bulkDelete(
+    dto: BulkDeleteInquiriesDto,
+  ): Promise<BulkInquiryDeleteResult> {
+    const succeeded: { id: string }[] = [];
+    const failed: { id: string; reason: string }[] = [];
+
+    for (const id of dto.ids) {
+      try {
+        const inquiry = await this.findOne(id);
+        await this.inquiryRepository.softRemove(inquiry);
+        succeeded.push({ id });
+      } catch (err) {
+        failed.push({
+          id,
+          reason:
+            err instanceof NotFoundException
+              ? err.message
+              : 'Internal server error',
+        });
+      }
+    }
+
+    return { succeeded, failed };
   }
 }
