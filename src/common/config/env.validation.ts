@@ -16,6 +16,7 @@ export const envValidationSchema = Joi.object({
   // Auth
   JWT_SECRET: Joi.string().min(16).required(),
   JWT_EXPIRES_IN: Joi.string().default('1d'),
+  JWT_REFRESH_TTL_DAYS: Joi.number().default(14),
 
   // Server
   PORT: Joi.number().default(3000),

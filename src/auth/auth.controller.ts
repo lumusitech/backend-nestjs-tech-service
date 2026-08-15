@@ -1,6 +1,7 @@
 import { Controller, Post, Get, Patch, Body } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { CurrentUser } from './decorators/current-user.decorator';
@@ -25,6 +26,26 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Invalid credentials' })
   login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto);
+  }
+
+  @Public()
+  @Post('refresh')
+  @ApiOperation({ summary: 'Refresh access token with rotation' })
+  @ApiResponse({ status: 200, description: 'New access + refresh token pair' })
+  @ApiResponse({
+    status: 401,
+    description: 'Invalid, expired or revoked refresh token',
+  })
+  refresh(@Body() refreshTokenDto: RefreshTokenDto) {
+    return this.authService.refresh(refreshTokenDto.refreshToken);
+  }
+
+  @Post('logout')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Revoke all active refresh tokens for the user' })
+  @ApiResponse({ status: 200, description: 'Refresh tokens revoked' })
+  logout(@CurrentUser() user: { id: string; role: string }) {
+    return this.authService.logout(user.id);
   }
 
   @Public()
