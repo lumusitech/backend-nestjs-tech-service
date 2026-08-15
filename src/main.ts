@@ -5,6 +5,8 @@ import helmet from 'helmet';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
+import { IdempotencyInterceptor } from './common/interceptors/idempotency.interceptor';
+import { IdempotencyService } from './common/services/idempotency.service';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 
 async function bootstrap() {
@@ -39,6 +41,10 @@ async function bootstrap() {
   );
 
   app.useGlobalFilters(new HttpExceptionFilter());
+  // El interceptor de idempotencia va PRIMERO (externo): captura/repone la
+  // respuesta ya transformada por TransformInterceptor y no re-ejecuta replays.
+  const idempotencyService = app.get(IdempotencyService);
+  app.useGlobalInterceptors(new IdempotencyInterceptor(idempotencyService));
   app.useGlobalInterceptors(new TransformInterceptor());
 
   const reflector = app.get(Reflector);
