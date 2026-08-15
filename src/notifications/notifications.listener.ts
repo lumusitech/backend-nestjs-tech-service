@@ -61,7 +61,7 @@ export class NotificationsListener {
     }));
 
     await this.notificationsService.createBulk(dtos);
-    this.sendPush(
+    void this.sendPush(
       recipientIds,
       'Nueva orden de trabajo',
       `Se creó la orden ${event.trackingCode}`,
@@ -103,7 +103,7 @@ export class NotificationsListener {
     }));
 
     await this.notificationsService.createBulk(dtos);
-    this.sendPush(
+    void this.sendPush(
       recipientIds,
       `Orden ${event.trackingCode} actualizada`,
       `Estado: '${oldLabel}' → '${newLabel}'`,
@@ -125,7 +125,7 @@ export class NotificationsListener {
     }));
 
     await this.notificationsService.createBulk(dtos);
-    this.sendPush(
+    void this.sendPush(
       event.technicianIds,
       'Nueva asignación',
       `Fuiste asignado a la orden ${event.trackingCode}`,
@@ -147,7 +147,7 @@ export class NotificationsListener {
     }));
 
     await this.notificationsService.createBulk(dtos);
-    this.sendPush(
+    void this.sendPush(
       event.technicianIds,
       'Asignación removida',
       `Fuiste desasignado de la orden ${event.trackingCode}`,
@@ -197,7 +197,7 @@ export class NotificationsListener {
     }));
 
     await this.notificationsService.createBulk(dtos);
-    this.sendPush(
+    void this.sendPush(
       recipientIds,
       'Tarea completada',
       `${event.completedByName} completó '${event.taskTitle}'`,
@@ -224,7 +224,7 @@ export class NotificationsListener {
     }));
 
     await this.notificationsService.createBulk(dtos);
-    this.sendPush(
+    void this.sendPush(
       adminIds,
       'Nuevo pago registrado',
       `Pago de ${event.amount} ARS`,
@@ -270,7 +270,7 @@ export class NotificationsListener {
     }));
 
     await this.notificationsService.createBulk(dtos);
-    this.sendPush(recipientIds, title, message);
+    void this.sendPush(recipientIds, title, message);
   }
 
   @OnEvent('workorder.note_added')
@@ -305,7 +305,7 @@ export class NotificationsListener {
     }));
 
     await this.notificationsService.createBulk(dtos);
-    this.sendPush(
+    void this.sendPush(
       recipientIds,
       `Nueva nota en ${event.trackingCode}`,
       `${event.createdByName} agregó una nota`,
@@ -333,7 +333,7 @@ export class NotificationsListener {
     }));
 
     await this.notificationsService.createBulk(dtos);
-    this.sendPush(
+    void this.sendPush(
       event.technicianIds,
       `Nuevo material en ${event.trackingCode}`,
       `Se agregó '${event.materialDescription}' a la orden`,
@@ -359,7 +359,7 @@ export class NotificationsListener {
     }));
 
     await this.notificationsService.createBulk(dtos);
-    this.sendPush(
+    void this.sendPush(
       event.technicianIds,
       `Nota actualizada en ${event.trackingCode}`,
       `Una nota fue actualizada en la orden`,
@@ -385,7 +385,7 @@ export class NotificationsListener {
     }));
 
     await this.notificationsService.createBulk(dtos);
-    this.sendPush(
+    void this.sendPush(
       event.technicianIds,
       `Nota eliminada en ${event.trackingCode}`,
       `Una nota fue eliminada en la orden`,
@@ -450,7 +450,7 @@ export class NotificationsListener {
     }));
 
     await this.notificationsService.createBulk(dtos);
-    this.sendPush(
+    void this.sendPush(
       recipientIds,
       'Nuevo trabajo pendiente',
       `'${event.title}' con vencimiento ${event.dueDate}`,
@@ -540,7 +540,7 @@ export class NotificationsListener {
     ];
 
     await this.notificationsService.createBulk(dtos);
-    this.sendPush(
+    void this.sendPush(
       [event.assignedToId],
       'Consulta asignada',
       `Se te asignó la consulta de ${event.clientName}`,
@@ -588,7 +588,7 @@ export class NotificationsListener {
     }));
 
     await this.notificationsService.createBulk(dtos);
-    this.sendPush(
+    void this.sendPush(
       adminIds,
       `Consulta ${decisionLabel}`,
       `La consulta de ${event.clientName} fue ${decisionLabel}`,
