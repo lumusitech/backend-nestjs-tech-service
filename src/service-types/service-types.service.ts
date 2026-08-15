@@ -12,6 +12,12 @@ import { FilterServiceTypeDto } from './dto/filter-service-type.dto';
 import { PaginatedResponseDto } from '../common/dto/paginated-response.dto';
 import { validateSortBy } from '../common/utils/sort-by.util';
 import { addDaysToDateString } from '../common/utils/date-filter.util';
+import {
+  BulkDeleteServiceTypesDto,
+  BulkServiceTypeDeleteResult,
+  BulkServiceTypeStatusResult,
+  BulkUpdateServiceTypeStatusDto,
+} from './dto/bulk-service-type.dto';
 
 const ALLOWED_SORT_COLUMNS = [
   'createdAt',
@@ -131,6 +137,57 @@ export class ServiceTypesService {
   async remove(id: string): Promise<void> {
     const serviceType = await this.findOne(id);
     await this.serviceTypeRepository.softRemove(serviceType);
+  }
+
+  async bulkUpdateStatus(
+    dto: BulkUpdateServiceTypeStatusDto,
+  ): Promise<BulkServiceTypeStatusResult> {
+    const succeeded: { id: string; isActive: boolean }[] = [];
+    const failed: { id: string; reason: string }[] = [];
+
+    for (const id of dto.ids) {
+      try {
+        const serviceType = await this.findOne(id);
+        serviceType.isActive = dto.isActive;
+        await this.serviceTypeRepository.save(serviceType);
+        succeeded.push({ id, isActive: serviceType.isActive });
+      } catch (err) {
+        failed.push({
+          id,
+          reason:
+            err instanceof NotFoundException
+              ? err.message
+              : 'Internal server error',
+        });
+      }
+    }
+
+    return { succeeded, failed };
+  }
+
+  async bulkDelete(
+    dto: BulkDeleteServiceTypesDto,
+  ): Promise<BulkServiceTypeDeleteResult> {
+    const succeeded: { id: string }[] = [];
+    const failed: { id: string; reason: string }[] = [];
+
+    for (const id of dto.ids) {
+      try {
+        const serviceType = await this.findOne(id);
+        await this.serviceTypeRepository.softRemove(serviceType);
+        succeeded.push({ id });
+      } catch (err) {
+        failed.push({
+          id,
+          reason:
+            err instanceof NotFoundException
+              ? err.message
+              : 'Internal server error',
+        });
+      }
+    }
+
+    return { succeeded, failed };
   }
 
   async hardRemove(id: string): Promise<void> {

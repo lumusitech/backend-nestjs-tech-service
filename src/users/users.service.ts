@@ -13,6 +13,10 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { FilterUserDto } from './dto/filter-user.dto';
 import { PaginatedResponseDto } from '../common/dto/paginated-response.dto';
 import { validateSortBy } from '../common/utils/sort-by.util';
+import {
+  BulkUpdateUserStatusDto,
+  BulkUserStatusResult,
+} from './dto/bulk-user.dto';
 
 const ALLOWED_SORT_COLUMNS = ['createdAt', 'name', 'email', 'role'] as const;
 
@@ -149,6 +153,32 @@ export class UsersService {
   async remove(id: string): Promise<void> {
     const user = await this.findOne(id);
     await this.userRepository.softRemove(user);
+  }
+
+  async bulkUpdateStatus(
+    dto: BulkUpdateUserStatusDto,
+  ): Promise<BulkUserStatusResult> {
+    const succeeded: { id: string; isActive: boolean }[] = [];
+    const failed: { id: string; reason: string }[] = [];
+
+    for (const id of dto.ids) {
+      try {
+        const user = await this.findOne(id);
+        user.isActive = dto.isActive;
+        await this.userRepository.save(user);
+        succeeded.push({ id, isActive: user.isActive });
+      } catch (err) {
+        failed.push({
+          id,
+          reason:
+            err instanceof NotFoundException
+              ? err.message
+              : 'Internal server error',
+        });
+      }
+    }
+
+    return { succeeded, failed };
   }
 
   async hardRemove(id: string): Promise<void> {

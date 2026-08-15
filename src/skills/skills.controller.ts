@@ -14,6 +14,10 @@ import { SkillsService } from './skills.service';
 import { CreateSkillDto } from './dto/create-skill.dto';
 import { UpdateSkillDto } from './dto/update-skill.dto';
 import { FilterSkillDto } from './dto/filter-skill.dto';
+import {
+  BulkDeleteSkillsDto,
+  BulkUpdateSkillStatusDto,
+} from './dto/bulk-skill.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { UserRole } from '../users/enums/user-role.enum';
@@ -46,6 +50,20 @@ export class SkillsController {
   @ApiResponse({ status: 200, description: 'List of skills returned' })
   findAll(@Query() filterDto: FilterSkillDto) {
     return this.skillsService.findAll(filterDto);
+  }
+
+  @Patch('bulk-status')
+  @ApiOperation({ summary: 'Bulk activate or deactivate skills' })
+  @ApiResponse({ status: 200, description: 'Skills updated successfully' })
+  bulkUpdateStatus(@Body() dto: BulkUpdateSkillStatusDto) {
+    return this.skillsService.bulkUpdateStatus(dto);
+  }
+
+  @Post('bulk-delete')
+  @ApiOperation({ summary: 'Bulk soft delete skills' })
+  @ApiResponse({ status: 200, description: 'Skills soft deleted' })
+  bulkDelete(@Body() dto: BulkDeleteSkillsDto) {
+    return this.skillsService.bulkDelete(dto);
   }
 
   @Get(':id')
