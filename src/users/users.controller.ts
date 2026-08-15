@@ -14,6 +14,7 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { FilterUserDto } from './dto/filter-user.dto';
+import { BulkUpdateUserStatusDto } from './dto/bulk-user.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { UserRole } from './enums/user-role.enum';
@@ -49,6 +50,14 @@ export class UsersController {
   @ApiResponse({ status: 200, description: 'Paginated list of users' })
   findAll(@Query() filterDto: FilterUserDto) {
     return this.usersService.findAll(filterDto);
+  }
+
+  @Patch('bulk-status')
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Bulk activate or deactivate users' })
+  @ApiResponse({ status: 200, description: 'Users updated successfully' })
+  bulkUpdateStatus(@Body() dto: BulkUpdateUserStatusDto) {
+    return this.usersService.bulkUpdateStatus(dto);
   }
 
   @Get(':id')

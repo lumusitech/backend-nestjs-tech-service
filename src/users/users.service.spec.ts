@@ -8,6 +8,7 @@ import { User } from './entities/user.entity';
 import { Skill } from '../skills/entities/skill.entity';
 import { UserRole } from './enums/user-role.enum';
 import { createMockRepository } from '../common/testing/mock-query-builder.helper';
+import { BulkUpdateUserStatusDto } from './dto/bulk-user.dto';
 
 jest.mock('bcrypt');
 
@@ -273,6 +274,48 @@ describe('UsersService', () => {
       await expect(service.hardRemove('unknown-id')).rejects.toThrow(
         NotFoundException,
       );
+    });
+  });
+
+  describe('bulkUpdateStatus', () => {
+    const dto: BulkUpdateUserStatusDto = {
+      ids: ['uuid-1', 'uuid-2'],
+      isActive: false,
+    };
+
+    it('should update isActive for all users', async () => {
+      repository.findOne.mockResolvedValueOnce(mockUser);
+      repository.findOne.mockResolvedValueOnce({
+        ...mockUser,
+        id: 'uuid-2',
+        isActive: true,
+      });
+
+      const result = await service.bulkUpdateStatus(dto);
+
+      expect(repository.save).toHaveBeenCalledTimes(2);
+      expect(result.succeeded).toHaveLength(2);
+      expect(result.succeeded[0]).toEqual({ id: 'uuid-1', isActive: false });
+      expect(result.failed).toHaveLength(0);
+    });
+
+    it('should report failed users without aborting the batch', async () => {
+      repository.findOne.mockResolvedValueOnce(null);
+      repository.findOne.mockResolvedValueOnce({
+        ...mockUser,
+        id: 'uuid-2',
+        isActive: true,
+      });
+
+      const result = await service.bulkUpdateStatus(dto);
+
+      expect(repository.save).toHaveBeenCalledTimes(1);
+      expect(result.succeeded).toHaveLength(1);
+      expect(result.failed).toHaveLength(1);
+      expect(result.failed[0]).toEqual({
+        id: 'uuid-1',
+        reason: expect.any(String),
+      });
     });
   });
 });

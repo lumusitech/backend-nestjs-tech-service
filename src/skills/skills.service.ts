@@ -12,6 +12,12 @@ import { FilterSkillDto } from './dto/filter-skill.dto';
 import { PaginatedResponseDto } from '../common/dto/paginated-response.dto';
 import { validateSortBy } from '../common/utils/sort-by.util';
 import { addDaysToDateString } from '../common/utils/date-filter.util';
+import {
+  BulkDeleteSkillsDto,
+  BulkSkillDeleteResult,
+  BulkSkillStatusResult,
+  BulkUpdateSkillStatusDto,
+} from './dto/bulk-skill.dto';
 
 const ALLOWED_SORT_COLUMNS = ['createdAt', 'name', 'category'] as const;
 
@@ -124,6 +130,55 @@ export class SkillsService {
   async remove(id: string): Promise<void> {
     const skill = await this.findOne(id);
     await this.skillRepository.softRemove(skill);
+  }
+
+  async bulkUpdateStatus(
+    dto: BulkUpdateSkillStatusDto,
+  ): Promise<BulkSkillStatusResult> {
+    const succeeded: { id: string; isActive: boolean }[] = [];
+    const failed: { id: string; reason: string }[] = [];
+
+    for (const id of dto.ids) {
+      try {
+        const skill = await this.findOne(id);
+        skill.isActive = dto.isActive;
+        await this.skillRepository.save(skill);
+        succeeded.push({ id, isActive: skill.isActive });
+      } catch (err) {
+        failed.push({
+          id,
+          reason:
+            err instanceof NotFoundException
+              ? err.message
+              : 'Internal server error',
+        });
+      }
+    }
+
+    return { succeeded, failed };
+  }
+
+  async bulkDelete(dto: BulkDeleteSkillsDto): Promise<BulkSkillDeleteResult> {
+    const succeeded: { id: string }[] = [];
+    const failed: { id: string; reason: string }[] = [];
+
+    for (const id of dto.ids) {
+      try {
+        const skill = await this.findOne(id);
+        await this.skillRepository.softRemove(skill);
+        succeeded.push({ id });
+      } catch (err) {
+        failed.push({
+          id,
+          reason:
+            err instanceof NotFoundException
+              ? err.message
+              : 'Internal server error',
+        });
+      }
+    }
+
+    return { succeeded, failed };
   }
 
   async hardRemove(id: string): Promise<void> {

@@ -14,6 +14,10 @@ import { ServiceTypesService } from './service-types.service';
 import { CreateServiceTypeDto } from './dto/create-service-type.dto';
 import { UpdateServiceTypeDto } from './dto/update-service-type.dto';
 import { FilterServiceTypeDto } from './dto/filter-service-type.dto';
+import {
+  BulkDeleteServiceTypesDto,
+  BulkUpdateServiceTypeStatusDto,
+} from './dto/bulk-service-type.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { UserRole } from '../users/enums/user-role.enum';
@@ -50,6 +54,23 @@ export class ServiceTypesController {
   @ApiResponse({ status: 200, description: 'List of service types returned' })
   findAll(@Query() filterDto: FilterServiceTypeDto) {
     return this.serviceTypesService.findAll(filterDto);
+  }
+
+  @Patch('bulk-status')
+  @ApiOperation({ summary: 'Bulk activate or deactivate service types' })
+  @ApiResponse({
+    status: 200,
+    description: 'Service types updated successfully',
+  })
+  bulkUpdateStatus(@Body() dto: BulkUpdateServiceTypeStatusDto) {
+    return this.serviceTypesService.bulkUpdateStatus(dto);
+  }
+
+  @Post('bulk-delete')
+  @ApiOperation({ summary: 'Bulk soft delete service types' })
+  @ApiResponse({ status: 200, description: 'Service types soft deleted' })
+  bulkDelete(@Body() dto: BulkDeleteServiceTypesDto) {
+    return this.serviceTypesService.bulkDelete(dto);
   }
 
   @Get(':id')

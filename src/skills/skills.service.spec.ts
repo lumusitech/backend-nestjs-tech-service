@@ -7,6 +7,10 @@ import {
   createMockRepository,
   createMockQueryBuilder,
 } from '../common/testing/mock-query-builder.helper';
+import {
+  BulkDeleteSkillsDto,
+  BulkUpdateSkillStatusDto,
+} from './dto/bulk-skill.dto';
 
 describe('SkillsService', () => {
   let service: SkillsService;
@@ -180,6 +184,70 @@ describe('SkillsService', () => {
       await service.hardRemove('skill-1');
 
       expect(repo.remove).toHaveBeenCalledWith(mockSkill);
+    });
+  });
+
+  describe('bulkUpdateStatus', () => {
+    const dto: BulkUpdateSkillStatusDto = {
+      ids: ['skill-1', 'skill-2'],
+      isActive: false,
+    };
+
+    it('should update isActive for all skills', async () => {
+      repo.findOne.mockResolvedValueOnce({ id: 'skill-1', isActive: true });
+      repo.findOne.mockResolvedValueOnce({ id: 'skill-2', isActive: true });
+
+      const result = await service.bulkUpdateStatus(dto);
+
+      expect(repo.save).toHaveBeenCalledTimes(2);
+      expect(result.succeeded).toHaveLength(2);
+      expect(result.succeeded[0]).toEqual({ id: 'skill-1', isActive: false });
+      expect(result.failed).toHaveLength(0);
+    });
+
+    it('should report failed skills without aborting the batch', async () => {
+      repo.findOne.mockResolvedValueOnce(null);
+      repo.findOne.mockResolvedValueOnce({ id: 'skill-2', isActive: true });
+
+      const result = await service.bulkUpdateStatus(dto);
+
+      expect(repo.save).toHaveBeenCalledTimes(1);
+      expect(result.succeeded).toHaveLength(1);
+      expect(result.failed).toHaveLength(1);
+      expect(result.failed[0]).toEqual({
+        id: 'skill-1',
+        reason: expect.any(String),
+      });
+    });
+  });
+
+  describe('bulkDelete', () => {
+    const dto: BulkDeleteSkillsDto = { ids: ['skill-1', 'skill-2'] };
+
+    it('should soft delete all skills', async () => {
+      repo.findOne.mockResolvedValueOnce({ id: 'skill-1' });
+      repo.findOne.mockResolvedValueOnce({ id: 'skill-2' });
+
+      const result = await service.bulkDelete(dto);
+
+      expect(repo.softRemove).toHaveBeenCalledTimes(2);
+      expect(result.succeeded).toHaveLength(2);
+      expect(result.failed).toHaveLength(0);
+    });
+
+    it('should report failed skills without aborting the batch', async () => {
+      repo.findOne.mockResolvedValueOnce(null);
+      repo.findOne.mockResolvedValueOnce({ id: 'skill-2' });
+
+      const result = await service.bulkDelete(dto);
+
+      expect(repo.softRemove).toHaveBeenCalledTimes(1);
+      expect(result.succeeded).toHaveLength(1);
+      expect(result.failed).toHaveLength(1);
+      expect(result.failed[0]).toEqual({
+        id: 'skill-1',
+        reason: expect.any(String),
+      });
     });
   });
 });
