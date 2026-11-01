@@ -3,15 +3,26 @@ updates:
   - package-ecosystem: npm
     directory: /
     schedule:
-      interval: weekly
-      day: monday
+      interval: monthly
     versioning-strategy: increase
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 5
+    cooldown:
+      default-days: 14
     labels:
       - dependencies
       - security
     assignees:
       - carludev
+    ignore:
+      # Majors ESM-only alineados con Nest 12: rompen jest (CJS, "type": "module")
+      # y requieren migración coordinada del framework. No mergear aislados.
+      # Ver: PR chore/resolve-dependabot-prs. Quitar estos ignores al migrar a Nest 12.
+      - dependency-name: "@nestjs/jwt"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@nestjs/passport"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@nestjs/schedule"
+        update-types: ["version-update:semver-major"]
     groups:
       nestjs:
         patterns:
